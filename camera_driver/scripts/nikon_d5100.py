@@ -44,7 +44,7 @@ global mutex
 mutex = Lock()
 
 def working_dir():
-    return '/tmp/ramdisk'
+    return '/mnt/ramdisk'
 
 def name():
     return 'd5100'
