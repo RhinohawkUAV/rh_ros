@@ -4,12 +4,18 @@ project(depth_vision)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+FIND_PACKAGE(CUDA REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   roscpp
   std_msgs
 )
+SET (CUDA_NVCC_FLAGS "-arch=sm_20" CACHE STRING "nvcc flags" FORCE)
+SET (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+SET (LIB_TYPE STATIC)
+CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE} src/cudaCV.cu)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -130,6 +136,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(depth_vision_node src/depth_vision.cpp)
+
 add_executable(dv_msg_node src/dv_msg.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -138,7 +145,7 @@ add_executable(dv_msg_node src/dv_msg.cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(depth_vision_node
- ${catkin_LIBRARIES})
+ ${catkin_LIBRARIES} TestLib)
 target_link_libraries(dv_msg_node
  ${catkin_LIBRARIES}
 )
