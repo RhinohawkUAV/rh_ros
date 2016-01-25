@@ -3,39 +3,25 @@
 
 ## Cannon S100 image capture node
 
-The s100_image_capture node listens for photo request, triggers the camera, copies the image to the localfile system, and then publishes the name of the file. 
+A ROS camera driver node that uses CHDK to take a photo from a Canon S100
 
 
 Start the S100 camera node
 
-    rosrun camera_driver s100_image_capture.py
+    rosrun camera_driver s100.py
 
 
-Listen for responses from S100 camera node
+Request a photo from the service s100/request_image
 
-    rostopic echo image_filename
-
-
-Trigger an image capture from the s100 node
-
-    rostopic pub -1 image_trigger std_msgs/Empty
+    rosrun camera_driver s100_service_client.py
 
 
-## Camera Images Node
+Listen to the S100 photo queue at s100/image_raw
 
-The camera_images node subscribes to the filename topic and then picks the image up, translates to ROS sensor_msg/Image, and publishes the ROS image. 
+     rosrun camera_driver s100_pic_client.py
 
 
-Start the camera images node
+    
 
-    rosrun camera_driver camera_images
-
-Listen for published images
-
-    rostopic echo /camera/image > foo
-
-Trigger reading an image from filesystem
-
-    rostopic pub -1 /camera_images std_msgs/String /tmp/IMG_0246.JPG
 
     
