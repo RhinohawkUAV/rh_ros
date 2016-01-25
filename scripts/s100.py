@@ -1,15 +1,32 @@
 #!/usr/bin/env python
 
 import subprocess
-from threading import Thread, Lock
+from threading import Lock
+
+import cv2 
 
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import Empty
+from sensor_msgs.msg import Image
+from polled_camera.srv import GetPolledImage, GetPolledImageResponse
+from cv_bridge import CvBridge, CvBridgeError
+
+
+# Implement Polled Camera Node for S100
+#
+# http://wiki.ros.org/camera_drivers
+#
+# Service 
+#      request_image (polled_camera/GetPolledImage)
+#
+# Published Topics:
+#       /s100/image_filename (sensor_msgs/Image)
 
 
 def working_dir():
     return '/tmp'
+
+def name():
+    return 's100'
 
 def take_photo():
     
@@ -65,24 +82,36 @@ global mutex
 mutex = Lock()
 
 
-def capture_image(request):
+def capture_image(getPolledImage):
     global publisher
     global mutex
+    success = False
+    message = 'No photo for you'
+
+    # run the camera
     mutex.acquire()
     try:
         print 'Taking photo'
         filename = take_photo()
+        success = True
+        message = filename
     finally:
         mutex.release()
+
     print "Photo complete: %s" % filename
-    publisher.publish(filename)
+
+    # convert to ROS image and publish
+    cv2_image = cv2.imread(filename)
+    ros_image = CvBridge().cv2_to_imgmsg(cv2_image, 'bgr8')
+    publisher.publish(ros_image)
+    return GetPolledImageResponse(success, message, rospy.Time.now())
 
 
 def s100_image_capture():
     global publisher
-    rospy.init_node("s100")
-    rospy.Subscriber("image_trigger", Empty, capture_image)
-    publisher = rospy.Publisher("image_filename", String, queue_size = 10)
+    rospy.init_node(name())
+    publisher = rospy.Publisher(name() + "/image_raw", Image, queue_size = 10)
+    rospy.Service(name() + '/request_image', GetPolledImage, capture_image)
     print "Ready"
     rospy.spin()
 
