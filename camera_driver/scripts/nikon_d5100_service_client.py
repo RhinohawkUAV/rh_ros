@@ -5,10 +5,10 @@ from polled_camera.srv import GetPolledImage
 
 def get_polled_image():
     print 'Waiting for service'
-    rospy.wait_for_service('/s100/request_image')
+    rospy.wait_for_service('/d5100/request_image')
     print 'Service is up'
     print 'Requesting pic'
-    get_polled_image = rospy.ServiceProxy('/s100/request_image', GetPolledImage)
+    get_polled_image = rospy.ServiceProxy('/d5100/request_image', GetPolledImage)
     print get_polled_image()
     print 'Pic complete'
 

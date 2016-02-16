@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED)
+pkg_check_modules(libraw REQUIRED)
 
 catkin_package(
 #  INCLUDE_DIRS include
