@@ -40,7 +40,7 @@ def name():
 def take_photo():
     rospy.loginfo('Capturing image')
     img = subprocess.check_output(["gphoto2", "--capture-image-and-download", "--stdout"]) 
-    (fd, path) = tempfile.mkstemp(dir="/tmp/ramdisk", suffix=".jpg")
+    (fd, path) = tempfile.mkstemp(dir=working_dir(), suffix=".jpg")
     f = os.fdopen(fd, 'w')
     f.write(img)
     f.close()
