@@ -10,7 +10,6 @@ Checkout the project into a ROS workspace.
     mkdir ~/catkin_ws
     cd ~/catkin_ws
     git clone git@gitlab.com:NL-outback-challenge-2016/obc-2016-ros.git src
-    cd ..
     catkin_make
 
 
