@@ -13,6 +13,11 @@ Checkout the project into a ROS workspace.
     catkin_make
 
 
+The depth_vision module needs CUDA to build.  You can skip this module in the build (if you don't have cuda installed) like this:
+
+    catkin_make -DCATKIN_BLACKLIST_PACKAGES=depth_vision
+
+
 ## Nodes
 
 * [camera_driver](camera_driver/README.md) - ROS nodes for the image processing pipleine.

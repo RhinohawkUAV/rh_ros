@@ -8,6 +8,7 @@ image_raw topic as a sensor_msg/Image message.
 Services: 
 
     /d5100/request_image (polled_camera/GetPolledImage)
+    /d5100/set_camera_info (sensor_msgs/CameraInfo) 
 
 Published Topics:
 
@@ -46,4 +47,26 @@ Or add this to /etc/fstab for a ramdisk that is created at boot time
 
 
 
+# GoPro Camera driver.
+
+A node just like the Nikon driver.  Used for testing, etc.
+
+
+Services: 
+
+    /gopro/request_image (polled_camera/GetPolledImage)
+    /gopro/set_camera_info (sensor_msgs/CameraInfo) 
+
+Published Topics:
+
+    /gopro/image_raw (sensor_msgs/Image)
+
+
+To start the node:
+
+    rosrun camera_driver gopro.py
+
+To trigger a capture run the service client:
+
+    python camera_driver/scripts/gopro_service_client.py
 
