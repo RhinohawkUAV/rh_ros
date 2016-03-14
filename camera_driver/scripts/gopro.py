@@ -1,16 +1,4 @@
 #!/usr/bin/env python
-from threading import Lock
-import os
-import logging
-
-import cv2 
-
-import rospy
-from sensor_msgs.msg import Image, CameraInfo
-from sensor_msgs.srv import SetCameraInfo
-from polled_camera.srv import GetPolledImage, GetPolledImageResponse
-from cv_bridge import CvBridge, CvBridgeError
-
 
 # Implement Polled Camera Node for GoPro
 #
@@ -22,8 +10,26 @@ from cv_bridge import CvBridge, CvBridgeError
 #
 # Published Topics:
 #       /gopro/image_raw (sensor_msgs/Image)
+#       /gopro/camera_info  (sensor_msgs/CameraInfo)
 
-global publisher
+
+from threading import Lock
+import os
+import logging
+
+import cv2 
+import rospy
+
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.srv import SetCameraInfo
+from polled_camera.srv import GetPolledImage, GetPolledImageResponse
+from sensor_msgs.msg import Image, CameraInfo
+from camera_info_manager import CameraInfoManager
+
+global image_publisher
+global camera_info_publisher
+global camera_info_manager
+global camera_info
 global mutex
 mutex = Lock()
 
@@ -31,11 +37,13 @@ mutex = Lock()
 def name():
     return 'gopro'
 
+
 def capture_image(getPolledImage):
+
+    global camera_info
 
     rospy.loginfo("Capturing image")
 
-    filename = 'none'
     success = False
     message = 'No photo for you'
     stamp = rospy.Time.now()
@@ -56,14 +64,15 @@ def capture_image(getPolledImage):
     finally:
         mutex.release()
 
-
     if success:
-        rospy.loginfo("Capture sucessful, publishing image")
+        rospy.loginfo("Capture successful, publishing image")
         # convert to ROS image and publish
         try:
             ros_image = CvBridge().cv2_to_imgmsg(cv2_image, 'bgr8')
             ros_image.header.stamp = stamp
-            publisher.publish(ros_image)
+            image_publisher.publish(ros_image)
+            camera_info.header.stamp = stamp
+            camera_info_publisher.publish(camera_info)
             message = "Image capture completed successfully"
         except TypeError as e:
             message = "CvBrideg could not convert image: %s" % e
@@ -73,17 +82,25 @@ def capture_image(getPolledImage):
     return GetPolledImageResponse(success, message, stamp)
 
 
-def set_camera_info(msg):
-    rospy.loginfo('set_camera_info called: ', msg)
-
 def image_capture():
-    global publisher
+
+    global image_publisher
+    global camera_info_publisher
+    global camera_info_manager
+    global camera_info
 
     rospy.init_node(name())
 
-    publisher = rospy.Publisher(name() + "/image_raw", Image, queue_size = 10)
+    image_publisher = rospy.Publisher(name() + "/image_raw", Image, queue_size = 5)
+    camera_info_publisher = rospy.Publisher(name() + "/camera_info", CameraInfo, queue_size = 5)
+    
     rospy.Service(name() + '/request_image', GetPolledImage, capture_image)
-    rospy.Service(name() + '/set_camera_info', SetCameraInfo, set_camera_info) 
+
+    # set_camera_info service
+    camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % name()
+    camera_info_manager = CameraInfoManager(name(), camera_info_url, name())
+    camera_info_manager.loadCameraInfo()
+    camera_info = camera_info_manager.getCameraInfo()
 
     rospy.loginfo("Ready")
     rospy.spin()
