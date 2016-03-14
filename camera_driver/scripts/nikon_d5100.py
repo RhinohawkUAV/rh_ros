@@ -1,20 +1,5 @@
 #!/usr/bin/env python
 
-import subprocess
-from threading import Lock
-import tempfile
-import os
-
-import cv2 
-
-import rospy
-from sensor_msgs.msg import Image, CameraInfo
-from sensor_msgs.srv import SetCameraInfo
-from polled_camera.srv import GetPolledImage, GetPolledImageResponse
-from cv_bridge import CvBridge, CvBridgeError
-
-
-
 # Implement Polled Camera Node for Nikon D5100
 #
 # http://wiki.ros.org/camera_drivers
@@ -34,7 +19,27 @@ from cv_bridge import CvBridge, CvBridgeError
 # root@ubuntu:~# chmod 777 /tmp/ramdisk/
 # root@ubuntu:~# mount -t tmpfs -o size=256M tmpfs /tmp/ramdisk/
 #
-global publisher
+
+import subprocess
+from threading import Lock
+import tempfile
+import os
+
+import cv2 
+
+import rospy
+from sensor_msgs.msg import Image, CameraInfo
+from sensor_msgs.srv import SetCameraInfo
+from polled_camera.srv import GetPolledImage, GetPolledImageResponse
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import CameraInfo
+from camera_info_manager import CameraInfoManager
+
+
+
+global image_raw_publisher
+global camera_info_publisher
+global camera_info
 global mutex
 mutex = Lock()
 
@@ -54,8 +59,9 @@ def take_photo():
     return path
 
 def capture_image(getPolledImage):
-    global publisher
-    global mutex
+
+    global camera_info
+
     filename = 'none'
     success = False
     message = 'No photo for you'
@@ -83,7 +89,9 @@ def capture_image(getPolledImage):
         try:
             ros_image = CvBridge().cv2_to_imgmsg(cv2_image, 'bgr8')
             ros_image.header.stamp = stamp
-            publisher.publish(ros_image)
+            image_raw_publisher.publish(ros_image)
+            camera_info.header.stamp = stamp
+            camera_info_publisher.publish(camera_info)
         except TypeError as e:
             rospy.logerr("CvBrideg could not convert image: %s", e)
             success  = False
@@ -92,11 +100,12 @@ def capture_image(getPolledImage):
     return GetPolledImageResponse(success, message, stamp)
 
 
-def set_camera_info(msg):
-    rospy.loginfo('set_camera_info called: ', msg)
-
 def d5100_image_capture():
-    global publisher
+
+    global image_raw_publisher
+    global camera_info_publisher
+    global camera_info
+
     rospy.init_node(name())
     
     # Tell camera to write images to RAM instead of media card
@@ -106,9 +115,16 @@ def d5100_image_capture():
         rospy.logfatal("Could not configure camera: %s", e)
         return
 
-    publisher = rospy.Publisher(name() + "/image_raw", Image, queue_size = 10)
+    image_raw_publisher = rospy.Publisher(name() + "/image_raw", Image, queue_size = 10)
+    camera_info_publisher = rospy.Publisher(name() + "/camera_info", CameraInfo, queue_size = 5)
+
     rospy.Service(name() + '/request_image', GetPolledImage, capture_image)
-    rospy.Service(name() + '/set_camera_info', SetCameraInfo, set_camera_info) 
+
+    # set_camera_info service
+    camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % name()
+    camera_info_manager = CameraInfoManager(name(), camera_info_url, name())
+    camera_info_manager.loadCameraInfo()
+    camera_info = camera_info_manager.getCameraInfo()
 
     rospy.loginfo("Ready")
     rospy.spin()

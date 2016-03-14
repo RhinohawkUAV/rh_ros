@@ -28,7 +28,6 @@ from camera_info_manager import CameraInfoManager
 
 global image_publisher
 global camera_info_publisher
-global camera_info_manager
 global camera_info
 global mutex
 mutex = Lock()
@@ -86,7 +85,6 @@ def image_capture():
 
     global image_publisher
     global camera_info_publisher
-    global camera_info_manager
     global camera_info
 
     rospy.init_node(name())

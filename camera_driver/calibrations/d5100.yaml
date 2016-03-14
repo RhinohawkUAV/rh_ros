@@ -1,0 +1,16 @@
+!!python/unicode 'camera_matrix':
+  !!python/unicode 'data': !!python/tuple [7128.400599913547, 0.0, 2603.5039043892107,
+    0.0, 7131.376232024714, 1986.1414704198116, 0.0, 0.0, 1.0]
+!!python/unicode 'camera_name': d5100
+!!python/unicode 'distortion_coefficients':
+  !!python/unicode 'data': !!python/tuple [-0.008112149069490603, -0.007715550567949266,
+    0.010303627825472726, 0.003847815500523789, 0.0]
+!!python/unicode 'distortion_model': plumb_bob
+!!python/unicode 'image_height': 3264
+!!python/unicode 'image_width': 4928
+!!python/unicode 'projection_matrix':
+  !!python/unicode 'data': !!python/tuple [7139.45751953125, 0.0, 2613.9535836596187,
+    0.0, 0.0, 7124.8427734375, 2002.4799293991236, 0.0, 0.0, 0.0, 1.0, 0.0]
+!!python/unicode 'rectification_matrix':
+  !!python/unicode 'data': !!python/tuple [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+    1.0]
