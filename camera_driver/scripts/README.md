@@ -70,3 +70,27 @@ To trigger a capture run the service client:
 
     python camera_driver/scripts/gopro_service_client.py
 
+
+# Networking setup on the raspi for GoPro.  
+
+The Gopro is a wifi hotspot at IP 10.5.5.9,  ESSID gopro-mck, PASSWORD rhinohawk.
+
+For /etc/wpa.conf use:
+
+    network={
+            ssid="gopro-mck"
+            proto=RSN
+            key_mgmt=WPA-PSK
+            pairwise=CCMP TKIP
+            group=CCMP TKIP
+            psk="rhinohawk"
+    }
+
+
+And for /etc/network/interfaces:
+
+    auto wlan1
+    allow-hotplug wlan1 
+    iface wlan1 inet dhcp
+    wpa-conf /etc/wpa.conf
+
