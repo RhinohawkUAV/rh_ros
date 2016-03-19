@@ -9,7 +9,7 @@ def get_polled_image():
     rospy.wait_for_service('/e2500/request_image')
     print 'Service is up'
     get_polled_image = rospy.ServiceProxy('/e2500/request_image', GetPolledImage)
-    rate = rospy.Rate(30)
+    rate = rospy.Rate(1.0/2)
     while True:
         rospy.loginfo('Requesting pic')
         get_polled_image()
