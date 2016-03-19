@@ -94,8 +94,8 @@ int main(int argc, char **argv)
   // cv::namedWindow(OPENCV_WINDOW);
   hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
   image_transport::ImageTransport it(nh);
-  image_transport::Subscriber sub = it.subscribe("/webcam/image_raw", 1, imageCallback);
-  pub = it.advertise("people_detector/image_annotated", 1);
+  image_transport::Subscriber sub = it.subscribe("image", 1, imageCallback);
+  pub = it.advertise("people", 1);
 
   // loitter
   ros::spin();
