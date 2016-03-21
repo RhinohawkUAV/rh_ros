@@ -1,11 +1,12 @@
 <launch>
-  <node pkg="camera_driver" type="e2500_service_client.py" name="camera_pump"     ns="e2500" respawn="true" respawn_delay="30">
-    <remap from="request_image" to="/e2500/request_image"/>
+  <node pkg="camera_driver" type="camera_pump.py"  name="camera_pump"     ns="e2500" respawn="true" respawn_delay="10">
+  	<param name="rate" value="10.0"/>
   </node>
-  <node pkg="camera_driver" type="e2500.py"                name="webcam"          ns="e2500"/>
-  <node pkg="image_proc"    type="image_proc"              name="image_proc"      ns="e2500"/>
-  <node pkg="camera_driver" type="people_detector"         name="people_detector" ns="e2500">
-    <remap from="image" to="/e2500/image_rect"/>
-    <remap from="people" to="/e2500/image_people"/>
+  <node pkg="camera_driver" type="webcam.py"       name="webcam"          ns="e2500">
+  	<param name="webcam_model" value="e2500"/>
+  </node>
+  <node pkg="image_proc"    type="image_proc"      name="image_proc"      ns="e2500"/>
+  <node pkg="camera_driver" type="people_detector" name="people_detector" ns="e2500">
+    	<param name="threads" value="2" type="int"/>
   </node>
 </launch>

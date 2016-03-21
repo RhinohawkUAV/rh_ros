@@ -6,7 +6,7 @@ from sensor_msgs.msg import CameraInfo
 
 
 def get_polled_image():
-    topic = '/d5100/set_camera_info'
+    topic = 'set_camera_info'
     print 'Waiting for service: ', topic
     rospy.wait_for_service(topic)
     print 'Service is up'

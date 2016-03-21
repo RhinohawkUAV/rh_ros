@@ -88,17 +88,22 @@ int main(int argc, char **argv)
 {
   // Start ROS node 
   ros::init(argc, argv, "people_detector");
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
   
   // Start image transport pipeline
   // cv::namedWindow(OPENCV_WINDOW);
   hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
   image_transport::ImageTransport it(nh);
-  image_transport::Subscriber sub = it.subscribe("image", 1, imageCallback);
-  pub = it.advertise("people", 1);
+  image_transport::Subscriber sub = it.subscribe("image_rect", 1, imageCallback);
+  pub = it.advertise("image_people", 1);
 
   // loitter
-  ros::spin();
+  int threads;
+  nh.param("threads", threads, 1);
+  ROS_INFO("Threads: %d",  threads);
+  ros::MultiThreadedSpinner spinner(threads); // Use more than one thread
+  spinner.spin(); // spin() will not return until the node has been shutdown
+  //ros::spin();
 }
 
 
