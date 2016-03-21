@@ -52,13 +52,13 @@ def capture_image(getPolledImage):
     mutex.acquire()
     try:
         if not camera_stream.isOpened():
-            message = 'Cannot open ', name()
+            message = 'Cannot open %s' % name()
             rospy.logerr(message)
             success = False
         else:    
             success, cv2_image = camera_stream.read()
         if success == False:
-            message = "Could not read image from ", name()
+            message = "Could not read image from %s" % name()
             rospy.logerr(message)
     finally:
         mutex.release()
