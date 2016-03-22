@@ -94,7 +94,7 @@ int main(int argc, char **argv)
   // cv::namedWindow(OPENCV_WINDOW);
   hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
   image_transport::ImageTransport it(nh);
-  image_transport::Subscriber sub = it.subscribe("image_rect", 1, imageCallback);
+  image_transport::Subscriber sub = it.subscribe("image", 1, imageCallback);
   pub = it.advertise("image_people", 1);
 
   // loitter
