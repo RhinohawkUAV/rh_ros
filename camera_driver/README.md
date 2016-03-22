@@ -1,10 +1,11 @@
-# ROS nodes for image processing pipeline
+# Camera driver ROS nodes
 
-There are currently 3 camera drivers:
+There are currently 3 [camera drivers](https://gitlab.com/NL-outback-challenge-2016/obc-2016-ros/wikis/camera-drivers):
 
 * Nikon D5100
-* Gopro here 3
+* Gopro hero 3
 * USB Webcam
+
 
 
 
