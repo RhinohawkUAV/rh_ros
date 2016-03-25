@@ -97,7 +97,7 @@ def image_capture():
     rospy.Service('request_image', GetPolledImage, capture_image)
 
     # set_camera_info service
-    webcam_model = rospy.get_param('~webcam_model', 'e2500')
+    webcam_model = rospy.get_param('~webcam_model', name())
     camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % webcam_model
     camera_info_manager = CameraInfoManager(webcam_model, camera_info_url)
     camera_info_manager.loadCameraInfo()
