@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="camera_driver" type="camera_pump.py"  name="camera_pump"     ns="filecam" respawn="true" respawn_delay="10">
+  	<param name="rate" value="30"/>
+  </node>
+  <node pkg="camera_driver" type="filecam.py"       name="gopro"          ns="filecam"/>
+  <node pkg="camera_driver" type="people_detector" name="people_detector" ns="filecam">
+	<remap from="people_detector/image" to="image_raw"/>
+  </node>
+</launch>
