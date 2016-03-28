@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /** ROS Image People Detector                                               **/
 /**                                                                         **/
-/*****************************************************************************/
+ /*****************************************************************************/
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
@@ -105,8 +105,3 @@ int main(int argc, char **argv)
   spinner.spin(); // spin() will not return until the node has been shutdown
   //ros::spin();
 }
-
-
-
-
-
