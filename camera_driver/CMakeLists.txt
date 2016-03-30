@@ -16,10 +16,21 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED)
 pkg_check_modules(libraw REQUIRED)
 
+add_service_files(
+  FILES
+  SetBlobInfo.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES camera_driver
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -39,6 +50,7 @@ add_executable(nikon_d5100 src/nikon_d5100.cpp)
 add_executable(people_detector src/people_detector.cpp)
 add_executable(to_stream src/to_stream.cpp)
 
+
 target_link_libraries(camera_image ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(camera_driver ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(camera_video ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
@@ -46,5 +58,6 @@ target_link_libraries(camera_video ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(nikon_d5100 ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} gphoto2)
 target_link_libraries(people_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(to_stream ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
 
 
