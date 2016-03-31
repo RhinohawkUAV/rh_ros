@@ -2,11 +2,15 @@
 
 import cv2
 import numpy as np
+import yaml
 
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+import rospkg
+
 from camera_driver.srv import SetBlobInfo
+
 
 global image_publisher
 global mask_publisher
@@ -32,46 +36,79 @@ window = cv2.namedWindow(control_window)
 
 # Low cut off
 
-hue_low = 57
+global hue_low
 def set_hue_low(new_value):
     global hue_low
     hue_low = new_value
-cv2.createTrackbar('Hue_Low', control_window, hue_low, 179, set_hue_low)
 
-hue_high = 90
+global hue_high 
 def set_hue_high(new_value):
     global hue_high
     hue_high = new_value
-cv2.createTrackbar('Hue_High', control_window, hue_high, 179, set_hue_high)
 
-saturation_low = 57
+global saturation_low
 def set_saturation_low(new_value):
     global saturation_low
     saturation_low = new_value
-cv2.createTrackbar('Saturation_Low', control_window, saturation_low, 255, set_saturation_low)
 
-saturation_high = 232
+global saturation_high
 def set_saturation_high(new_value):
     global saturation_high
     saturation_high = new_value
-cv2.createTrackbar('Saturation_High', control_window, saturation_high, 255, set_saturation_high)
 
-value_low = 23
+global value_low
 def set_value_low(new_value):
     global value_low
     value_low = new_value
-cv2.createTrackbar('Value_Low', control_window, value_low, 255, set_value_low)
 
-value_high = 252
+
+global value_high
 def set_value_high(new_value):
     global value_high
     value_high = new_value
-cv2.createTrackbar('Value_High', control_window, value_high, 255, set_value_high)
 
 
 def set_blob_info(msg):
     rospy.loginfo("set_blob_info")
+    package_path = rospkg.RosPack().get_path('camera_driver')
+    full_path = "%s/calibrations/%s.yaml" % (package_path, name())
+    data = dict(
+        hue_low = hue_low,
+        hue_high = hue_high,
+        saturation_low = saturation_low,
+        saturation_high = saturation_high,
+        value_low = value_low,
+        value_high = value_high
+    )
+    with open(full_path, 'w') as outfile:
+        yaml.dump(data, outfile, default_flow_style=False)
     return True
+
+
+def get_blob_info():
+    rospy.loginfo("get_blob_info")
+
+    global hue_low
+    global hue_high
+    global saturation_low
+    global saturation_high
+    global value_low
+    global value_high
+
+    package_path = rospkg.RosPack().get_path('camera_driver')
+    full_path = "%s/calibrations/%s.yaml" % (package_path, name())
+    rospy.loginfo("get_blob_info: loading settings from %s" % full_path)
+    yaml_file = open(full_path, "r")
+    blob_params = yaml.load(yaml_file)
+
+    hue_low = blob_params['hue_low']
+    hue_high = blob_params['hue_high']
+    saturation_low = blob_params['saturation_low']
+    saturation_high = blob_params['saturation_high']
+    value_low = blob_params['value_low']
+    value_high = blob_params['value_high']
+
+    rospy.loginfo("get_blob_info: setting hue_low to %s" % hue_low)
 
 
 def process_image(image):
@@ -114,15 +151,27 @@ def detect_blobs():
     global contours_publisher
     global bridge
 
+    # Hoookup ROS stuff
     rospy.init_node(name())
-
     image_publisher = rospy.Publisher("image_blob", Image, queue_size = 2)
     mask_publisher = rospy.Publisher("image_mask", Image, queue_size = 2)
     contours_publisher = rospy.Publisher("image_contours", Image, queue_size = 2)
     rospy.Subscriber("image", Image, process_image)
     service = rospy.Service('set_blob_info', SetBlobInfo, set_blob_info)
     
+    # ROS to OpenCV
     bridge = CvBridge()
+
+    # Reload blob detector parameters
+    get_blob_info()
+
+    # Bring up UI
+    cv2.createTrackbar('Hue_Low', control_window, hue_low, 179, set_hue_low)
+    cv2.createTrackbar('Hue_High', control_window, hue_high, 179, set_hue_high)
+    cv2.createTrackbar('Saturation_Low', control_window, saturation_low, 255, set_saturation_low)
+    cv2.createTrackbar('Saturation_High', control_window, saturation_high, 255, set_saturation_high)
+    cv2.createTrackbar('Value_Low', control_window, value_low, 255, set_value_low)
+    cv2.createTrackbar('Value_High', control_window, value_high, 255, set_value_high)
 
     rospy.loginfo("Ready... 'spinning'")
     r = rospy.Rate(10)
