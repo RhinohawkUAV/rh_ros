@@ -1,8 +1,8 @@
-# Package for Software In the Loop (SIL) simulations of the Rhinohawk vision pieline.
+# Package for Software In the Loop (SIL) simulations of the Outback Joe Challenge vision pieline.
 
 The simulator and image pipeline are started with roslaunch:
 
-    roslaunch rhinohawk_gazebo rhinohawk.launch
+    roslaunch ojc_gazebo ojc.launch
 
 Which should bring up the gazebo client.  Use `rqt` to view images from ROS topics.
 
