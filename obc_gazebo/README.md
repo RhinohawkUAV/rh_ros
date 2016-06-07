@@ -1,8 +1,8 @@
-# Package for Software In the Loop (SIL) simulations of the Outback Joe Challenge vision pieline.
+# OBC Software In The Loop simulation
 
-Intro, describe the setup
+This package is designed to startup a simulation of a quadcopter and camera and attach it to the PX4 autopilot and our ROS image processing pipeline.
 
-## running 
+## Running 
 
 The simulator and image pipeline are started with roslaunch:
 
@@ -14,34 +14,36 @@ Which should bring up:
 
 Use `rqt` to view images from ROS topics.
 
-Then start PX4 and qgroundcontrol
+Then start PX4 and qgroundcontrol to make the quad fly.
 
 ## Installing
 
-This is designed to be used with the [PX4 SIL simulation](http://dev.px4.io/simulation-gazebo.html).  PX4 uses [Gazebo](http://gazebosim.org/) as the physics simulator.  
+This is based on the [PX4 SITL](http://dev.px4.io/simulation-gazebo.html) simulation.  PX4 SITL uses [Gazebo](http://gazebosim.org/) as the physics simulator.  
 
-PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get ROS working with Gazebo 6.  Here is what I did:
+PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get ROS working with Gazebo 6.
 
-* Install ROS Jade desktop full on Ubunutu 14.04 - http://wiki.ros.org/jade/Installation/Ubuntu
-* Upgrade ROS from Gazebo 5 to Gazebo 6 ROS packages.  Install pre-built Debian packages - http://gazebosim.org/tutorials?tut=ros_installing#A.InstallPre-BuiltDebians 
-
-
-
-
-Then, checkout, build and run...
-
-* Checkout
-* submodules
+* System dependecies
+    * Install ROS Jade desktop full on Ubunutu 14.04 - http://wiki.ros.org/jade/Installation/Ubuntu
+    * Upgrade ROS Jade from Gazebo 5 to Gazebo 6 ROS packages.  Use prebuilt debs
+        * sudo apt-get install ros-jade-gazebo6-ros-pkgs
+    * Otherwise see these links
+        * http://gazebosim.org/tutorials/?tut=ros_overview
+        * http://gazebosim.org/tutorials/?tut=ros_wrapper_versions
+        * http://gazebosim.org/tutorials?tut=ros_installing#A.InstallPre-BuiltDebians 
+* Checkout the project
+    * clone 
+    * update submodules
 * Build
     * `cd ~/catkin_ws`
-    * `catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules/ -j4`
-* source files
-    * `source devel/setup.sh`
-    * `source src/obc_gazebo/setup.s`
-* Try gazbeo out. Prior to launching an autopilot or ROS, the simulation should show a working camera
+    * `catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules`
+* Source env files prior to running
+    * `source /usr/share/gazebo/setup.sh`
+    * `source ~/catkin_ws/devel/setup.sh`
+    * `source ~/catkin_ws/src/obc_gazebo/setup.s`
+* Check that the Gazbeo simulation runs without ROS or autopilot.
     * `gazebo --verbose src/obc_gazebo/worlds/obc.world`
-* launch SITL
-* ROS
+* Launch Gazebo and image pipeline from ROS 
+    * roslaunch obc_gazebo obc.launch
 * PX4
 * qground control
  
