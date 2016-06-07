@@ -1,5 +1,5 @@
 <sdf version='1.5'>
-  <model name='iris_opt_flow'>
+  <model name='iris_nikon'>
 
     <include>
       <uri>model://iris</uri>

@@ -5,6 +5,6 @@
     <!-- more default parameters can be changed here -->
   </include>
   <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector">
-	<remap from="image" to="/rh_camera/rgb/image_raw"/>
+	<remap from="image" to="/iris_nikon/nikon/rgb/image_raw"/>
   </node>
 </launch>
