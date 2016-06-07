@@ -5,11 +5,14 @@
       <uri>model://ground_plane</uri>
     </include>
     <include>
+      <uri>model://asphalt_plane</uri>
+    </include>
+    <include>
       <uri>model://sun</uri>
     </include>
     <include>
-      <uri>model://beer</uri>
-      <pose frame=''>3 0 0 0 0 0</pose>
+      <uri>model://gas_station</uri>
+      <pose frame=''>-7 10 0 0 0 0</pose>
     </include>
     <include>
       <uri>model://iris_nikon</uri>
@@ -53,7 +56,7 @@
           </geometry>
           <material>
             <script>
-              <name>Gazebo/Red</name>
+              <name>Gazebo/Blue</name>
               <uri>file://media/materials/scripts/gazebo.material</uri>
             </script>
           </material>
