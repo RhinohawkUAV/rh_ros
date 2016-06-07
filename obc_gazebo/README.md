@@ -25,31 +25,38 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
 * System dependecies
     * Install ROS Jade desktop full on Ubunutu 14.04 - http://wiki.ros.org/jade/Installation/Ubuntu
     * Upgrade ROS Jade from Gazebo 5 to Gazebo 6 ROS packages.  Use prebuilt debs
-        * sudo apt-get install ros-jade-gazebo6-ros-pkgs
+    ```bash
+    sudo apt-get install ros-jade-gazebo6-ros-pkgs
+    ```
     * Otherwise see these links
         * http://gazebosim.org/tutorials/?tut=ros_overview
         * http://gazebosim.org/tutorials/?tut=ros_wrapper_versions
         * http://gazebosim.org/tutorials?tut=ros_installing#A.InstallPre-BuiltDebians 
-* Checkout the project
-    * clone 
-    * update submodules
+* Create catkin workspace and checkout project
+    ```bash
+    source /opt/ros/jade/setup.bash
+    mkdir ~/catkin_ws
+    git clone git@gitlab.com:NL-outback-challenge-2016/obc-2016-ros.git src
+    cd ~/catkin_ws/src
+    catkin_init_workspace
+    git submodule update --init    
+    ```
 * Build
-    * `cd ~/catkin_ws`
-    * `catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules`
-* Source env files prior to running
-    * `source /usr/share/gazebo/setup.sh`
-    * `source ~/catkin_ws/devel/setup.sh`
-    * `source ~/catkin_ws/src/obc_gazebo/setup.s`
-* Check that the Gazbeo simulation runs without ROS or autopilot.
-    * `gazebo --verbose src/obc_gazebo/worlds/obc.world`
-* Launch Gazebo and image pipeline from ROS 
-    * roslaunch obc_gazebo obc.launch
-* PX4
+    ```bash
+    cd ~/catkin_ws
+    catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules
+    ```
+* Run gazebo simulator and ROS nodes.  This should bring up the Gazebo client.  Use the client to make sure the scene is good.  I typically kill the Gazebo client after that as it is a hog.
+    ```bash
+    cd ~/catkin_ws
+    source /usr/share/gazebo/setup.sh
+    source devel/setup.sh
+    source src/obc_gazebo/setup.sh
+    roslaunch obc_gazebo obc.launch
+    ```
+* Start the PX4 autopilot
+    ```bash
+    cd ~/catkin_ws
+    ./src/obc_gazebo/scripts/sitl_px4_run.sh
+    ```  
 * qground control
- 
-
-
-Obsolete
-
-* Do a source build of gazebo_ros_pkgs.  These packages provide the topics that link ROS and Gazebo.  Clone https://github.com/ros-simulation/gazebo_ros_pkgs.git into a catkin workspace and run/build from there.
-
