@@ -25,7 +25,7 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
 * System dependecies
     * Install ROS Jade desktop full on Ubunutu 14.04 - http://wiki.ros.org/jade/Installation/Ubuntu
     * Upgrade ROS Jade from Gazebo 5 to Gazebo 6 ROS packages.  Use prebuilt debs
-    ```bash
+    ```
     sudo apt-get install ros-jade-gazebo6-ros-pkgs
     ```
     * Otherwise see these links
@@ -33,7 +33,7 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
         * http://gazebosim.org/tutorials/?tut=ros_wrapper_versions
         * http://gazebosim.org/tutorials?tut=ros_installing#A.InstallPre-BuiltDebians 
 * Create catkin workspace and checkout project
-    ```bash
+    ```
     source /opt/ros/jade/setup.bash
     mkdir ~/catkin_ws
     git clone git@gitlab.com:NL-outback-challenge-2016/obc-2016-ros.git src
@@ -42,7 +42,7 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
     git submodule update --init    
     ```
 * Build
-    ```bash
+    ```
     cd ~/catkin_ws
     catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules
     ```
@@ -55,7 +55,7 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
     roslaunch obc_gazebo obc.launch
     ```
 * Start the PX4 autopilot
-    ```bash
+    ```
     cd ~/catkin_ws
     ./src/obc_gazebo/scripts/sitl_px4_run.sh
     ```  

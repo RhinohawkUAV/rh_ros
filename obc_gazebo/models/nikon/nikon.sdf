@@ -49,7 +49,6 @@
           <distortion_k3>0.0</distortion_k3>
           <distortion_t1>0.0</distortion_t1>
           <distortion_t2>0.0</distortion_t2>
-          <robotNamespace>/iris_nikon</robotNamespace>
 	</plugin>
       </sensor>
     </link>

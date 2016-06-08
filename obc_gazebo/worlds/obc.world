@@ -15,7 +15,7 @@
       <pose frame=''>-7 10 0 0 0 0</pose>
     </include>
     <include>
-      <uri>model://iris_nikon</uri>
+      <uri>model://obc_quad</uri>
     </include>
     <model name='unit_box_1'>
       <pose frame=''>3 3 0.5 0 -0 0</pose>

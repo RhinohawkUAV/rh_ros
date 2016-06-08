@@ -4,7 +4,7 @@
     <arg name="world_name" value="$(find obc_gazebo)/worlds/obc.world"/>
     <!-- more default parameters can be changed here -->
   </include>
-  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector">
-	<remap from="image" to="/iris_nikon/nikon/rgb/image_raw"/>
+  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
+	<remap from="image" to="/nikon/rgb/image_raw"/>
   </node>
 </launch>
