@@ -1,11 +1,30 @@
 <launch>
-  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  
+  <!-- gazebo quadcopter simultaion -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find obc_gazebo)/worlds/obc.world"/>
-    <!-- more default parameters can be changed here -->
   </include>
+
+  <!-- image pipeline -->
   <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
-	<remap from="image" to="/nikon/rgb/image_raw"/>
-	<param name="show_picker" value="false"/>
+    <remap from="image" to="/nikon/rgb/image_raw"/>
+    <param name="show_picker" value="false"/>
   </node>
+
+  <!-- mavros -->
+  <arg name="fcu_url" default="udp://:14540@127.0.0.1:14557" />
+  <arg name="gcs_url" default="" />
+  <arg name="tgt_system" default="1" />
+  <arg name="tgt_component" default="1" />
+  <arg name="log_output" default="screen" />
+
+  <include file="$(find mavros)/launch/node.launch">
+    <arg name="pluginlists_yaml" value="$(find mavros)/launch/px4_pluginlists.yaml" />
+    <arg name="config_yaml" value="$(find mavros)/launch/px4_config.yaml" />
+    <arg name="fcu_url" value="$(arg fcu_url)" />
+    <arg name="gcs_url" value="$(arg gcs_url)" />
+    <arg name="tgt_system" value="$(arg tgt_system)" />
+    <arg name="tgt_component" value="$(arg tgt_component)" />
+    <arg name="log_output" value="$(arg log_output)" />
+  </include>
 </launch>
