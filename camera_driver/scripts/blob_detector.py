@@ -5,18 +5,23 @@ import numpy as np
 import yaml
 
 import rospy
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
 import rospkg
 
 from camera_driver.srv import SetBlobInfo
 
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
+from opencv_apps.msg import Point2DStamped
+from opencv_apps.msg import Point2D
+from std_msgs.msg import Header
 
+global joe_location_publisher
 global image_publisher
 global mask_publisher
 global contours_publisher
 global bridge
-
+global seq
+seq = 0
 
 def name():
     return "blob_detector"
@@ -27,7 +32,7 @@ def name():
 
 #Picker
 control_window = "Picker"
-window = cv2.namedWindow(control_window)
+global window
 
 
 ##################
@@ -61,12 +66,10 @@ def set_value_low(new_value):
     global value_low
     value_low = new_value
 
-
 global value_high
 def set_value_high(new_value):
     global value_high
     value_high = new_value
-
 
 def set_blob_info(msg):
     rospy.loginfo("set_blob_info")
@@ -83,7 +86,6 @@ def set_blob_info(msg):
     with open(full_path, 'w') as outfile:
         yaml.dump(data, outfile, default_flow_style=False)
     return True
-
 
 def get_blob_info():
     rospy.loginfo("get_blob_info")
@@ -112,6 +114,8 @@ def get_blob_info():
 
 
 def process_image(image):
+
+    global seq
     rospy.loginfo("process_image")
 
     # Convert to opencv image
@@ -135,24 +139,34 @@ def process_image(image):
     contours_message = bridge.cv2_to_imgmsg(contours_image, encoding="bgr8")
     contours_publisher.publish(contours_message)
 
-    # publish image annotated with circle for blob location
     if len(contours) > 0:
         c = max(contours, key=cv2.contourArea)
         ((x, y), radius) = cv2.minEnclosingCircle(c)
+        # Annotate image with circle for blob location
         cv2.circle(cv_image, (int(x), int(y)), int(radius), (0, 255, 255), 3)
+        # Publish image coordinates of detected blob
+        seq += 1
+        header = Header(frame_id="nikon", seq=seq, stamp=rospy.Time.now())
+        point = Point2D(x=x, y=y)
+        point2dStamped = Point2DStamped(point=point, header=header)
+        joe_location_publisher.publish(point2dStamped)
+
     image_message = bridge.cv2_to_imgmsg(cv_image, encoding="bgr8")
     image_publisher.publish(image_message)
 
 
 def detect_blobs():
 
+    global joe_location_publisher
     global image_publisher
     global mask_publisher
     global contours_publisher
     global bridge
+    global window
 
     # Hoookup ROS stuff
     rospy.init_node(name())
+    joe_location_publisher = rospy.Publisher("joe_location", Point2DStamped, queue_size = 2)
     image_publisher = rospy.Publisher("image_blob", Image, queue_size = 2)
     mask_publisher = rospy.Publisher("image_mask", Image, queue_size = 2)
     contours_publisher = rospy.Publisher("image_contours", Image, queue_size = 2)
@@ -166,17 +180,23 @@ def detect_blobs():
     get_blob_info()
 
     # Bring up UI
-    cv2.createTrackbar('Hue_Low', control_window, hue_low, 179, set_hue_low)
-    cv2.createTrackbar('Hue_High', control_window, hue_high, 179, set_hue_high)
-    cv2.createTrackbar('Saturation_Low', control_window, saturation_low, 255, set_saturation_low)
-    cv2.createTrackbar('Saturation_High', control_window, saturation_high, 255, set_saturation_high)
-    cv2.createTrackbar('Value_Low', control_window, value_low, 255, set_value_low)
-    cv2.createTrackbar('Value_High', control_window, value_high, 255, set_value_high)
+    show_picker = rospy.get_param("~show_picker", True)
+    rospy.loginfo("Show picker: %s" % show_picker)
+    
+    if show_picker:
+        window = cv2.namedWindow(control_window)
+        cv2.createTrackbar('Hue_Low', control_window, hue_low, 179, set_hue_low)
+        cv2.createTrackbar('Hue_High', control_window, hue_high, 179, set_hue_high)
+        cv2.createTrackbar('Saturation_Low', control_window, saturation_low, 255, set_saturation_low)
+        cv2.createTrackbar('Saturation_High', control_window, saturation_high, 255, set_saturation_high)
+        cv2.createTrackbar('Value_Low', control_window, value_low, 255, set_value_low)
+        cv2.createTrackbar('Value_High', control_window, value_high, 255, set_value_high)
 
     rospy.loginfo("Ready... 'spinning'")
     r = rospy.Rate(10)
     while not rospy.is_shutdown():
-        cv2.waitKey(1)
+        if show_picker:
+            cv2.waitKey(1)
         r.sleep()
 
 

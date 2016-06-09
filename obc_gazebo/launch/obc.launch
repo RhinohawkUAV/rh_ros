@@ -6,5 +6,6 @@
   </include>
   <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
 	<remap from="image" to="/nikon/rgb/image_raw"/>
+	<param name="show_picker" value="false"/>
   </node>
 </launch>
