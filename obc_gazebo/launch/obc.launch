@@ -7,7 +7,7 @@
 
   <!-- image pipeline -->
   <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
-    <remap from="image" to="/nikon/rgb/image_raw"/>
+    <remap from="image" to="/nikon/image_raw"/>
     <param name="show_picker" value="false"/>
   </node>
 
@@ -17,7 +17,6 @@
   <arg name="tgt_system" default="1" />
   <arg name="tgt_component" default="1" />
   <arg name="log_output" default="screen" />
-
   <include file="$(find mavros)/launch/node.launch">
     <arg name="pluginlists_yaml" value="$(find mavros)/launch/px4_pluginlists.yaml" />
     <arg name="config_yaml" value="$(find obc_gazebo)/launch/px4_config.yaml" />
@@ -27,4 +26,10 @@
     <arg name="tgt_component" value="$(arg tgt_component)" />
     <arg name="log_output" value="$(arg log_output)" />
   </include>
+
+  <!-- Publish static frame translation from quad to camera -->
+  <!-- Camera mounted on the front of the quad and pitched down 90 degrees -->
+  <node pkg="tf" type="static_transform_publisher" name="nikon_link_broadcaster" 
+	args="0.11 0 0.001 0 0.7068 0 0.7074 fcu nikon 200" />
+
 </launch>
