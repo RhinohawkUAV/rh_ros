@@ -12,10 +12,11 @@
     </include>
     <include>
       <uri>model://gas_station</uri>
-      <pose frame=''>-7 10 0 0 0 0</pose>
+      <pose frame=''>-7 10 0   0 0 0</pose>
     </include>
     <include>
       <uri>model://obc_quad</uri>
+      <pose>0 0 0   0 0 0</pose>
     </include>
     <model name='unit_box_1'>
       <pose frame=''>3 3 0.5 0 -0 0</pose>
@@ -38,15 +39,6 @@
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-          </surface>
         </collision>
         <visual name='visual'>
           <geometry>

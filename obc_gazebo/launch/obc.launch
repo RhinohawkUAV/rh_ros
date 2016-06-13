@@ -1,4 +1,7 @@
 <launch>
+
+  <!-- without this ROS and gazebo use different times, and tf does not work -->
+  <param name="/use_sim_time" value="true" />
   
   <!-- gazebo quadcopter simultaion -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -29,7 +32,16 @@
 
   <!-- Publish static frame translation from quad to camera -->
   <!-- Camera mounted on the front of the quad and pitched down 90 degrees -->
+  <!-- 
+         the quaternion in args has scalar part last!!!
+  --> 
   <node pkg="tf" type="static_transform_publisher" name="nikon_link_broadcaster" 
-	args="0.11 0 0.001 0 0.7068 0 0.7074 fcu nikon 200" />
+  	args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu nikon 200" 
+	/>
+
+<!--
+	args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu nikon 200" 
+	args="0.11 0 0.001      0.07465817 -0.1802403  0.37533108  0.90612702     fcu nikon 200" 
+-->
 
 </launch>

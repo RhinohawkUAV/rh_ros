@@ -11,8 +11,9 @@ from camera_driver.srv import SetBlobInfo
 
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-from opencv_apps.msg import Point2DStamped
-from opencv_apps.msg import Point2D
+
+from geometry_msgs.msg import PointStamped
+from geometry_msgs.msg import Point
 from std_msgs.msg import Header
 
 global joe_location_publisher
@@ -146,10 +147,10 @@ def process_image(image):
         cv2.circle(cv_image, (int(x), int(y)), int(radius), (0, 255, 255), 3)
         # Publish image coordinates of detected blob
         seq += 1
-        header = Header(frame_id="nikon", seq=seq, stamp=rospy.Time.now())
-        point = Point2D(x=x, y=y)
-        point2dStamped = Point2DStamped(point=point, header=header)
-        joe_location_publisher.publish(point2dStamped)
+        header = Header(frame_id="nikon", seq=image.header.seq, stamp=image.header.stamp)
+        point = Point(x=x, y=y, z=1.)
+        pointStamped = PointStamped(point=point, header=header)
+        joe_location_publisher.publish(pointStamped)
 
     image_message = bridge.cv2_to_imgmsg(cv_image, encoding="bgr8")
     image_publisher.publish(image_message)
@@ -166,7 +167,7 @@ def detect_blobs():
 
     # Hoookup ROS stuff
     rospy.init_node(name())
-    joe_location_publisher = rospy.Publisher("joe_location", Point2DStamped, queue_size = 2)
+    joe_location_publisher = rospy.Publisher("joe_location", PointStamped, queue_size = 2)
     image_publisher = rospy.Publisher("image_blob", Image, queue_size = 2)
     mask_publisher = rospy.Publisher("image_mask", Image, queue_size = 2)
     contours_publisher = rospy.Publisher("image_contours", Image, queue_size = 2)
