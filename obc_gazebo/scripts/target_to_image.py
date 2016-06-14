@@ -51,6 +51,8 @@ def target_image_location(image):
 
 def process_image(image):
     rospy.loginfo("process_image")
+    if camera_projection_matrix is None:
+        return
     cv_image = cv_bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
     (x, y, radius) = target_image_location(image)
     cv2.circle(cv_image, (int(x), int(y)), int(radius), (255, 255, 0), 3)

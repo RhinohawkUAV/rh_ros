@@ -7,7 +7,7 @@
 
     <include>
       <uri>model://nikon</uri>
-      <pose>0.11 0 0.001   0 1.570796 0</pose>
+      <pose>0.11 0 0.001   0 1.57079 0</pose>
     </include>
 
     <joint name="nikon_joint" type="revolute">

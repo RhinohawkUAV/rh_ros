@@ -14,6 +14,11 @@
     <param name="show_picker" value="false"/>
   </node>
 
+  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="nikon">
+    <remap from="image_location" to="/nikon/joe_location"/>
+    <remap from="camera_info" to="/nikon/camera_info"/>
+  </node>
+
   <!-- mavros -->
   <arg name="fcu_url" default="udp://:14540@127.0.0.1:14557" />
   <arg name="gcs_url" default="" />
@@ -39,9 +44,5 @@
   	args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu nikon 200" 
 	/>
 
-<!--
-  	args="0.11 0 0.001     0.  0.  0. 1.    fcu nikon 200" 
-	args="0.11 0 0.001      0.07465817 -0.1802403  0.37533108  0.90612702     fcu nikon 200" 
--->
 
 </launch>

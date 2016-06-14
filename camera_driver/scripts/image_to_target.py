@@ -36,15 +36,15 @@ def process_location(point_stamped):
     
     # Normalized image coordinates, homogenous coordinates
     image_target = np.array([point_stamped.point.x, point_stamped.point.y, 1., 1.])
-    rospy.loginfo("target 2D normalized:%s", image_target)
+    # rospy.loginfo("target 2D normalized:%s", image_target)
 
     # 2D to 3D normalized
     target = np.dot(inverse_camera_projection_matrix, image_target)
-    rospy.loginfo("target 3D normalized:%s", target)
+    # rospy.loginfo("target 3D normalized:%s", target)
 
     # Change to vehicle coordinate system
     target = [target[2], -target[0], -target[1], 1]
-    rospy.loginfo("target 3D vehicle coordinates:%s", target)
+    # rospy.loginfo("target 3D vehicle coordinates:%s", target)
     
     # We also need to camera center point
     camera = np.array([0., 0., 0., 1.])
@@ -56,35 +56,34 @@ def process_location(point_stamped):
     if tf_listener.canTransform(source_frame, target_frame, point_stamped.header.stamp):
         rospy.loginfo("Transforming")
 
-        rospy.loginfo("Transform: %s", tf_listener.lookupTransform(source_frame, target_frame, point_stamped.header.stamp))
-
         target = to_point_stamped(target, source_frame, point_stamped.header.seq, point_stamped.header.stamp)
         camera = to_point_stamped(camera, source_frame, point_stamped.header.seq, point_stamped.header.stamp)
         
-        rospy.loginfo("camera in nikon:\n%s", camera)
-        rospy.loginfo("target in nikon:\n%s", target)
+        #rospy.loginfo("camera in nikon:\n%s", camera)
+        #rospy.loginfo("target in nikon:\n%s", target)
         
-        rospy.loginfo("Transform nikon -> fcu: %s", tf_listener.lookupTransform('nikon', 'fcu', point_stamped.header.stamp))
+        #rospy.loginfo("Transform nikon -> fcu: %s", tf_listener.lookupTransform('fcu', 'nikon', point_stamped.header.stamp))
         target = tf_listener.transformPoint('fcu', target)
         camera = tf_listener.transformPoint('fcu', camera)
 
-        rospy.loginfo("camera in fcu:\n%s", camera)
-        rospy.loginfo("target in fcu:\n%s", target)
+        #rospy.loginfo("camera in fcu:\n%s", camera)
+        #rospy.loginfo("target in fcu:\n%s", target)
 
-        rospy.loginfo("Transform fcu -> local: %s", tf_listener.lookupTransform('fcu', 'local_origin', point_stamped.header.stamp))
+        #rospy.loginfo("Transform fcu -> local: %s", tf_listener.lookupTransform('local_origin', 'fcu', point_stamped.header.stamp))
         target = tf_listener.transformPoint(target_frame, target)
         camera = tf_listener.transformPoint(target_frame, camera)
 
-        rospy.loginfo("camera in local_origin:\n%s", camera)
-        rospy.loginfo("target in local_origin:\n%s", target)
+        #rospy.loginfo("camera in local_origin:\n%s", camera)
+        #rospy.loginfo("target in local_origin:\n%s", target)
 
         # project to intersection with ground plane
         scale = - camera.point.z / (target.point.z - camera.point.z)
-
-        point = Point(x=scale * target.point.x + (1. - scale) * camera.point.x, y=scale * target.point.y + (1. - scale) * camera.point.y, z=scale * target.point.z + (1. - scale) * camera.point.x)
+        # rospy.loginfo("scale:%s", scale)
+        
+        point = Point(x=scale * target.point.x + (1. - scale) * camera.point.x, y=scale * target.point.y + (1. - scale) * camera.point.y, z=scale * target.point.z + (1. - scale) * camera.point.z)
         header = Header(frame_id=target_frame, seq=point_stamped.header.seq, stamp=point_stamped.header.stamp)
         joe = PointStamped(point=point, header=header)
-        rospy.loginfo("joe:%s", joe)
+        location_publisher.publish(joe)
         
     else:
         rospy.loginfo("Not transforming")
