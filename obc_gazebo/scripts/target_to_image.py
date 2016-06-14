@@ -25,7 +25,7 @@ def target_image_location(image):
     target_frame = 'nikon'
     point = Point(x=3., y=3., z=0.5)
 
-    header = Header(frame_id=source_frame, seq=image.header, stamp=image.header.stamp)
+    header = Header(frame_id=source_frame, seq=image.header.seq, stamp=image.header.stamp)
     point_stamped = PointStamped(point=point, header=header)
 
     if tf_listener.canTransform(source_frame, target_frame, image.header.stamp):
