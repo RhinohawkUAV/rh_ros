@@ -5,7 +5,8 @@ from polled_camera.srv import GetPolledImage
 
 def get_polled_image():
     rospy.init_node("camera_pump")
-    service_name = 'request_image'
+    camera_name = rospy.get_param('~camera', "nikon")
+    service_name = '/%s/request_image' % camera_name
     rospy.loginfo('Waiting for service %s' % service_name)
     rospy.wait_for_service(service_name)
     rospy.loginfo('Service %s is up' % service_name)

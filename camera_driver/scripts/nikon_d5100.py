@@ -115,10 +115,10 @@ def d5100_image_capture():
         rospy.logfatal("Could not configure camera: %s", e)
         return
 
-    image_raw_publisher = rospy.Publisher(name() + "/image_raw", Image, queue_size = 10)
-    camera_info_publisher = rospy.Publisher(name() + "/camera_info", CameraInfo, queue_size = 5)
+    image_raw_publisher = rospy.Publisher("image_raw", Image, queue_size = 10)
+    camera_info_publisher = rospy.Publisher("camera_info", CameraInfo, queue_size = 5)
 
-    rospy.Service(name() + '/request_image', GetPolledImage, capture_image)
+    rospy.Service('request_image', GetPolledImage, capture_image)
 
     # set_camera_info service
     camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % name()

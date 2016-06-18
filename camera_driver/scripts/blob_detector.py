@@ -86,6 +86,7 @@ def set_blob_info(msg):
     )
     with open(full_path, 'w') as outfile:
         yaml.dump(data, outfile, default_flow_style=False)
+    rospy.loginfo("set_blob_info: writing settings to %s" % full_path)
     return True
 
 def get_blob_info():

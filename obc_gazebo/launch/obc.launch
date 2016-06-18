@@ -11,7 +11,7 @@
   <!-- image pipeline -->
   <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
     <remap from="image" to="/nikon/image_raw"/>
-    <param name="show_picker" value="false"/>
+    <param name="show_picker" value="true"/>
   </node>
 
   <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="nikon">

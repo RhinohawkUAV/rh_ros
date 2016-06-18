@@ -24,14 +24,26 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
 
 * System dependecies
     * Install ROS Jade desktop full on Ubunutu 14.04 - http://wiki.ros.org/jade/Installation/Ubuntu
-    * Upgrade ROS Jade from Gazebo 5 to Gazebo 6 ROS packages.  Use prebuilt debs
+    * Upgrade ROS Jade from Gazebo 5 to Gazebo 6 ROS packages.  Use prebuilt debs:
     ```
     sudo apt-get install ros-jade-gazebo6-ros-pkgs
     ```
     * Otherwise see these links
         * http://gazebosim.org/tutorials/?tut=ros_overview
         * http://gazebosim.org/tutorials/?tut=ros_wrapper_versions
-        * http://gazebosim.org/tutorials?tut=ros_installing#A.InstallPre-BuiltDebians 
+        * http://gazebosim.org/tutorials?tut=ros_installing#A.InstallPre-BuiltDebians
+   * protobuf compiler
+   ```
+   sudo apt-get install protobuf-compiler
+   ```
+   * mavros
+   ```
+   sudo apt-get install ros-jade-mavros ros-jade-mavros-extras
+   ```
+   * PX4 http://dev.px4.io
+   * qgroundcontrol 
+
+ 
 * Create catkin workspace and checkout project
     ```
     source /opt/ros/jade/setup.bash
