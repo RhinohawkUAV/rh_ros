@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(camera_driver)
 
 
+find_package(PkgConfig REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -9,10 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   cv_bridge
   image_transport
-  OpenCV
 )
 
-find_package(PkgConfig REQUIRED)
 pkg_check_modules(libgphoto2 REQUIRED)
 pkg_check_modules(libraw REQUIRED)
 
