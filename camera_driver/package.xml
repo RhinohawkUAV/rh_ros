@@ -50,6 +50,8 @@
   <build_depend>opencv2</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>libgphoto-dev</build_depend>
+  <build_depend>polled_camera</build_depend>
+  <build_depend>camera_info_manager</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
@@ -60,6 +62,8 @@
   <run_depend>opencv2</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>libgphoto-dev</run_depend>
+  <run_depend>polled_camera</run_depend>
+  <run_depend>camera_info_manager</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

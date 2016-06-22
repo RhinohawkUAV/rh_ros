@@ -1,16 +1,20 @@
-!!python/unicode 'camera_matrix':
-  !!python/unicode 'data': !!python/tuple [3834.763080533813, 0.0, 2531.0031210169254,
-    0.0, 3840.592485562898, 1636.5493682622382, 0.0, 0.0, 1.0]
-!!python/unicode 'camera_name': d5100
-!!python/unicode 'distortion_coefficients':
-  !!python/unicode 'data': !!python/tuple [-0.08199422709226135, 0.024531298066534826,
-    0.000540810346977335, 0.000256750239582023, 0.0]
-!!python/unicode 'distortion_model': plumb_bob
-!!python/unicode 'image_height': 3264
-!!python/unicode 'image_width': 4928
-!!python/unicode 'projection_matrix':
-  !!python/unicode 'data': !!python/tuple [3713.532958984375, 0.0, 2535.7490286668326,
-    0.0, 0.0, 3784.00390625, 1637.3678418359486, 0.0, 0.0, 0.0, 1.0, 0.0]
-!!python/unicode 'rectification_matrix':
-  !!python/unicode 'data': !!python/tuple [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-    1.0]
+image_width: 4928
+image_height: 3264
+camera_name: d5100
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [3834.763080533813, 0.0, 2531.0031210169254, 0.0, 3840.592485562898, 1636.5493682622382, 0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.08199422709226135, 0.024531298066534826, 0.000540810346977335, 0.000256750239582023, 0.0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [3713.532958984375, 0.0, 2535.7490286668326, 0.0, 0.0, 3784.00390625, 1637.3678418359486, 0.0, 0.0, 0.0, 1.0, 0.0]

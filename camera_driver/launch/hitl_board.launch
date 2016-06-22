@@ -1,24 +1,29 @@
 <launch>
-  <node pkg="camera_driver" type="camera_pump.py"  name="camera_pump"     ns="nikon" respawn="true" respawn_delay="10">
-  	<param name="rate" value="0.2"/>
-	<param name="camera" value="nikon"/>
+
+  <node pkg="polled_camera" type="poller"  name="camera_pump"   respawn="true" respawn_delay="10" args="1.0">
+  	<remap from="output" to="d5100"/>
+	<remap from="camera" to="d5100"/>
   </node>
-  <node pkg="camera_driver" type="nikon_d5100.py"       name="nikon"          ns="nikon"/>
-  <node pkg="image_proc"    type="image_proc"      name="image_proc"      ns="nikon">
+
+  <node pkg="camera_driver" type="nikon_d5100"       name="d5100"/>
+
+
+  <node pkg="image_proc"    type="image_proc"      name="image_proc"      ns="d5100">
   	<remap from="image" to="image_raw"/>
   </node>
 
-  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector"   ns="nikon">
+  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector"   ns="d5100">
 	<remap from="image" to="image_rect_color"/>
         <param name="show_picker" value="false"/>
   </node>
 
-  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="nikon">
-    <remap from="image_location" to="/nikon/joe_location"/>
-    <remap from="camera_info" to="/nikon/camera_info"/>
+  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="d5100">
+    <remap from="image_location" to="/d5100/joe_location"/>
+    <remap from="camera_info" to="/d5100/camera_info"/>
   </node>
 
  <!-- mavros -->
+<!--
   <arg name="fcu_url" default="/dev/ttyACM0" />
   <arg name="gcs_url" default="" />
   <arg name="tgt_system" default="1" />
@@ -33,6 +38,7 @@
     <arg name="tgt_component" value="$(arg tgt_component)" />
     <arg name="log_output" value="$(arg log_output)" />
   </include>
+-->
   <!-- Publish static frame translation from quad to camera -->
   <!-- Camera mounted on the front of the quad and pitched down 90 degrees -->
   <!-- 

@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   cv_bridge
   image_transport
+  polled_camera
+  camera_info_manager
 )
 
 pkg_check_modules(libgphoto2 REQUIRED)
