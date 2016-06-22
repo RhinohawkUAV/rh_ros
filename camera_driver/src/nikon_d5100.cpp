@@ -131,6 +131,8 @@ capture_callback(polled_camera::GetPolledImage::Request& request,
   response.status_message = "Image captured as " + local_filename;
   response.stamp = pic_time;
 
+  // delete the file
+  std::remove(local_filename.c_str());
   /*
     cv::namedWindow("Display window", CV_WINDOW_NORMAL);
     cv::imshow("Display window", image);
