@@ -47,18 +47,20 @@ static void ctx_status_func (GPContext *context, const char *str, void *data)
 // gphoto code from from https://github.com/fape/libgphoto2/blob/master/examples/sample-capture.c
 void capture_to_file(Camera *camera, GPContext *context, const char *fn) 
 {
-  ROS_INFO("capture_to_file.\n");
+  ROS_INFO("capture_to_file: start");
   int fd, retval;
   CameraFile *file;
   CameraFilePath camera_file_path;
   strcpy(camera_file_path.folder, "/");
   strcpy(camera_file_path.name, "foo.jpg");
   retval = gp_camera_capture(camera, GP_CAPTURE_IMAGE, &camera_file_path, context);
+  ROS_INFO("capture_to_file: transfering");
   fd = open(fn, O_CREAT | O_WRONLY, 0644);
   retval = gp_file_new_from_fd(&file, fd);
   retval = gp_camera_file_get(camera, camera_file_path.folder, camera_file_path.name, GP_FILE_TYPE_NORMAL, file, context);
   retval = gp_camera_file_delete(camera, camera_file_path.folder, camera_file_path.name, context);
   gp_file_free(file);
+  ROS_INFO("capture_to_file: end");
 }
 
 
@@ -85,7 +87,7 @@ capture_callback(polled_camera::GetPolledImage::Request& request,
   string local_filename = get_local_filename(image_seq++);
   capture_to_file(camera, context, local_filename.c_str());
   ros::Time pic_time =  ros::Time::now();
-  ROS_DEBUG("Image captured");
+  ROS_INFO("Image captured");
 
   // read jpg with openCV.
   cv::Mat image = cv::imread(local_filename, CV_LOAD_IMAGE_COLOR);
@@ -95,7 +97,7 @@ capture_callback(polled_camera::GetPolledImage::Request& request,
       return;
     }
 
-  ROS_DEBUG("Image read");
+  ROS_INFO("Image read");
 
   // convert to ROS message
   cv_bridge::CvImage cv_image;
@@ -133,6 +135,9 @@ capture_callback(polled_camera::GetPolledImage::Request& request,
 
   // delete the file
   std::remove(local_filename.c_str());
+
+  ROS_INFO("Image published");
+
   /*
     cv::namedWindow("Display window", CV_WINDOW_NORMAL);
     cv::imshow("Display window", image);
@@ -155,10 +160,11 @@ int main(int argc, char **argv)
   gp_camera_new(&camera);
   int retval = gp_camera_init(camera, context);
   if(retval != GP_OK) {
-    ROS_ERROR("Sorry gp_camera_init returns %d\n", retval);
+    ROS_ERROR("Sorry gp_camera_init returns %d", retval);
     exit(1);
   }
   printf("Camera init complete\n");
+  // set-config /main/settings/capturetarget=0
 
   // load calibration
   camera_info_manager::CameraInfoManager camera_info_manager(nh, name);
