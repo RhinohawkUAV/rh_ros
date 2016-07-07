@@ -26,6 +26,9 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
     * Install ROS Jade desktop full on Ubunutu 14.04 - http://wiki.ros.org/jade/Installation/Ubuntu
     * Upgrade ROS Jade from Gazebo 5 to Gazebo 6 ROS packages.  Use prebuilt debs:
     ```
+    sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
+    wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+    sudo apt-get update
     sudo apt-get install ros-jade-gazebo6-ros-pkgs
     ```
     * Otherwise see these links
@@ -55,6 +58,9 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
     ```
 * Build
     ```
+    sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+    sudo apt-get update
+    sudo apt-get install cmake
     cd ~/catkin_ws
     catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules
     ```
