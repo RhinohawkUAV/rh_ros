@@ -15,8 +15,4 @@
         <param name="show_picker" value="false"/>
   </node>
 
-  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="d5100">
-    <remap from="image_location" to="/d5100/joe_location"/>
-    <remap from="camera_info" to="/d5100/camera_info"/>
-  </node>
 </launch>
