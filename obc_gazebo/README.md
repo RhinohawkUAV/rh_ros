@@ -48,6 +48,7 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
 
  
 * Create catkin workspace and checkout project
+
     ```
     source /opt/ros/jade/setup.bash
     mkdir ~/catkin_ws
@@ -56,7 +57,9 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
     catkin_init_workspace
     git submodule update --init    
     ```
+
 * Build
+
     ```
     sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
     sudo apt-get update
@@ -64,7 +67,9 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
     cd ~/catkin_ws
     catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules
     ```
+
 * Run gazebo simulator and ROS nodes.  This should bring up the Gazebo client.  Use the client to make sure the scene is good.  I typically kill the Gazebo client after that as it is a hog.
+
     ```bash
     cd ~/catkin_ws
     source /usr/share/gazebo/setup.sh
@@ -72,9 +77,12 @@ PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get 
     source src/obc_gazebo/setup.sh
     roslaunch obc_gazebo obc.launch
     ```
+
 * Start the PX4 autopilot
+
     ```
     cd ~/catkin_ws
     ./src/obc_gazebo/scripts/sitl_px4_run.sh
     ```  
+
 * qground control
