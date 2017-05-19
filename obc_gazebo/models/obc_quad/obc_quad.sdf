@@ -1,15 +1,12 @@
 <sdf version='1.5'>
   <model name='iris_nikon'>
-
     <include>
       <uri>model://iris</uri>
     </include>
-
     <include>
       <uri>model://nikon</uri>
       <pose>0.11 0 0.001   0 1.57079 0</pose>
     </include>
-
     <joint name="nikon_joint" type="revolute">
       <child>nikon::link</child>
       <parent>iris::base_link</parent>

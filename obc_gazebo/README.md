@@ -2,6 +2,20 @@
 
 This package is designed to startup a simulation of a quadcopter and camera and attach it to the PX4 autopilot and our ROS image processing pipeline.
 
+PX4 comes with a SITL simulation based on Gazebo.  The plan is to use PX4 for the
+quad copter modelm autopilot, ground station, and mavros interfaces.  We'll add a 
+camera to a PX4 quad model and use our ROS image pipeline to find Joe.
+
+To get ready for this make sure you can run the image pipeline from a
+webcam.  Try a few Gazebo runs and build your own model.
+
+Then look at the PX4 developer documentation for SITL and interfacing 
+ROS/GAZEBO/PX4/QGroundControl.
+
+https://dev.px4.io/en/simulation/gazebo.html
+
+https://dev.px4.io/en/simulation/ros_interface.html 
+
 ## Running 
 
 The simulator and image pipeline are started with roslaunch:
@@ -14,75 +28,16 @@ Which should bring up:
 
 Use `rqt` to view images from ROS topics.
 
-Then start PX4 and qgroundcontrol to make the quad fly.
+Then use `qgroundcontrol` mission planning to make the quad fly.  Or attach a joystick.
 
 ## Installing
 
-This is based on the [PX4 SITL](http://dev.px4.io/simulation-gazebo.html) simulation.  PX4 SITL uses [Gazebo](http://gazebosim.org/) as the physics simulator.  
+Checkout PX4 and get a SILT build working.  
 
-PX4 uses Gazebo 6.  ROS jade uses Gazebo 5.  A key part of installing is to get ROS working with Gazebo 6.
+https://dev.px4.io/en/simulation/gazebo.html
 
-* System dependecies
-    * Install ROS Jade desktop full on Ubunutu 14.04 - http://wiki.ros.org/jade/Installation/Ubuntu
-    * Upgrade ROS Jade from Gazebo 5 to Gazebo 6 ROS packages.  Use prebuilt debs:
-    ```
-    sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
-    wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
-    sudo apt-get update
-    sudo apt-get install ros-jade-gazebo6-ros-pkgs
-    ```
-    * Otherwise see these links
-        * http://gazebosim.org/tutorials/?tut=ros_overview
-        * http://gazebosim.org/tutorials/?tut=ros_wrapper_versions
-        * http://gazebosim.org/tutorials?tut=ros_installing#A.InstallPre-BuiltDebians
-   * protobuf compiler
-   ```
-   sudo apt-get install protobuf-compiler
-   ```
-   * mavros
-   ```
-   sudo apt-get install ros-jade-mavros ros-jade-mavros-extras
-   ```
-   * PX4 http://dev.px4.io
-   * qgroundcontrol 
+Checkout our OBC image processing pipeline and make it work on a laptop and webcam.
 
- 
-* Create catkin workspace and checkout project
+https://gitlab.com/NL-outback-challenge-2016/obc-2016-ros/wikis/vision-pipeline-user-guide
 
-    ```
-    source /opt/ros/jade/setup.bash
-    mkdir ~/catkin_ws
-    git clone git@gitlab.com:NL-outback-challenge-2016/obc-2016-ros.git src
-    cd ~/catkin_ws/src
-    catkin_init_workspace
-    git submodule update --init    
-    ```
 
-* Build
-
-    ```
-    sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
-    sudo apt-get update
-    sudo apt-get install cmake
-    cd ~/catkin_ws
-    catkin_make -DCMAKE_MODULE_PATH=/opt/ros/jade/share/cmake_modules/cmake/Modules
-    ```
-
-* Run gazebo simulator and ROS nodes.  This should bring up the Gazebo client.  Use the client to make sure the scene is good.  I typically kill the Gazebo client after that as it is a hog.
-
-    ```bash
-    cd ~/catkin_ws
-    source /usr/share/gazebo/setup.sh
-    source devel/setup.sh
-    source src/obc_gazebo/setup.sh
-    roslaunch obc_gazebo obc.launch
-    ```
-
-* Start the PX4 autopilot
-
-    ```
-    cd ~/catkin_ws
-    ./src/obc_gazebo/scripts/sitl_px4_run.sh
-    ```  
-
-* qground control
