@@ -2,14 +2,16 @@
 
 This package is designed to startup a simulation of a quadcopter and camera and attach it to the PX4 autopilot and our ROS image processing pipeline.
 
-PX4 comes with a SITL simulation based on Gazebo.  The plan is to use PX4 for the
-quad copter modelm autopilot, ground station, and mavros interfaces.  We'll add a 
-camera to a PX4 quad model and use our ROS image pipeline to find Joe.
+PX4 comes with a SITL simulation based on Gazebo.  The plan is to use PX4 sources for the
+quadcopter autopilot, ground station, and mavros interfaces.  We'll add a 
+camera to a PX4 Iris quad model and use our ROS image pipeline to 
+process the camera output and locate Joe in the local reference frame.
 
 To get ready for this make sure you can run the image pipeline from a
-webcam.  Try a few Gazebo runs and build your own model.
+webcam.  Try a few Gazebo runs and build your own model.  Run the PX4
+SITL examples.
 
-Then look at the PX4 developer documentation for SITL and interfacing 
+The PX4 developer documentation for SITL and interfacing 
 ROS/GAZEBO/PX4/QGroundControl.
 
 https://dev.px4.io/en/simulation/gazebo.html
@@ -24,11 +26,13 @@ The simulator and image pipeline are started with roslaunch:
 
 Which should bring up:
 * gazebo server and client
+* PX4 autopilot and simulation interfaces
 * ROS image pipeline
 
-Use `rqt` to view images from ROS topics.
+Use `rqt` to view images from ROS topics and preddictions of Joe's location.
 
-Then use `qgroundcontrol` mission planning to make the quad fly.  Or attach a joystick.
+Then use `qgroundcontrol` mission planning to make the quad fly.  Or attach 
+a joystick to control the quad.
 
 ## Installing
 
