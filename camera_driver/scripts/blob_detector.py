@@ -166,6 +166,9 @@ def detect_blobs():
     global bridge
     global window
 
+    # Reload blob detector parameters
+    get_blob_info()
+
     # Hoookup ROS stuff
     rospy.init_node(name())
     joe_location_publisher = rospy.Publisher("joe_location", PointStamped, queue_size = 2)
@@ -177,9 +180,6 @@ def detect_blobs():
     
     # ROS to OpenCV
     bridge = CvBridge()
-
-    # Reload blob detector parameters
-    get_blob_info()
 
     # Bring up UI
     show_picker = rospy.get_param("~show_picker", True)
