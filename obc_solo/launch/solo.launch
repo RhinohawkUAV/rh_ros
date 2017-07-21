@@ -2,8 +2,6 @@
 	<!-- vim: set ft=xml noet : -->
 	<!-- example launch script for ArduPilotMega based FCU's -->
 
-<!--
-
 	<arg name="fcu_url" default="udp://:14550@"/>
 	<arg name="gcs_url" default="" />
 	<arg name="tgt_system" default="1" />
@@ -20,9 +18,8 @@
 		<arg name="tgt_component" value="$(arg tgt_component)" />
 		<arg name="log_output" value="$(arg log_output)" />
 	</include>
--->
 
-<node pkg="obc_solo" type="camera-driver.py" name="solo_camera_driver"
-      args="$(find obc_solo)/launch/sololink.sdp"/>
+	<node pkg="obc_solo" type="camera-driver.py" name="solo_camera_driver"
+      	args="$(find obc_solo)/launch/sololink.sdp"/>
 
 </launch>
