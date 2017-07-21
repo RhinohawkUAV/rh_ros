@@ -16,6 +16,8 @@ from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import Point
 from std_msgs.msg import Header
 
+from distutils.version import LooseVersion
+
 global joe_location_publisher
 global image_publisher
 global mask_publisher
@@ -128,7 +130,11 @@ def process_image(image):
     mask = cv2.inRange(hsv, (hue_low, saturation_low, value_low), (hue_high, saturation_high, value_high))
     mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
-    contours, hierarchy = cv2.findContours(np.copy(mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if LooseVersion(cv2.__version__).version[0] == 2:
+        contours, hierarchy = cv2.findContours(np.copy(mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    else:
+        _, contours, hierarchy = cv2.findContours(np.copy(mask), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # publish binary image
     mask_message = bridge.cv2_to_imgmsg(mask, encoding="mono8")
