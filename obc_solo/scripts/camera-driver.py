@@ -19,9 +19,9 @@ class Gopro:
         self.camera_info_publisher = rospy.Publisher("camera_info", CameraInfo, queue_size = 5)
         name = 'gopro'
         camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % name
-        camera_info_manager = CameraInfoManager(name, camera_info_url, name)
-        camera_info_manager.loadCameraInfo()
-        self.camera_info = camera_info_manager.getCameraInfo()
+        self.camera_info_manager = CameraInfoManager(name, camera_info_url)
+        self.camera_info_manager.loadCameraInfo()
+        self.camera_info = self.camera_info_manager.getCameraInfo()
         self.sololink_config = rospy.myargv(argv=sys.argv)[1]
         rospy.loginfo("Solo link config %s" % self.sololink_config)
 
@@ -71,4 +71,4 @@ if __name__ == "__main__":
     rospy.sleep(1)
     rospy.loginfo("Camera_driver staring up")
     Gopro().stream()
-    ros.spin()
+    rospy.spin()
