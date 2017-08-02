@@ -40,7 +40,7 @@ mutex = Lock()
 MAX_FAILURES_BEFORE_RESTART = 10
 UDP_IP = "10.5.5.9"
 UDP_PORT = 8554
-KEEP_ALIVE_RATE = 0.5 # send keep-alive message every 2 seconds
+KEEP_ALIVE_RATE = 0.25 # send keep-alive message every 4 seconds
 
 num_failures = 0
 
@@ -50,18 +50,21 @@ def name():
 
 def init_stream():
     rospy.loginfo("Starting gopro stream...")
-    response = urllib2.urlopen("http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart")
-    data = json.load(response)
-    rospy.loginfo("got json: %s"%data)
-    if ("status" not in data) or data["status"]!="0":
-        rospy.logerr("Cannot start gopro stream")
-    else:
-        global camera_stream
-        camera_stream = cv2.VideoCapture('udp://@10.5.5.9:8554');
-        if not camera_stream.isOpened():
-            message = 'Cannot open gopro stream'
-            rospy.logerr(message)
-            success = False
+    try:
+        response = urllib2.urlopen("http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart")
+        data = json.load(response)
+        rospy.loginfo("got json: %s"%data)
+        if ("status" not in data) or data["status"]!="0":
+            rospy.logerr("Cannot start gopro stream")
+        else:
+            global camera_stream
+            camera_stream = cv2.VideoCapture('udp://@10.5.5.9:8554');
+            if not camera_stream.isOpened():
+                message = 'Cannot open gopro stream'
+                rospy.logerr(message)
+                success = False
+    except urllib2.URLError as e:
+        rospy.logerr("Error starting gopro stream: %s" % e)
 
 
 def send_keep_alive():
