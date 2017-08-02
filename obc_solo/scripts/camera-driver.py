@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import cv2
 import socket
 import rospy
@@ -10,7 +11,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CameraInfo
 from camera_info_manager import CameraInfoManager
 
-
+ENV_VAR_CAMERA_NAME = "CAMERA_NAME"
 
 class Gopro:
 
@@ -18,12 +19,15 @@ class Gopro:
         self.image_raw_publisher = rospy.Publisher("image_raw", Image, queue_size = 10)
         self.camera_info_publisher = rospy.Publisher("camera_info", CameraInfo, queue_size = 5)
         name = 'gopro'
+        if ENV_VAR_CAMERA_NAME in os.environ:
+            name = os.environ[ENV_VAR_CAMERA_NAME]
         camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % name
+        rospy.loginfo("Camera calibration: %s" % camera_info_url)
         self.camera_info_manager = CameraInfoManager(name, camera_info_url)
         self.camera_info_manager.loadCameraInfo()
         self.camera_info = self.camera_info_manager.getCameraInfo()
         self.sololink_config = rospy.myargv(argv=sys.argv)[1]
-        rospy.loginfo("Solo link config %s" % self.sololink_config)
+        rospy.loginfo("Solo link config: %s" % self.sololink_config)
 
     def stream(self):
         rospy.loginfo("Requesting video stream from solo camera")
@@ -59,7 +63,7 @@ class Gopro:
                     self.camera_info.header.stamp = stamp
                     self.camera_info_publisher.publish(self.camera_info)
                 except TypeError as e:
-                    rospy.logerr("CvBrideg could not convert image: %s", e)
+                    rospy.logerr("CvBridge could not convert image: %s", e)
             else:
                 rospy.logerr("Could not capture video frame")
         else:

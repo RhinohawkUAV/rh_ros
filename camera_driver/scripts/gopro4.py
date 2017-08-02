@@ -37,11 +37,12 @@ global mutex
 global camera_stream
 mutex = Lock()
 
-
+MAX_FAILURES_BEFORE_RESTART = 10
 UDP_IP = "10.5.5.9"
 UDP_PORT = 8554
-keepAliveRate = 0.5 # send keep-alive message every 2 seconds
+KEEP_ALIVE_RATE = 0.5 # send keep-alive message every 2 seconds
 
+num_failures = 0
 
 def name():
     return 'gopro'
@@ -71,6 +72,7 @@ def send_keep_alive():
 
 def capture_image(getPolledImage):
 
+    global num_failures
     global camera_info
     global camera_stream
 
@@ -87,16 +89,18 @@ def capture_image(getPolledImage):
             message = 'Cannot open gopro. Attempting to restart stream...'
             rospy.logerr(message)
             success = False
-            init_stream()
+            num_failures += 1
         else:    
             success, cv2_image = camera_stream.read()
         if success == False:
             message = "Could not read image from gopro"
             rospy.logerr(message)
+            num_failures += 1
     finally:
         mutex.release()
 
     if success:
+        num_failures = 0
         rospy.loginfo("Capture successful, publishing image")
         # convert to ROS image and publish
         try:
@@ -110,6 +114,9 @@ def capture_image(getPolledImage):
             message = "CvBridge could not convert image: %s" % e
             rospy.logerr(message)
             success  = False
+    else:
+        if num_failures>MAX_FAILURES_BEFORE_RESTART:
+            init_stream()
 
     return GetPolledImageResponse(success, message, stamp)
 
@@ -137,7 +144,7 @@ def image_capture():
 
     rospy.loginfo("Ready")
 
-    rate = rospy.Rate(keepAliveRate)
+    rate = rospy.Rate(KEEP_ALIVE_RATE)
     while True:
         rospy.logdebug('Sending stream keep-alive message to gopro')
         send_keep_alive()
