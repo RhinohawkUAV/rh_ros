@@ -2,7 +2,8 @@
   <node pkg="camera_driver" type="camera_pump.py"  name="camera_pump"     ns="gopro" respawn="true" respawn_delay="10">
   	<param name="camera" value="gopro"/>
     <!-- Less than 30fps results in "Circular buffer overrun" error from ffmpeg -->
-  	<param name="rate" value="30"/>
+    <!-- Need at least 40fps to avoid a long delay -->
+  	<param name="rate" value="60"/>
   </node>
   <node pkg="camera_driver" type="gopro4.py"       name="gopro"           ns="gopro"/>
   <node pkg="image_proc"    type="image_proc"      name="image_proc"      ns="gopro">
