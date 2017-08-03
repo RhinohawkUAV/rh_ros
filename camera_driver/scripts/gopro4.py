@@ -140,7 +140,7 @@ def image_capture():
     rospy.Service('request_image', GetPolledImage, capture_image)
 
     # set_camera_info service
-    camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % name()
+    camera_info_url = 'package://camera_driver/calibrations/gopro4.yaml' 
     camera_info_manager = CameraInfoManager(name(), camera_info_url)
     camera_info_manager.loadCameraInfo()
     camera_info = camera_info_manager.getCameraInfo()

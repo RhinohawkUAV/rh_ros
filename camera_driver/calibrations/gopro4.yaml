@@ -1,20 +1,16 @@
-image_width: 432
-image_height: 240
-camera_name: narrow_stereo
-camera_matrix:
-  rows: 3
-  cols: 3
-  data: [193.740405, 0, 201.272861, 0, 191.132253, 104.354554, 0, 0, 1]
-distortion_model: plumb_bob
-distortion_coefficients:
-  rows: 1
-  cols: 5
-  data: [-0.201427, 0.033088, -0.0009289999999999999, 0.002372, 0]
-rectification_matrix:
-  rows: 3
-  cols: 3
-  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
-projection_matrix:
-  rows: 3
-  cols: 4
-  data: [138.89473, 0, 202.746142, 0, 0, 172.712311, 100.725631, 0, 0, 0, 1, 0]
+!!python/unicode 'camera_matrix':
+  !!python/unicode 'data': !!python/tuple [198.10193091511715, 0.0, 220.25829709257795,
+    0.0, 191.09039369142278, 123.54039966310269, 0.0, 0.0, 1.0]
+!!python/unicode 'camera_name': gopro4
+!!python/unicode 'distortion_coefficients':
+  !!python/unicode 'data': !!python/tuple [-0.22242167761736453, 0.04325741818295351,
+    -0.0028214750105533715, -0.001782115262238698, 0.0]
+!!python/unicode 'distortion_model': plumb_bob
+!!python/unicode 'image_height': 240
+!!python/unicode 'image_width': 432
+!!python/unicode 'projection_matrix':
+  !!python/unicode 'data': !!python/tuple [144.20358276367188, 0.0, 217.4075714488099,
+    0.0, 0.0, 172.48585510253906, 123.41934504509663, 0.0, 0.0, 0.0, 1.0, 0.0]
+!!python/unicode 'rectification_matrix':
+  !!python/unicode 'data': !!python/tuple [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+    1.0]
