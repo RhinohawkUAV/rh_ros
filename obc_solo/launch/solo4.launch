@@ -21,14 +21,14 @@
 
   <node pkg="obc_solo" type="camera-driver.py" name="solo_camera_driver" ns="gopro"
       	args="$(find obc_solo)/launch/sololink.sdp">
-    <env name="CAMERA_NAME" value="gopro4"/>
+    <env name="CAMERA_NAME" value="solo4"/>
   </node>
 
   <node pkg="image_proc" type="image_proc" name="image_proc" ns="gopro">
     <remap from="image" to="image_raw"/>
   </node>
 
-  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector"   ns="gopro">
+  <node pkg="camera_driver" type="chess_detector.py"   name="chess_detector"   ns="gopro">
 	<remap from="image" to="image_rect_color"/>
   </node>
 
