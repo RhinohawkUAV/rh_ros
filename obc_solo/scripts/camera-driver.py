@@ -74,5 +74,10 @@ if __name__ == "__main__":
     rospy.init_node('cameraDriver')
     rospy.sleep(1)
     rospy.loginfo("Camera_driver staring up")
-    Gopro().stream()
-    rospy.spin()
+    r = rospy.Rate(0.2)
+    gopro = Gopro()
+    while not rospy.is_shutdown():
+        rospy.logwarn("Attempting to start video stream...")
+        gopro.stream()
+        r.sleep()
+
