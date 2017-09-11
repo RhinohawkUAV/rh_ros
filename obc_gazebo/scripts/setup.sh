@@ -12,3 +12,7 @@ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$firmware/Tools/sitl_gazebo
 # Pull in OBC models
 GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$obc_ros/src/obc_gazebo/models
 
+# Change startup location to Baron Cameron Park Field #9
+export PX4_HOME_LAT=38.977710
+export PX4_HOME_LON=-77.337480
+export PX4_HOME_ALT=400

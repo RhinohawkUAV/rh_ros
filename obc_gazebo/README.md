@@ -46,4 +46,8 @@ Checkout our OBC image processing pipeline and make it work on a laptop and webc
 
 https://gitlab.com/NL-outback-challenge-2016/obc-2016-ros/wikis/vision-pipeline-user-guide
 
+I was missing some of the gazebo to ros links an had to install a few more packages:
 
+```
+sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
+```
