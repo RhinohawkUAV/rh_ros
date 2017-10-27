@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <sdf version="1.4">
-  <model name="my_ground_plane">
+  <model name="aruco_4x4_100_0023">
     <static>true</static>
     <link name="link">
       <collision name="collision">
@@ -24,15 +24,11 @@
 	  <box>
 	    <size>1 1 0.1</size>
 	  </box>
-	  <!-- <plane> -->
-	  <!--   <normal>0 0 1</normal> -->
-	  <!--   <size>1 1</size> -->
-	  <!-- </plane> -->
 	</geometry>
 	<material>
 	  <script>
-	    <uri>model://my_ground_plane/materials/scripts</uri>
-	    <uri>model://my_ground_plane/materials/textures</uri>
+	    <uri>model://aruco_4x4_100_0023/materials/scripts</uri>
+	    <uri>model://aruco_4x4_100_0023/materials/textures</uri>
 	    <name>MyGroundPlane/Image</name>
 	  </script>
 	</material>
