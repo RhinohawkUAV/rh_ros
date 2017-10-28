@@ -1,13 +1,17 @@
 <launch>
 
   <!-- Add OBC image pipeline -->
-  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
+  <!-- node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
     <remap from="image" to="/nikon/image_raw"/>
     <param name="show_picker" value="true"/>
+  </node -->
+
+  <node pkg="camera_driver" type="aruco_detector.py"   name="aruco_detector" ns="nikon">
+    <remap from="image" to="/nikon/image_raw"/>
   </node>
-  
+
   <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="nikon">
-    <remap from="image_location" to="/nikon/joe_location"/>
+    <remap from="image_location" to="/nikon/landing_box_location"/>
     <remap from="camera_info" to="/nikon/camera_info"/>
   </node>
   

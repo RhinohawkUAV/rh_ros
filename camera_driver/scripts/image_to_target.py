@@ -104,7 +104,7 @@ def image_to_target():
     tf_listener = tf.TransformListener()
     
     # publish 3D locations in local_origin frame
-    location_publisher = rospy.Publisher("position", PointStamped, queue_size = 10)
+    location_publisher = rospy.Publisher("target_position_local", PointStamped, queue_size = 10)
     
     # subscribe to get camera calibration
     rospy.Subscriber("camera_info", CameraInfo, process_camera_info)

@@ -20,7 +20,7 @@
     </include>
     <include>
       <uri>model://aruco_4x4_100_0023</uri>
-      <pose>-7 3 4.2  0 0 0</pose>
+      <pose>-20 0 0.2  0 0 0</pose>
     </include>
     <physics name='default_physics' default='0' type='ode'>
       <gravity>0 0 -9.8066</gravity>
