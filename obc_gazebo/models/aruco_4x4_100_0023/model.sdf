@@ -1,8 +1,19 @@
 <?xml version="1.0"?>
 <sdf version="1.4">
   <model name="aruco_4x4_100_0023">
-    <static>true</static>
+    <!-- static>true</static -->
     <link name="link">
+      <inertial>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.084167</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.084167</iyy>
+          <iyz>0</iyz>
+          <izz>0.16667</izz>
+        </inertia>
+      </inertial>
       <collision name="collision">
 	<geometry>
 	  <box>
@@ -29,7 +40,7 @@
 	  <script>
 	    <uri>model://aruco_4x4_100_0023/materials/scripts</uri>
 	    <uri>model://aruco_4x4_100_0023/materials/textures</uri>
-	    <name>MyGroundPlane/Image</name>
+	    <name>aruco_4x4_100_0023/Image</name>
 	  </script>
 	</material>
       </visual>

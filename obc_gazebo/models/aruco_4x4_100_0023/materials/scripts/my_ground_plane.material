@@ -1,4 +1,4 @@
-material MyGroundPlane/Image {
+material aruco_4x4_100_0023/Image {
   technique {
     pass {
       ambient 0.5 0.5 0.5 1.0
