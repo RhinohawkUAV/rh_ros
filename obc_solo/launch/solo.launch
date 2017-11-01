@@ -1,4 +1,9 @@
 <launch>
+  <!-- 
+    Set the "CAMERA_NAME" environment variable to specify the calibration file:
+    CAMERA_NAME=solo4zoom roslaunch obc_solo solo4.launch 
+  --> 
+
   <!-- vim: set ft=xml noet : -->
   <!-- example launch script for ArduPilotMega based FCU's -->
 
@@ -20,18 +25,34 @@
   </include>
 
   <node pkg="obc_solo" type="camera-driver.py" name="solo_camera_driver" ns="gopro"
-      	args="$(find obc_solo)/launch/sololink.sdp" />
+      	args="$(find obc_solo)/launch/sololink.sdp">
+  </node>
 
   <node pkg="image_proc" type="image_proc" name="image_proc" ns="gopro">
     <remap from="image" to="image_raw"/>
   </node>
 
-  <node pkg="camera_driver" type="people_detector"   name="people_detector">
+  <node pkg="camera_driver" type="aruco_detector.py"   name="aruco_detector"   ns="gopro">
+	<remap from="image" to="image_rect"/>
   </node>
 
-  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector"   ns="gopro">
-	<remap from="image" to="image_rect_color"/>
+  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="gopro">
+    <remap from="image_location" to="/gopro/landing_box_location"/>
+    <remap from="camera_info" to="/gopro/camera_info"/>
   </node>
-
+  
+  <!-- Publish static frame translation from quad to camera -->
+  <!-- Camera mounted on the front of the quad and pitched down 90 degrees -->
+  <!-- the quaternion in args has scalar part last!!!  --> 
+  <!--
+   Parameters:
+    (x,y,z) - camera pose relative to fcu in meters
+    (qx, qy, qz, qw) - quaterion for camera orientation
+    frame_id, child_frame_id - names of coordinate frames
+    peroid in ms
+  <node pkg="tf" type="static_transform_publisher" name="gopro_link_broadcaster" 
+	args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu gopro 200" 
+	/>
+  -->
 
 </launch>

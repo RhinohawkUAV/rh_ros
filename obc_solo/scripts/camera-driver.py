@@ -22,12 +22,12 @@ class Gopro:
         if ENV_VAR_CAMERA_NAME in os.environ:
             name = os.environ[ENV_VAR_CAMERA_NAME]
         camera_info_url = 'package://camera_driver/calibrations/%s.yaml' % name
-        rospy.loginfo("Camera calibration: %s" % camera_info_url)
+        rospy.logwarn("Camera calibration: %s" % camera_info_url)
         self.camera_info_manager = CameraInfoManager(name, camera_info_url)
         self.camera_info_manager.loadCameraInfo()
         self.camera_info = self.camera_info_manager.getCameraInfo()
         self.sololink_config = rospy.myargv(argv=sys.argv)[1]
-        rospy.loginfo("Solo link config: %s" % self.sololink_config)
+        rospy.logwarn("Solo link config: %s" % self.sololink_config)
 
     def stream(self):
         rospy.loginfo("Requesting video stream from solo camera")
