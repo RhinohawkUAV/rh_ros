@@ -1,0 +1,16 @@
+!!python/unicode 'camera_matrix':
+  !!python/unicode 'data': !!python/tuple [1596.9557344328155, 0.0, 612.5709584291675,
+    0.0, 1609.6698475454068, 405.6870481627064, 0.0, 0.0, 1.0]
+!!python/unicode 'camera_name': solo4zoom
+!!python/unicode 'distortion_coefficients':
+  !!python/unicode 'data': !!python/tuple [-0.17269672972417108, 0.35210100785992576,
+    0.011861474036618525, -0.0012291840341045043, 0.0]
+!!python/unicode 'distortion_model': plumb_bob
+!!python/unicode 'image_height': 720
+!!python/unicode 'image_width': 1280
+!!python/unicode 'projection_matrix':
+  !!python/unicode 'data': !!python/tuple [1571.369873046875, 0.0, 611.2448018053547,
+    0.0, 0.0, 1592.753173828125, 409.2423917087435, 0.0, 0.0, 0.0, 1.0, 0.0]
+!!python/unicode 'rectification_matrix':
+  !!python/unicode 'data': !!python/tuple [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+    1.0]
