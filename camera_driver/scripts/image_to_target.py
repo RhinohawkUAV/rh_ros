@@ -50,7 +50,7 @@ def process_location(point_stamped):
     camera = np.array([0., 0., 0., 1.])
 
     # Get the frame translation to local_origin
-    source_frame = 'nikon'
+    source_frame = 'gopro'
     target_frame = 'local_origin'
     
     if tf_listener.canTransform(source_frame, target_frame, point_stamped.header.stamp):

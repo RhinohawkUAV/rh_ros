@@ -63,7 +63,7 @@ imu:
 local_position:
   frame_id: "fcu"
   tf:
-    send: false
+    send: true
     frame_id: "local_origin"
     child_frame_id: "fcu"
 
