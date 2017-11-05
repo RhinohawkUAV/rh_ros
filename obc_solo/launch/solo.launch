@@ -21,7 +21,7 @@
   </include>
 
   <node pkg="obc_solo" type="camera-driver.py" name="solo_camera_driver" ns="gopro"
-      	args="$(find obc_solo)/launch/sololink.sdp">
+      	args="$(find obc_solo)/launch/sololink.sdp" output="screen">
   </node>
 
   <node pkg="image_proc" type="image_proc" name="image_proc" ns="gopro">
