@@ -1,7 +1,8 @@
 <launch>
   <!-- 
     Set the "CAMERA_NAME" environment variable to specify the calibration file:
-    CAMERA_NAME=solo4zoom roslaunch obc_solo solo4.launch 
+    CAMERA_NAME=solo4zoom roslaunch obc_solo solo.launch 
+    CAMERA_NAME=gopro  roslaunch obc_solo solo.launch 
   --> 
   <arg name="fcu_url" default="udp://:14550@"/>
   <arg name="gcs_url" default="" />
@@ -40,7 +41,6 @@
   <!-- Publish static frame translation from quad to camera -->
   <!-- Camera mounted on the front of the quad and pitched down 90 degrees -->
   <!-- the quaternion in args has scalar part last!!!  --> 
-  <!--
    Parameters:
     (x,y,z) - camera pose relative to fcu in meters (front, left, up)
     (qx, qy, qz, qw) - quaterion for camera orientation
@@ -49,6 +49,5 @@
   <node pkg="tf" type="static_transform_publisher" name="gopro_link_broadcaster" 
 	args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu gopro 200" 
 	/>
-  -->
 
 </launch>

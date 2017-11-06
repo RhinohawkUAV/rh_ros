@@ -46,7 +46,7 @@ global_position:
   frame_id: "fcu"           # pose and fix frame_id
   rot_covariance: 99999.0   # covariance for attitude?
   tf:
-    send: false               # send TF?
+    send: True               # send TF?
     frame_id: "local_origin"  # TF frame_id
     child_frame_id: "fcu_utm" # TF child_frame_id
 
@@ -63,7 +63,7 @@ imu:
 local_position:
   frame_id: "fcu"
   tf:
-    send: true
+    send: True
     frame_id: "local_origin"
     child_frame_id: "fcu"
 
