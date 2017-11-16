@@ -5,7 +5,8 @@
     CAMERA_NAME=gopro  roslaunch obc_solo solo.launch 
   --> 
   <arg name="fcu_url" default="udp://:14550@"/>
-  <arg name="gcs_url" default="" />
+  <!-- QGroundControl proxy.  QGC on same host -->
+  <arg name="gcs_url" default="udp://:14558@localhost:14570" />
   <arg name="tgt_system" default="1" />
   <arg name="tgt_component" default="1" />
   <arg name="log_output" default="screen" />
