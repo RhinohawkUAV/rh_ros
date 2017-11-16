@@ -1,0 +1,75 @@
+<launch>
+
+  <!-- Add OBC image pipeline -->
+  <!-- node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
+    <remap from="image" to="/nikon/image_raw"/>
+    <param name="show_picker" value="true"/>
+  </node -->
+
+  <node pkg="camera_driver" type="aruco_detector.py"   name="aruco_detector" ns="nikon">
+    <remap from="image" to="/nikon/image_raw"/>
+  </node>
+
+  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="nikon">
+    <remap from="image_location" to="/nikon/landing_box_location"/>
+    <remap from="camera_info" to="/nikon/camera_info"/>
+  </node>
+  
+  <!-- Publish static frame translation from quad to camera -->
+  <!-- Camera mounted on the front of the quad and pitched down 90 degrees -->
+  <!-- 
+       the quaternion in args has scalar part last!!!
+  --> 
+  <node pkg="tf" type="static_transform_publisher" name="nikon_link_broadcaster" 
+	args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu nikon 200" 
+	/>
+
+  <!-- This portion is a copy of the px4 mavros_posix_sitl.launch with the 
+       vehicle spawing step removed so we can launch our obc_quad model -->
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="0"/>
+  <arg name="R" default="0"/>
+  <arg name="P" default="0"/>
+  <arg name="Y" default="0"/>
+  <arg name="est" default="lpe"/>
+  <arg name="vehicle" default="iris"/>
+  <arg name="world" default="$(find obc_gazebo)/worlds/obc.world"/>
+  <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
+  <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
+
+  <arg name="headless" default="false"/>
+  <arg name="gui" default="true"/>
+  <arg name="ns" default="/"/>
+  <arg name="fcu_url" default="udp://:14550@localhost:14556"/>
+  <arg name="gcs_url" default="udp://:14558@localhost:14570"/>
+
+  <arg name="debug" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="paused" default="false"/>
+
+  <arg name="pluginlists_yaml" default="$(find mavros)/launch/px4_pluginlists.yaml" />
+  <arg name="config_yaml" default="$(find obc_gazebo)/launch/px4_config.yaml" />
+
+  <node name="sitl" pkg="px4" type="px4" output="screen"
+        args="$(find px4) $(arg rcS)">
+  </node>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="world_name" value="$(arg world)" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="verbose" value="$(arg verbose)" />
+    <arg name="paused" value="$(arg paused)" />
+  </include>
+
+  <include file="$(find px4)/launch/mavros.launch">
+    <arg name="ns" value="$(arg ns)"/>
+    <arg name="gcs_url" value="$(arg gcs_url)"/>
+    <arg name="fcu_url" value="$(arg fcu_url)"/>
+    <arg name="pluginlists_yaml" value="$(arg pluginlists_yaml)" />
+    <arg name="config_yaml" value="$(arg config_yaml)" />
+  </include>
+
+</launch>
