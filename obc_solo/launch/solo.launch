@@ -22,9 +22,20 @@
     <arg name="log_output" value="$(arg log_output)" />
   </include>
 
+  <!-- GSCAM node -->
+  <arg name="cam_node_name" value="gopro"/>
+  <env name="GSCAM_CONFIG" value='udpsrc port=5600 caps="application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264" ! rtph264depay ! avdec_h264 ! videoconvert ! video/x-raw ' />
+  <node pkg="gscam" type="gscam" name="$(arg cam_node_name)">
+    <param name="camera_name" value="$(optenv CAMERA_NAME gopro)" />
+    <param name="camera_info_url" value="package://camera_driver/calibrations/${NAME}.yaml" />
+    <remap from="camera/image_raw" to="$(arg cam_node_name)/image_raw" />
+  </node>
+
+<!--
   <node pkg="obc_solo" type="camera-driver.py" name="solo_camera_driver" ns="gopro"
       	args="$(find obc_solo)/launch/sololink.sdp" output="screen">
   </node>
+-->
 
   <node pkg="image_proc" type="image_proc" name="image_proc" ns="gopro">
     <remap from="image" to="image_raw"/>
