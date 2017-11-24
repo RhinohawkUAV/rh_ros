@@ -31,11 +31,7 @@
     <remap from="camera/image_raw" to="$(arg cam_node_name)/image_raw" />
   </node>
 
-<!--
-  <node pkg="obc_solo" type="camera-driver.py" name="solo_camera_driver" ns="gopro"
-      	args="$(find obc_solo)/launch/sololink.sdp" output="screen">
-  </node>
--->
+  <node pkg="obc_solo" type="request-video-stream.py" name="solo_video_stream" ns="gopro"/>
 
   <node pkg="image_proc" type="image_proc" name="image_proc" ns="gopro">
     <remap from="image" to="image_raw"/>
