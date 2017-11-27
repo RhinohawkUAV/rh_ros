@@ -1,5 +1,9 @@
 <launch>
 
+  <!--
+      This launches the full simulation stack with mavros as a companion computer
+  -->
+
   <!-- Add OBC image pipeline -->
   <!-- node pkg="camera_driver" type="blob_detector.py"   name="blob_detector" ns="nikon">
     <remap from="image" to="/nikon/image_raw"/>
