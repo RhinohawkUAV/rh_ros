@@ -7,7 +7,7 @@ import yaml
 import rospy
 import rospkg
 
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image,CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 
 from geometry_msgs.msg import PointStamped
@@ -15,6 +15,7 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import Header
 
 global aruco_publisher
+global aruco_publisher_cmp
 global arucobox_publisher
 global arucobox_location_publisher
 global bridge
@@ -36,6 +37,8 @@ def name():
 def process_image(image):
 
     global seq
+    global aruco_publisher
+    global aruco_publisher_cmp
     rospy.loginfo("process_image")
 
     # Convert to opencv image
@@ -47,8 +50,9 @@ def process_image(image):
     c1 = aruco_publisher.get_num_connections()
     c2 = arucobox_publisher.get_num_connections()
     c3 = arucobox_location_publisher.get_num_connections()
+    c4 = aruco_publisher_cmp.get_num_connections()
 
-    if c1>0 or c2>0 or c3>0:
+    if c1>0 or c2>0 or c3>0 or c4>0:
 
         # Find markers
         res = cv2.aruco.detectMarkers(cv_image, dictionary, parameters=params)
@@ -66,7 +70,7 @@ def process_image(image):
             topLeft = tuple(marker[0][0])
             bottomRight = tuple(marker[0][2])
 
-            if c1>0:
+            if c1>0 or c4:
                 # draw all marker annotations
                 cv2.aruco.drawDetectedMarkers(annotated, res[0], res[1])
 
@@ -74,7 +78,7 @@ def process_image(image):
                 # draw bounding box for chosen marker 
                 cv2.rectangle(annotated2,topLeft,bottomRight,(255,0,0),2)
                     
-            if c3>0:
+            if c3>0 or c4>0:
                 # find center location for chosen marker
                 x,y = topLeft
                 w = bottomRight[0] - topLeft[0]
@@ -95,6 +99,13 @@ def process_image(image):
             image_message = bridge.cv2_to_imgmsg(annotated, encoding="bgr8")
             aruco_publisher.publish(image_message)
 
+        if c4>0:
+            msg = CompressedImage()
+            msg.header.stamp = rospy.Time.now()
+            msg.format = "png"
+            msg.data = np.array(cv2.imencode('.png', annotated)[1]).tostring()
+            aruco_publisher_cmp.publish(msg)
+
         if c2>0:
             # publish bounding box image
             image_message = bridge.cv2_to_imgmsg(annotated2, encoding="bgr8")
@@ -104,6 +115,7 @@ def process_image(image):
 def detect_aruco():
 
     global aruco_publisher
+    global aruco_publisher_cmp
     global arucobox_publisher
     global arucobox_location_publisher
     global bridge
@@ -111,6 +123,7 @@ def detect_aruco():
     # Hoookup ROS stuff
     rospy.init_node(name())
     aruco_publisher = rospy.Publisher("aruco_marker", Image, queue_size = 5)
+    aruco_publisher_cmp = rospy.Publisher("aruco_marker/compressed", CompressedImage, queue_size = 5)
     arucobox_publisher = rospy.Publisher("landing_box", Image, queue_size = 5)
     arucobox_location_publisher = rospy.Publisher("landing_box_location", PointStamped, queue_size = 5)
     
