@@ -1,0 +1,96 @@
+<!-- 
+	roscore
+
+	roslaunch rosbridge_server rosbridge_websocket.launch
+
+	rosbag play /media/molly/Files/RhinoHawk/ROSBags/2017-12-17-13-16-46_5.bag 
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+
+  <title>Vision Testing Map</title>
+
+  <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/main.css"/>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,700" rel="stylesheet">
+
+  
+
+</head>
+
+<body class="fill">
+  <div class="container-fluid fill">
+    <div class="row fill">
+      <div class="col fill" id="mapHolder">
+      </div>
+    </div>
+    <div class="row fixed-top">
+      <div class="col">
+        <img src="img/RhinoHawk_Logo_white.png" style="width:180px; margin:12px;"/>
+      </div>
+    </div>
+    <div class="row fixed-bottom telemetryRow">
+      <div class="col telemetryHolder" style="margin-left:12px;">
+        <h3 class="tel-header">Position</h3>
+        <h4 class="tel-sub-header">Latitude</h4>
+        <p class="tel-detail" id="tel-lat">00.00000</p>
+        <h4 class="tel-sub-header">Longitude</h4>
+        <p class="tel-detail" id="tel-long">-00.00000</p>
+      </div>
+      <div class="col telemetryHolder">
+        <div class="tel-detail" id="tel-compass">
+          <img id="compass-pointer" src="img/compass_pointer.png" />
+          <p class="tel-detail" id="compass-direction">N</p>
+        </div>
+      </div>
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Altitude</h3>
+        <p class="tel-detail" id="tel-altitude">0<span>FT</span></p>
+      </div>
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Speed</h3>
+        <p class="tel-detail" id="tel-speed">0<span>M/S</span></p>
+      </div>
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">time</h3>
+        <p class="tel-detail" id="tel-time">00:00:00</p>
+      </div>
+    </div>
+     <div class="row fixed-bottom image-stream" >
+      <div class="col">
+        <img id="aruco-image" />
+      </div>
+    </div>
+    <div class="row fixed-bottom scatter-plot" >
+      <div class="col" id="graph-scatter-plot">
+        
+      </div>
+    </div>
+  </div>
+
+  <script>
+    connectToROS('ws://192.168.1.247:9090');
+    
+    var myAccessToken = 'pk.eyJ1IjoibW8xMXlqIiwiYSI6ImNqY2pzMHMyZTQ1aG8yd3A1d2dpZ2N0ODAifQ.encFuTzHoiqxDgNjVFtXIw';
+
+    var map = L.map('mapHolder').setView([38.977699,-77.3374482], 8);
+
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+      maxZoom: 25,
+      id: 'mapbox.satellite',
+      accessToken: myAccessToken
+    }).addTo(map);
+
+  </script>
+
+</body>
+</html>
