@@ -5,6 +5,7 @@
 
 import threading
 import traceback
+from functools import partial
 
 import rospy
 
@@ -14,12 +15,9 @@ from sensor_msgs.msg import NavSatFix
 from mavros_msgs.srv import SetMode
 from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL
 
-#from geometry_msgs.msg import PointStamped
-#from geometry_msgs.msg import Point
-#from std_msgs.msg import Header
-
 from obc_solo.srv import TakeOff, TakeOffResponse
 from obc_solo.srv import Land, LandResponse 
+from latch import LatchMap
 
 gps_topic = None
 set_mode = None
@@ -28,10 +26,11 @@ set_home = None
 takeoff = None
 land = None
 
+values = LatchMap()
+
 
 def name():
     return "mission"
-
 
 
 def arm(state):
@@ -103,7 +102,12 @@ def set_custom_mode(custom_mode):
 
 def do_takeoff_cur_gps(min_pitch, yaw, altitude):
 
-    fix = rospy.wait_for_message(gps_topic, NavSatFix, timeout=10)
+    #fix = rospy.wait_for_message(gps_topic, NavSatFix, timeout=10)
+    fix = values.get_value(gps_topic)
+    if not fix: 
+        rospy.logerr("No GPS fix is latched")
+        return
+        
     rospy.loginfo("Taking-off from current coord: Lat: %f Long %f", 
             fix.latitude, fix.longitude)
     rospy.loginfo("With desired Altitude: %f, Yaw: %f, Pitch angle: %f", 
@@ -127,7 +131,12 @@ def do_takeoff_cur_gps(min_pitch, yaw, altitude):
 
 def do_land_cur_gps(yaw, altitude):
 
-    fix = rospy.wait_for_message(gps_topic, NavSatFix, timeout=10)
+    #fix = rospy.wait_for_message(gps_topic, NavSatFix, timeout=10)
+    fix = values.get_value(gps_topic)
+    if not fix:
+        rospy.logerr("No GPS fix is latched")
+        return
+
     rospy.loginfo("Landing on current coord: Lat: %f Long: %f", 
             fix.latitude, fix.longitude)
     rospy.loginfo("With desired Altitude: %f, Yaw: %f", 
@@ -208,6 +217,8 @@ def start():
 
     rospy.Service('command/takeoff', TakeOff, handle_takeoff)
     rospy.Service('command/land', Land, handle_land)
+
+    rospy.Subscriber(gps_topic, NavSatFix, partial(values.latch_value, gps_topic, 10))
 
     rospy.loginfo("Mission controller ready...")
     rospy.spin()
