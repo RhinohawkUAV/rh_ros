@@ -10,14 +10,22 @@ from functools import partial
 import rospy
 
 import mavros
-from mavros_msgs.msg import State
+from mavros_msgs.msg import State, Waypoint
 from sensor_msgs.msg import NavSatFix
 from mavros_msgs.srv import SetMode
-from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL
+from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
+    WaypointPush, WaypointClear
 
 from obc_solo.srv import TakeOff, TakeOffResponse
 from obc_solo.srv import Land, LandResponse 
+from obc_solo.srv import FlyTo, FlyToResponse 
 from latch import LatchMap
+
+MAV_GLOBAL_FRAME = 3
+MAV_CMD_WAYPOINT = 16
+MAV_CMD_RTL = 20
+MAV_CMD_LAND = 21
+MAV_CMD_TAKEOFF = 22
 
 gps_topic = None
 set_mode = None
@@ -25,6 +33,8 @@ arming = None
 set_home = None
 takeoff = None
 land = None
+wp_push = None
+wp_clear = None
 
 values = LatchMap()
 
@@ -186,10 +196,93 @@ def handle_land(req):
 
     rospy.loginfo("Landing...")
  
-    if not(do_land_cur_gps(0, 0)):
+    if not do_land_cur_gps(0, 0):
         return LandResponse(False)
 
     return LandResponse(True)
+
+
+def push_waypoints(waypoints):
+    try:
+        ret = wp_push(waypoints)
+    except rospy.ServiceException:
+        rospy.logerr('Error setting waypoints:\n' + ''.join(traceback.format_stack()))
+        return False
+
+    if not ret.success:
+        rospy.logerr('Error setting waypoints: unknown')
+        return False
+
+    return True
+
+
+def waypoint(lat, lon, alt, delay):
+    w = Waypoint()
+    w.frame = MAV_GLOBAL_FRAME
+    w.command = MAV_CMD_WAYPOINT
+    w.is_current = False
+    w.autocontinue = True
+    w.param1 = delay # Hold time
+    w.param2 = 20     # Position threshold in meters
+    w.x_lat = lat
+    w.y_long = lon
+    w.z_alt = alt
+    return w
+
+
+def wp_rtl():
+    w = Waypoint()
+    w.frame = MAV_GLOBAL_FRAME
+    w.command = MAV_CMD_RTL
+    return w
+
+def wp_land(lat, lon, alt):
+    w = waypoint(lat, lon, alt, 0)
+    w.command = MAV_CMD_LAND
+    return w
+
+def wp_takeoff(lat, lon, alt):
+    w = waypoint(lat, lon, alt, 0)
+    w.command = MAV_CMD_TAKEOFF
+    return w
+
+def mission_planner(lat0, lon0, lat, lon, cruise_alt):
+    w0 = wp_takeoff(lat0, lon0, cruise_alt)
+    w0.is_current = True
+    w1 = waypoint(lat, lon, cruise_alt, 0)
+    w2 = wp_land(lat, lon, 0) 
+    return [w0, w1, w2]
+
+
+def handle_flyto(req):
+    """ Takeoff, fly to the given coordinates, and land
+    """
+    fix = values.get_value(gps_topic)
+
+    arm(True)
+    #do_takeoff_cur_gps(0, 0, req.cruise_altitude)
+
+    set_custom_mode("STABILIZED")
+
+    wps = mission_planner(fix.latitude, fix.longitude, \
+            req.target_lat, req.target_long, req.cruise_altitude)
+
+    if not push_waypoints(wps):
+        rospy.logerr('Error pushing waypoints')
+        return FlyToResponse(False)
+
+    rospy.loginfo("Successfully pushed %d waypoints", len(wps))
+
+    set_custom_mode("AUTO.MISSION")
+
+    # TODO: wait until waypoint is reached
+    #rospy.sleep(5.)
+
+    #if not do_land_cur_gps(0, 0):
+    #    return FlyToResponse(False)
+
+    return FlyToResponse(True)
+
 
 
 def get_proxy(topic, serviceType):
@@ -203,12 +296,14 @@ def start():
     rospy.init_node(name())
     mavros.set_namespace()
 
-    global set_mode, arming, set_home, takeoff, land
+    global set_mode, arming, set_home, takeoff, land, wp_push, wp_clear
     set_mode = get_proxy('/mavros/set_mode', SetMode)
     arming = get_proxy('/mavros/cmd/arming', CommandBool)
     set_home = get_proxy('/mavros/cmd/set_home', CommandHome)
     takeoff = get_proxy('/mavros/cmd/takeoff', CommandTOL)
     land = get_proxy('/mavros/cmd/land', CommandTOL)
+    wp_push = get_proxy('/mavros/mission/push', WaypointPush)
+    wp_clear = get_proxy('/mavros/mission/clear', WaypointClear)
 
     global gps_topic
     gps_topic = find_gps_topic("takeoff")
@@ -217,8 +312,12 @@ def start():
 
     rospy.Service('command/takeoff', TakeOff, handle_takeoff)
     rospy.Service('command/land', Land, handle_land)
+    rospy.Service('command/land2', Land, handle_land)
+    rospy.Service('command/flyto', FlyTo, handle_flyto)
 
     rospy.Subscriber(gps_topic, NavSatFix, partial(values.latch_value, gps_topic, 10))
+
+    wp_clear()
 
     rospy.loginfo("Mission controller ready...")
     rospy.spin()

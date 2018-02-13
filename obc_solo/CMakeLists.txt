@@ -58,6 +58,7 @@ add_service_files(
   FILES
   TakeOff.srv
   Land.srv
+  FlyTo.srv
 )
 
 ## Generate actions in the 'action' folder
