@@ -31,14 +31,24 @@
 <body class="fill">
   <div class="container-fluid fill">
     <div class="row fill">
-      <div class="col fill" id="mapHolder">
-      </div>
+      <div class="col fill" id="mapHolder"></div>
+     
     </div>
     <div class="row fixed-top">
       <div class="col">
         <img src="img/RhinoHawk_Logo_white.png" style="width:180px; margin:12px;"/>
       </div>
     </div>
+    
+    <div class="row">
+     <div class="centerToggle">
+        <h3 class="tel-header">Auto center</h3>
+        <div class="toggleOn" id="toggleHolder" onclick="toggleMapCenter('toggleHolder');">
+          <div class="togleMarker"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="row fixed-bottom telemetryRow">
       <div class="col telemetryHolder" style="margin-left:12px;">
         <h3 class="tel-header">Position</h3>
@@ -53,13 +63,20 @@
           <p class="tel-detail" id="compass-direction">N</p>
         </div>
       </div>
+      
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Ground Speed</h3>
+        <canvas id="groundGuage"></canvas>
+        <p class="tel-detail" id="tel-speed">0<span>M/S</span></p>
+      </div>
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Air Speed</h3>
+        <canvas id="airGuage"></canvas>
+        <p class="tel-detail" id="tel-airSpeed">0<span>M/S</span></p>
+      </div>
       <div class="col telemetryHolder">
         <h3 class="tel-header">Altitude</h3>
         <p class="tel-detail" id="tel-altitude">0<span>FT</span></p>
-      </div>
-      <div class="col telemetryHolder">
-        <h3 class="tel-header">Speed</h3>
-        <p class="tel-detail" id="tel-speed">0<span>M/S</span></p>
       </div>
       <div class="col telemetryHolder">
         <h3 class="tel-header">time</h3>
@@ -71,15 +88,16 @@
         <img id="aruco-image" />
       </div>
     </div>
-    <div class="row fixed-bottom scatter-plot" >
+    <!--<div class="row fixed-bottom scatter-plot" >
       <div class="col" id="graph-scatter-plot">
         
       </div>
-    </div>
+    </div>-->
   </div>
+  <script type="text/javascript" src="js/guagemin.js"></script>
 
   <script>
-    connectToROS('ws://192.168.1.247:9090');
+    connectToROS('ws://192.168.1.149:9090');
     
     var myAccessToken = 'pk.eyJ1IjoibW8xMXlqIiwiYSI6ImNqY2pzMHMyZTQ1aG8yd3A1d2dpZ2N0ODAifQ.encFuTzHoiqxDgNjVFtXIw';
 
@@ -89,8 +107,9 @@
       attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
       maxZoom: 25,
       id: 'mapbox.satellite',
-      accessToken: myAccessToken
+      accessToken: myAccessToken,
     }).addTo(map);
+    map.zoomControl.setPosition('bottomright');
 
   </script>
 

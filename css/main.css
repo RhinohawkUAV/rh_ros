@@ -18,6 +18,11 @@ body{
 
 /*******************  Telemetry *******************/
 
+.telemetryHolder {
+	position:relative;
+}
+
+
 .telemetryRow{
 	background:rgba(10,10,10,.6);
 	color:#fff;
@@ -37,7 +42,7 @@ body{
 }
 
 .tel-detail {
-	font-size:35px;
+	font-size:40px;
 	font-weight: 200;
 }
 
@@ -74,6 +79,9 @@ body{
 	text-align: center;
 }
 
+
+/*******************  Image Stream *******************/
+
 .image-stream {
 	bottom:160px;
 }
@@ -86,6 +94,8 @@ body{
 .image-stream img{
 	width:300px;
 }
+
+/*******************  Scatter plot *******************/
 
 .scatter-plot {
 	width:500px;
@@ -105,4 +115,60 @@ body{
 	border-radius: 2px;
 	background-color:#4ABDE2;
 	position: absolute;
+}
+/*******************  Map Controls *******************/
+
+.leaflet-bottom{
+	bottom: 165px;
+}
+
+.centerToggle{
+	position: absolute;
+	bottom: 195px;
+    right: 60px;
+    color:#fff;
+    z-index: 1000;
+}
+
+.toggleOn, .toggleOff {
+	position: relative;
+	width: 50px;
+    height: 32px;
+    border-radius: 15px;
+    border: 1px solid #fff;
+    margin:4px 0 0 20px;
+}
+
+.toggleOn{
+	background: #4ABDE2;
+}
+
+.toggleOn .togleMarker, .toggleOff .togleMarker {
+	height: 26px;
+	width: 26px;
+	border-radius: 13px;
+	position: absolute;
+	top:2px;
+	left:2px;
+	background: #fff;
+	transition: all 0.3s ease;
+}
+
+.toggleOn .togleMarker {
+	left:20px;
+}
+
+/*******************  Guages *******************/
+
+
+#groundGuage, #airGuage {
+	transform: rotate(-45deg);
+	position: absolute;
+    top: 8px;
+    left: -90px;
+}
+
+#tel-speed, #tel-airSpeed {
+	margin-top: 65px;
+    margin-left: 59px;
 }
