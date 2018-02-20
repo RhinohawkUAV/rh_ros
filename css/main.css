@@ -158,10 +158,10 @@ body{
 	left:20px;
 }
 
-/*******************  Guages *******************/
+/*******************  Gauges *******************/
 
 
-#groundGuage, #airGuage {
+#groundGauge, #airGauge {
 	transform: rotate(-45deg);
 	position: absolute;
     top: 8px;

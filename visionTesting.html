@@ -66,12 +66,12 @@
       
       <div class="col telemetryHolder">
         <h3 class="tel-header">Ground Speed</h3>
-        <canvas id="groundGuage"></canvas>
+        <canvas id="groundGauge"></canvas>
         <p class="tel-detail" id="tel-speed">0<span>M/S</span></p>
       </div>
       <div class="col telemetryHolder">
         <h3 class="tel-header">Air Speed</h3>
-        <canvas id="airGuage"></canvas>
+        <canvas id="airGauge"></canvas>
         <p class="tel-detail" id="tel-airSpeed">0<span>M/S</span></p>
       </div>
       <div class="col telemetryHolder">
@@ -97,7 +97,7 @@
   <script type="text/javascript" src="js/guagemin.js"></script>
 
   <script>
-    connectToROS('ws://192.168.1.149:9090');
+    connectToROS('ws://beauregard:9090');
     
     var myAccessToken = 'pk.eyJ1IjoibW8xMXlqIiwiYSI6ImNqY2pzMHMyZTQ1aG8yd3A1d2dpZ2N0ODAifQ.encFuTzHoiqxDgNjVFtXIw';
 

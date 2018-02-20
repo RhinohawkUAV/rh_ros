@@ -5,7 +5,7 @@ var centerMap = true;
 
 var uavPath=[];
 
-// Guage Settigns -----------------------------------------------------------------------
+// Gauge Settigns -----------------------------------------------------------------------
 var opts = {
   angle: -0.26, // The span of the gauge arc
   lineWidth: 0.07, // The line thickness
@@ -25,7 +25,7 @@ var opts = {
   
 };
 
-var guageTopSpeed = 20;
+var gaugeTopSpeed = 20;
 
 
 // Connect to ROSBridge -----------------------------------------------------------------------
@@ -54,8 +54,8 @@ function connectToTopics() {
 
   var altitudeTopic = new ROSLIB.Topic({
       ros: ros,
-      name: '/mavros/global_position/rel_alt',
-      messageType: 'std_msgs/Float64'
+      name: '/mavros/global_position/local',
+      messageType: 'nav_msgs/Odometry'
     });
 
   var navSatTopic = new ROSLIB.Topic({
@@ -76,25 +76,28 @@ function connectToTopics() {
       messageType : 'sensor_msgs/CompressedImage'
     });
 
-  var clockTopic = new ROSLIB.Topic({
-      ros : ros,
-      name : '/mavros/time_reference',
-      messageType : 'sensor_msgs/TimeReference'
+    var clockTopic = new ROSLIB.Topic({
+        ros : ros,
+        name : '/mavros/time_reference',
+        messageType : 'sensor_msgs/TimeReference'
     });
 
-  navSatTopic.subscribe(function(message) {
+    navSatTopic.subscribe(function(message) {
 
-    uavPath.push([message.latitude, message.longitude]);
+        // 
+        uavPath.pushMaxLimit([message.latitude, message.longitude], 5 );
 
-    if(uavPath.length > 1){
-      updateMapPath();
-    }else{
-      map.setView([ message.latitude,message.longitude], 18);
-    }
+        // If uavPath was populated before, update it.
+        // Else, 
+        if(uavPath.length > 1){
+          updateMapPath();
+        }else{
+          map.setView([ message.latitude,message.longitude], 18);
+        }
 
-    document.getElementById("tel-lat").innerHTML= message.latitude;
-    document.getElementById("tel-long").innerHTML= message.longitude;
-  });
+        document.getElementById("tel-lat").innerHTML= message.latitude;
+        document.getElementById("tel-long").innerHTML= message.longitude;
+    });
 
   compassTopic.subscribe(function(message) {
     document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.data+'deg'+');');
@@ -107,28 +110,71 @@ function connectToTopics() {
   });
 
   altitudeTopic.subscribe(function(message) {
-    document.getElementById("tel-altitude").innerHTML= Math.round(message.data*3.28084) + "<span> FT</span>";
+    var altitudeMeters = message.pose.pose.position.z;
+    msgStr = ""
+    msgStr += `<p class=\"tel-detail\" id=\"altitude-feet\">${ Math.round( altitudeMeters * 3.28084 ) }<span> FT</span></p>`
+    msgStr += `<p class=\"tel-detail\" id=\"altitude-meters\">${ Math.round( altitudeMeters ) }<span> M</span></p>`
+    document.getElementById("tel-altitude").innerHTML= msgStr;
   });
 
   groundSpeedTopic.subscribe(function(message) {
     document.getElementById("tel-speed").innerHTML= getGroundVelocity(message.twist).toFixed(1) + "<span> M/S</span>";
-    groundSpeed.set(getGroundVelocity(message.twist));
+    groundSpeedGauge.set(getGroundVelocity(message.twist));
+    airSpeedGauge.set(0);
 
     /* ********* if using VFR_HUD
-    document.getElementById("tel-speed").innerHTML= message.groundspeed.toFixed(1) + "<span> M/S</span>";
-    document.getElementById("tel-airSpeed").innerHTML= message.airspeed.toFixed(1) + "<span> M/S</span>";
-    groundSpeed.set(message.groundspeed);
-    airSpeed.set(message.airspeed);*/
+    document.getElementById("tel-speed").innerHTML= message.groundSpeedGauge.toFixed(1) + "<span> M/S</span>";
+    document.getElementById("tel-airSpeed").innerHTML= message.airSpeedGauge.toFixed(1) + "<span> M/S</span>";
+    groundSpeedGauge.set(message.groundspeed);
+    airSpeedGauge.set(message.airspeed);*/
   });
 
-var groundSpeed = new Gauge( document.getElementById('groundGuage')).setOptions(opts); // create sexy gauge!
-var airSpeed = new Gauge(document.getElementById('airGuage')).setOptions(opts); // create sexy gauge!
+  
+/* *************************************************      SET UP CLOCK
+*/
+clockTopic.subscribe(function(message){
+    var theDate = new Date();
+    theDate.setTime(message.time_ref.secs*1000);
+    //console.log(theDate.getSeconds());
+    
+    document.getElementById("tel-time").innerHTML = theDate.getHours()+":"+theDate.getMinutes()+":"+theDate.getSeconds();
 
-groundSpeed.maxValue =guageTopSpeed; // set max gauge value
-airSpeed.maxValue =guageTopSpeed; // set max gauge value
+/* Old code to calculate speed. 
+    if(clockInit == false){
+      startTime = theDate;
+      lastTime = theDate;
+      currentTime = message.time_ref.secs;
+      clockInit = true;
+      currentLong = uavPath[uavPath.length-1][0];
+      currentLat = uavPath[uavPath.length-1][1];
+    }else{
+      if(message.time_ref.secs != currentTime){
+        lastLong = currentLong;
+        lastLat = currentLat;
+        currentLong = uavPath[uavPath.length-1][0];
+        currentCat = uavPath[uavPath.length-1][1];
+
+        lastTime = currentTime;
+        currentTime = message.time_ref.secs;
+
+        var deltaTime = (currentTime - lastTime);
+
+        document.getElementById("tel-speed").innerHTML = calcSpeed(lastLat, lastLong, currentLat, currentLong, deltaTime).toFixed(2) + "<span>M/S</span>";
+      }  
+    }
+    */
+
+});
+
+var groundSpeedGauge = new Gauge(document.getElementById('groundGauge')).setOptions(opts); // create sexy gauge!
+var airSpeedGauge    = new Gauge(document.getElementById('airGauge')).setOptions(opts); // create sexy gauge!
+
+groundSpeedGauge.maxValue =gaugeTopSpeed; // set max gauge value
+airSpeedGauge.maxValue =gaugeTopSpeed; // set max gauge value
 }
 
-
+// Calculate ground velocity using geometry_msgs/TwistStamped.
+// Change to use 
 function getGroundVelocity(data){
   var velocity = Math.sqrt(Math.abs(Math.pow(data.linear.x, 2)+Math.pow(data.linear.y, 2)));
   return velocity;
@@ -201,37 +247,25 @@ function toggleMapCenter(toToggle){
     newDot.setAttribute('style', 'left:'+message.point.x/2+'px; top:'+message.point.y/2+'px;');
     document.getElementById('graph-scatter-plot').appendChild(newDot);
   });
-*/
-/* *************************************************      SET UP CLOCK
-clockTopic.subscribe(function(message){
-    var theDate = new Date();
-    theDate.setTime(message.time_ref.secs*1000);
-    //console.log(theDate.getSeconds());
-    
-    document.getElementById("tel-time").innerHTML = theDate.getHours()+":"+theDate.getMinutes()+":"+theDate.getSeconds();
+  */
 
-
-    if(clockInit == false){
-      startTime = theDate;
-      lastTime = theDate;
-      currentTime = message.time_ref.secs;
-      clockInit = true;
-      currentLong = uavPath[uavPath.length-1][0];
-      currentLat = uavPath[uavPath.length-1][1];
-    }else{
-      if(message.time_ref.secs != currentTime){
-        lastLong = currentLong;
-        lastLat = currentLat;
-        currentLong = uavPath[uavPath.length-1][0];
-        currentCat = uavPath[uavPath.length-1][1];
-
-        lastTime = currentTime;
-        currentTime = message.time_ref.secs;
-
-        var deltaTime = (currentTime - lastTime);
-
-        document.getElementById("tel-speed").innerHTML = calcSpeed(lastLat, lastLong, currentLat, currentLong, deltaTime).toFixed(2) + "<span>M/S</span>";
-      }  
-    }*/
-
-
+// Prop def for .pushMax() to limit size of static memory.
+// Avoids memory snowball if app is running for a long time.
+// Source: https://codereview.stackexchange.com/a/101236
+Object.defineProperty(
+    Array.prototype,
+    "pushMaxLimit",
+    {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: function( value, max )
+        {
+            if ( this.length >= max )
+            {
+                this.splice( 0, this.length - max + 1 );
+            }
+            return this.push( value );
+        }
+    }
+);
