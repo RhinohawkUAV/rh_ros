@@ -24,38 +24,32 @@ class Geometry(DrawGroup):
         DrawGroup.__init__(self)
         self.noFlyZones = noFlyZones
 
-    def findVisibleVertices(self, position, end):
-        visiblePoints = []
-
-        originalPoints = []
-        lines = []  # type: List[LineString]
+    def isPositionVisible(self, eye, position):
+        """Is the given position visible from eye?"""
+        line = LineString([eye, position])
         for noFlyZone in self.noFlyZones:
-            for polgonVertex in noFlyZone.polygon.exterior.coords:
-                lines.append(LineString([position, polgonVertex]))
-                originalPoints.append(polgonVertex)
-        lines.append(LineString([position, end]))
-        originalPoints.append(end)
+            if noFlyZone.blocksLineOfSight(line):
+                return False
+        return True
 
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-            visible = True
-            for noFlyZone in self.noFlyZones:
-                visible = not noFlyZone.blocksLineOfSight(line)
-                if visible is False:
-                    break
+    def findVisibleVertices(self, eye, end):
+        """Find all vertices (including end) visible from eye"""
+        visibleVertices = []
+        for noFlyZone in self.noFlyZones:
+            for polygonVertex in noFlyZone.vertices:
+                if self.isPositionVisible(eye, polygonVertex):
+                    visibleVertices.append(polygonVertex)
+        if self.isPositionVisible(eye, end):
+            visibleVertices.append(end)
 
-            drawLine = DrawableLine(lineString=line, fill="red")
-            if visible:
-                visiblePoints.append(originalPoints[i])
-            else:
-                drawLine["dash"] = [2, 2]
+        # Drawing
+        for vertex in visibleVertices:
+            drawLine = DrawableLine(eye[0], eye[1], vertex[0], vertex[1], fill="red")
             self.addDrawable(drawLine)
-            i += 1
-        return visiblePoints
+
+        return visibleVertices
 
     def findPath(self, start, end, renderer):
-        # self.addDrawable(DrawableCircle(start[0], start[1], 1.0, fill="green"))
         self.graph = VertexBag()
         self.graph.updateVertex(start, 0)
 
@@ -65,8 +59,6 @@ class Geometry(DrawGroup):
             if vertex.position is end:
                 break
 
-            self.addDrawable(DrawableCircle(vertex.position[0], vertex.position[1], 1.0, fill="green"))
-            self.addDrawable(DrawableCircle(end[0], end[1], 1.0, fill="green"))
             visiblePoints = self.findVisibleVertices(vertex.position, end)
 
             for visiblePoint in visiblePoints:
@@ -77,6 +69,9 @@ class Geometry(DrawGroup):
                     totalDistance = distance + vertex.shortestDistance
                     self.graph.updateVertex(visiblePoint, totalDistance)
                     self.graph.putEdge(vertex.position, visiblePoint, distance)
+
+            self.addDrawable(DrawableCircle(vertex.position[0], vertex.position[1], 1.0, fill="green"))
+            self.addDrawable(DrawableCircle(end[0], end[1], 1.0, fill="green"))
             renderCopy = copy.deepcopy(self)
             renderer.render(renderCopy)
             self.clearDrawables()
@@ -89,6 +84,6 @@ class Geometry(DrawGroup):
         for noFlyZone in self.noFlyZones:
             noFlyZone.draw(canvas)
 
-        DrawGroup.draw(self, canvas)
-
         self.graph.draw(canvas)
+
+        DrawGroup.draw(self, canvas)

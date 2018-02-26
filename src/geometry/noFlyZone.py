@@ -1,10 +1,20 @@
+from Tkinter import Canvas
+
+from shapely.geometry import Polygon
+
+from render.Drawable import Drawable
 from render.drawables import DrawablePolygon
 
 
-class NoFlyZone(DrawablePolygon):
-    def __init__(self, points, velocity):
-        DrawablePolygon.__init__(self, points, fill="", outline="blue", width=5.0)
+class NoFlyZone(Drawable):
+    def __init__(self, vertices, velocity):
+        self.vertices = vertices
         self.velocity = velocity
 
     def blocksLineOfSight(self, line):
-        return line.crosses(self.polygon) or line.within(self.polygon)
+        polygon = Polygon(self.vertices)
+        return line.crosses(polygon) or line.within(polygon)
+
+    def draw(self, canvas):
+        # type: (Canvas) -> None
+        DrawablePolygon(self.vertices, fill="", outline="blue", width=5.0).draw(canvas)

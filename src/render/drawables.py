@@ -1,7 +1,5 @@
 from Tkinter import Canvas
 
-from shapely.geometry import Polygon
-
 from render.Drawable import Drawable
 
 
@@ -45,17 +43,14 @@ class DrawableCircle(dict, Drawable):
 
 
 class DrawablePolygon(dict, Drawable):
-    def __init__(self, points=None, polygon=None, **kwargs):
+    def __init__(self, points, **kwargs):
         dict.__init__(self, **kwargs)
-        if polygon is None:
-            self.polygon = Polygon(points)
-        else:
-            self.polygon = polygon
+        self.points = points
 
     def draw(self, canvas):
         # type: (Canvas)->None
         coords = []
-        for vertex in self.polygon.exterior.coords:
-            coords.append(vertex[0])
-            coords.append(vertex[1])
+        for point in self.points:
+            coords.append(point[0])
+            coords.append(point[1])
         canvas.create_polygon(coords, **self)
