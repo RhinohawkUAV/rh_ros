@@ -27,6 +27,7 @@ class Renderer:
 
     def _render(self, drawable):
         """Renders drawable object and then transforms to canvas coordinates"""
+        self.renderWindow.canvas.delete(tk.ALL)
         drawable.draw(self.renderWindow.canvas)
         self.renderWindow.transform()
 

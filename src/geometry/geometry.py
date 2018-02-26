@@ -1,7 +1,6 @@
-import Tkinter as tk
 from Tkinter import Canvas
 
-from sympy import Segment2D
+from shapely.geometry import LineString
 from typing import Any
 from typing import List
 
@@ -24,14 +23,14 @@ class Geometry:
         self.drawables = []  # type: List[Any]
 
     def findVisibleVertices(self, position):
-        self.addDrawable(DrawCircle(float(position.x), float(position.y), 1.0, fill="red"))
-
-        lines = []  # type: List[Segment2D]
-        for noFlyZone in self.noFlyZones:
-            for vertex in noFlyZone.polygon.vertices:
-                lines.append(Segment2D(position, vertex))
-
         visiblePoints = []
+        self.addDrawable(DrawCircle(position[0], position[1], 1.0, fill="red"))
+
+        lines = []  # type: List[LineString]
+        for noFlyZone in self.noFlyZones:
+            for vertex in noFlyZone.polygon.exterior.coords:
+                lines.append(LineString([position, vertex]))
+
         for line in lines:
             visible = True
             for noFlyZone in self.noFlyZones:
@@ -39,9 +38,9 @@ class Geometry:
                 if visible is False:
                     break
 
-            drawLine = DrawLine(segment=line)
+            drawLine = DrawLine(lineString=line)
             if visible:
-                visiblePoints.append(line.p2)
+                visiblePoints.append(line.coords[1])
             else:
                 drawLine["dash"] = [2, 2]
             self.addDrawable(drawLine)
@@ -52,15 +51,14 @@ class Geometry:
              canvas  # type: Canvas
              ):
         """Must be called from GUI thread"""
-        canvas.delete(tk.ALL)
         for drawable in self.drawables:
             drawable.draw(canvas)
 
         for noFlyZone in self.noFlyZones:
             coords = []
-            for vertex in noFlyZone.polygon.vertices:
-                coords.append(float(vertex.x))
-                coords.append(float(vertex.y))
+            for vertex in noFlyZone.polygon.exterior.coords:
+                coords.append(vertex[0])
+                coords.append(vertex[1])
             canvas.create_polygon(coords, fill="", outline="blue")
 
     def addDrawable(self, drawable):
@@ -71,18 +69,18 @@ class DrawLine(dict):
     """Used to hold information about a line to draw on a canvas.
     It holds the coordinates of the line and is also a dictionary passed to the create_line() method."""
 
-    def __init__(self, x1=None, y1=None, x2=None, y2=None, segment=None, **kwargs):
+    def __init__(self, x1=None, y1=None, x2=None, y2=None, lineString=None, **kwargs):
         dict.__init__(self, **kwargs)
-        if segment is None:
+        if lineString is None:
             self.x1 = x1
-            self.x2 = x2
             self.y1 = y1
+            self.x2 = x2
             self.y2 = y2
         else:
-            self.x1 = float(segment.p1.x)
-            self.x2 = float(segment.p2.x)
-            self.y1 = float(segment.p1.y)
-            self.y2 = float(segment.p2.y)
+            self.x1 = float(lineString.coords[0][0])
+            self.y1 = float(lineString.coords[0][1])
+            self.x2 = float(lineString.coords[1][0])
+            self.y2 = float(lineString.coords[1][1])
 
     def draw(self,
              canvas  # type: Canvas
