@@ -1,9 +1,9 @@
-from shapely.geometry import Polygon
+from render.drawables import DrawablePolygon
 
 
-class NoFlyZone:
+class NoFlyZone(DrawablePolygon):
     def __init__(self, points, velocity):
-        self.polygon = Polygon(points)
+        DrawablePolygon.__init__(self, points)
         self.velocity = velocity
 
     def blocksLineOfSight(self, line):
