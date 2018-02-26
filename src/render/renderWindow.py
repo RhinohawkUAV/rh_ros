@@ -1,4 +1,4 @@
-import sys
+import os
 from Tkinter import Canvas
 from Tkinter import Toplevel
 
@@ -13,7 +13,7 @@ class RenderWindow(Toplevel):
         self.title("Path Finding")
         self.canvas = Canvas(self, width=canvasWidth, height=canvasHeight)
         self.canvas.pack()
-        self.protocol("WM_DELETE_WINDOW", sys.exit)
+        self.protocol("WM_DELETE_WINDOW", self.test)
 
     def transform(self):
         canvas = self.canvas
@@ -24,3 +24,6 @@ class RenderWindow(Toplevel):
         canvas.scale("all", 0.0, 0.0, 2.0 / self.viewWidth, 2.0 / self.viewHeight)
         canvas.scale("all", 0.0, 0.0, width / 2.0, -height / 2.0)
         canvas.move("all", width / 2.0, height / 2.0)
+
+    def test(self):
+        os._exit(0)

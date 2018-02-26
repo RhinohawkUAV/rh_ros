@@ -22,7 +22,7 @@ class Geometry(DrawGroup):
 
     def findVisibleVertices(self, position):
         visiblePoints = []
-        self.addDrawable(DrawableCircle(position[0], position[1], 1.0, fill="red"))
+        self.addDrawable(DrawableCircle(position[0], position[1], 1.0, fill="green"))
 
         lines = []  # type: List[LineString]
         for noFlyZone in self.noFlyZones:
@@ -36,7 +36,7 @@ class Geometry(DrawGroup):
                 if visible is False:
                     break
 
-            drawLine = DrawableLine(lineString=line)
+            drawLine = DrawableLine(lineString=line, fill="red")
             if visible:
                 visiblePoints.append(line.coords[1])
             else:
@@ -48,7 +48,8 @@ class Geometry(DrawGroup):
     def draw(self, canvas):
         # type: (Canvas)->None
         """Must be called from GUI thread"""
-        DrawGroup.draw(self, canvas)
 
         for noFlyZone in self.noFlyZones:
             noFlyZone.draw(canvas)
+
+        DrawGroup.draw(self, canvas)

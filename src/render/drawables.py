@@ -58,4 +58,4 @@ class DrawablePolygon(dict, Drawable):
         for vertex in self.polygon.exterior.coords:
             coords.append(vertex[0])
             coords.append(vertex[1])
-        canvas.create_polygon(coords, fill="", outline="blue")
+        canvas.create_polygon(coords, **self)
