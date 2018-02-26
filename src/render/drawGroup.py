@@ -24,3 +24,6 @@ class DrawGroup(Drawable):
 
     def addDrawable(self, drawable):
         self.drawables.append(drawable)
+
+    def clearDrawables(self):
+        del self.drawables[:]

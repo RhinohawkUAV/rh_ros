@@ -12,7 +12,6 @@ class Geometry(DrawGroup):
     """
     Holds entire geometric state of the system, including, no-fly zones, their velocities, etc.
     Path finding related queries can be be performed on this object.
-
     """
 
     def __init__(self, noFlyZones):
