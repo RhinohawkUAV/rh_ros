@@ -33,11 +33,12 @@ class Geometry:
 
         visiblePoints = []
         for line in lines:
-            totalIntersections = 0
+            visible = True
             for noFlyZone in self.noFlyZones:
-                intersections = noFlyZone.polygon.intersection(line)
-                totalIntersections += len(intersections)
-            visible = totalIntersections <= 1
+                visible = not noFlyZone.blocksLineOfSight(line)
+                if visible is False:
+                    break
+
             drawLine = DrawLine(segment=line)
             if visible:
                 visiblePoints.append(line.p2)

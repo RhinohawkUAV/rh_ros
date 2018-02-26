@@ -13,3 +13,14 @@ class NoFlyZone:
             line = Segment2D(position, vertex)
             points.append(vertex)
         return points
+
+    def blocksLineOfSight(self, line):
+        intersections = self.polygon.intersection(line)
+        for intersection in intersections:
+            print intersection
+
+        # Grazed shape
+        if len(intersections) <= 1:
+            return False
+        else:
+            return True
