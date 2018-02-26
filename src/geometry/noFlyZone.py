@@ -3,7 +3,7 @@ from render.drawables import DrawablePolygon
 
 class NoFlyZone(DrawablePolygon):
     def __init__(self, points, velocity):
-        DrawablePolygon.__init__(self, points, fill="", outline="blue", width=3.0)
+        DrawablePolygon.__init__(self, points, fill="", outline="blue", width=5.0)
         self.velocity = velocity
 
     def blocksLineOfSight(self, line):
