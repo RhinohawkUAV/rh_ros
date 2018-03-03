@@ -1,5 +1,7 @@
 from Tkinter import Canvas
 
+import numpy as np
+
 from render.Drawable import Drawable
 
 
@@ -7,8 +9,9 @@ class DrawableLine(dict, Drawable):
     """Used to hold information about a line to draw on a canvas.
     It holds the coordinates of the line and is also a dictionary passed to the create_line() method."""
 
-    def __init__(self, x1=None, y1=None, x2=None, y2=None, lineString=None, **kwargs):
+    def __init__(self, x1=None, y1=None, x2=None, y2=None, lineString=None, text=None, **kwargs):
         dict.__init__(self, **kwargs)
+        self.text = text
         if lineString is None:
             self.x1 = x1
             self.y1 = y1
@@ -23,6 +26,11 @@ class DrawableLine(dict, Drawable):
     def draw(self, canvas):
         # type: (Canvas)->None
 
+        midPoint = np.array([(self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2])
+        textOffset = np.array([-self.y2 - self.y1, self.x2 - self.x1])
+        textOffset = 4 * textOffset / np.linalg.norm(textOffset, 2)
+        textPos = midPoint + textOffset
+        canvas.create_text(textPos[0], textPos[1], text=self.text, fill="black")
         canvas.create_line(self.x1, self.y1, self.x2, self.y2, **self)
 
 

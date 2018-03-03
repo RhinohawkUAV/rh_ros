@@ -6,7 +6,7 @@ from Tkinter import Canvas
 from shapely.geometry import LineString
 from typing import List
 
-from graph.graph import VertexBag
+from graph.graph import VertexBag, Vertex
 from noFlyZone import NoFlyZone
 from render.drawGroup import DrawGroup
 from render.drawables import DrawableCircle, DrawableLine
@@ -33,7 +33,7 @@ class Geometry(DrawGroup):
         return True
 
     def findVisibleVertices(self, eye, end):
-        """Find all vertices (including end) visible from eye"""
+        """Find all no fly zon vertices + end, which are visible from eye"""
         visibleVertices = []
         for noFlyZone in self.noFlyZones:
             for polygonVertex in noFlyZone.vertices:
@@ -42,40 +42,49 @@ class Geometry(DrawGroup):
         if self.isPositionVisible(eye, end):
             visibleVertices.append(end)
 
-        # Drawing
-        for vertex in visibleVertices:
-            drawLine = DrawableLine(eye[0], eye[1], vertex[0], vertex[1], fill="red")
-            self.addDrawable(drawLine)
-
         return visibleVertices
 
-    def findPath(self, start, end, renderer):
+    def findPath(self, startPoint, endPoint, renderer):
         self.graph = VertexBag()
-        self.graph.updateVertex(start, 0)
+        self.graph.putVertex(Vertex(startPoint, 0))
 
         while self.graph.hasUnvisted():
-            vertex = self.graph.getLowestCostUnvisted()
+            vertex = self.graph.getNextVertex()
 
-            if vertex.position is end:
+            if vertex.position is endPoint:
+                self.graph.setShortestPathStart(endPoint)
                 break
 
-            visiblePoints = self.findVisibleVertices(vertex.position, end)
+            visiblePoints = self.findVisibleVertices(vertex.position, endPoint)
 
             for visiblePoint in visiblePoints:
                 if not self.graph.beenVisited(visiblePoint):
                     x = vertex.position[0] - visiblePoint[0]
                     y = vertex.position[1] - visiblePoint[1]
                     distance = math.sqrt(x * x + y * y)
-                    totalDistance = distance + vertex.shortestDistance
-                    self.graph.updateVertex(visiblePoint, totalDistance)
-                    self.graph.putEdge(vertex.position, visiblePoint, distance)
 
+                    self.graph.updateVertex(visiblePoint, vertex, distance)
+
+            # Drawing
+            for visiblePoint in visiblePoints:
+                drawLine = DrawableLine(vertex.position[0], vertex.position[1], visiblePoint[0], visiblePoint[1],
+                                        fill="blue")
+                self.addDrawable(drawLine)
+
+            self.graph.setShortestPathStart(vertex.position)
             self.addDrawable(DrawableCircle(vertex.position[0], vertex.position[1], 1.0, fill="green"))
-            self.addDrawable(DrawableCircle(end[0], end[1], 1.0, fill="green"))
+            self.addDrawable(DrawableCircle(endPoint[0], endPoint[1], 1.0, fill="green"))
             renderCopy = copy.deepcopy(self)
             renderer.render(renderCopy)
             self.clearDrawables()
             time.sleep(1)
+
+        self.clearDrawables()
+        self.addDrawable(DrawableCircle(startPoint[0], startPoint[1], 1.0, fill="green"))
+        self.addDrawable(DrawableCircle(endPoint[0], endPoint[1], 1.0, fill="green"))
+        renderCopy = copy.deepcopy(self)
+        renderer.render(renderCopy)
+        time.sleep(1)
 
     def draw(self, canvas):
         # type: (Canvas)->None
@@ -84,6 +93,5 @@ class Geometry(DrawGroup):
         for noFlyZone in self.noFlyZones:
             noFlyZone.draw(canvas)
 
-        self.graph.draw(canvas)
-
         DrawGroup.draw(self, canvas)
+        self.graph.draw(canvas)

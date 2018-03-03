@@ -10,5 +10,5 @@ noFly3 = NoFlyZone([(10, 20), (30, 20), (30, 30), (10, 30)], (0, 0))
 
 geo = Geometry([noFly1, noFly2, noFly3])
 start = (80, 80)
-end = (30, 45)
+end = (10, 15)
 geo.findPath(start, end, renderer)

@@ -17,4 +17,4 @@ class NoFlyZone(Drawable):
 
     def draw(self, canvas):
         # type: (Canvas) -> None
-        DrawablePolygon(self.vertices, fill="", outline="blue", width=5.0).draw(canvas)
+        DrawablePolygon(self.vertices, fill="red").draw(canvas)
