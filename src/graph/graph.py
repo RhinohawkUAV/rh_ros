@@ -1,72 +1,87 @@
+import vertex
 from render.Drawable import Drawable
-from render.drawables import DrawableLine, DrawableCircle
+from render.drawables import DrawableLine
+from vertex import Vertex
 
 
-class VertexBag(Drawable):
-    def __init__(self):
-        self.unvisitedVertices = {}
-        self.visitedVertices = {}
-        self.edges = {}
-        self.shortestPathStart = None
+class SearchGraph(Drawable):
+    """
+    A graph used to find the shortest path.  Each vertex holds some piece of metadata and can be looked up using the information.
+    """
 
-    def putVertex(self, vertex):
-        self.unvisitedVertices[vertex.position] = vertex
+    def __init__(self, startData):
+        self._unvisitedVertices = {}
+        self._visitedVertices = {}
+        self._emphasizedPathEnd = None
+        self._addUnvisited(startData, 0)
 
-    def getVertex(self, position):
-        return self.unvisitedVertices[position]
+    def getUnvisitedVertex(self, data):
+        return self._unvisitedVertices[data]
 
-    def updateVertex(self, position, sourceVertex, distance):
+    def getVisitedVertex(self, data):
+        return self._visitedVertices[data]
 
-        totalDistance = distance + sourceVertex.shortestDistance
-        if self.unvisitedVertices.has_key(position):
-            existingVertex = self.getVertex(position)
+    def beenVisited(self, data):
+        return self._visitedVertices.has_key(data)
 
-            if existingVertex.shortestDistance > totalDistance:
-                existingVertex.shortestDistance = totalDistance
-                existingVertex.previousShortest = sourceVertex
+    def updateCost(self, sourceVertex, data, cost):
+        """
+        A route has been found from sourceVertex, to the vertex identified by data (if it exists), with the given cost.
+
+        If no vertex corresponds to data, then we just discovered one.  Create and add it.
+
+        If a vertex already exists at data, then update its cost, if appropriate.
+
+        :param data:
+        :param sourceVertex:
+        :param cost:
+        :return:
+        """
+        totalCost = cost + sourceVertex.totalCost
+        if self._unvisitedVertices.has_key(data):
+            existingVertex = self.getUnvisitedVertex(data)
+
+            if existingVertex.totalCost > totalCost:
+                existingVertex.totalCost = totalCost
+                existingVertex.previous = sourceVertex
 
         else:
-            existingVertex = Vertex(position, totalDistance)
-            existingVertex.previousShortest = sourceVertex
-            self.putVertex(existingVertex)
+            self._addUnvisited(data, totalCost, sourceVertex)
 
-    def beenVisited(self, position):
-        return self.visitedVertices.has_key(position)
-
-    def hasUnvisted(self):
-        return len(self.unvisitedVertices) > 0
-
-    def minLowestCostVertex(self, vertices):
-        minVertex = vertices[0]
-        i = 1
-
-        while i < len(vertices):
-            if vertices[i].shortestDistance < minVertex.shortestDistance:
-                minVertex = vertices[i]
-            i += 1
-
-        return minVertex
+    def _addUnvisited(self, data, totalCost, previousVertex=None):
+        """
+        Creates a new vertex with the given metadata, totalCost, and possible previousVertex.
+        :param data:
+        :param totalCost:
+        :param previousVertex:
+        :return:
+        """
+        self._unvisitedVertices[data] = Vertex(data, totalCost, previousVertex)
 
     def getNextVertex(self):
-        minVertex = self.minLowestCostVertex(self.unvisitedVertices.values())
-        self.visitedVertices[minVertex.position] = minVertex
-        del self.unvisitedVertices[minVertex.position]
-        return minVertex
+        if len(self._unvisitedVertices.values()) == 0:
+            return None
 
-    def putEdge(self, p1, p2, distance):
-        self.edges[(p1, p2)] = Edge(p1, p2, distance)
+        minVertex = vertex.minCostVertex(self._unvisitedVertices.values())
+        self._visitedVertices[minVertex.data] = minVertex
+        del self._unvisitedVertices[minVertex.data]
+        return minVertex
 
     def traverseLeastPath(self, end, func):
         vertex = end
         while not vertex is None:
             func(vertex)
-            vertex = vertex.previousShortest
+            vertex = vertex.previous
+
+    def setEmphasizedPathEnd(self, endPoint):
+        """Sets the end point of the shortest path to emphasize"""
+        self._emphasizedPathEnd = self.getVisitedVertex(endPoint)
 
     def drawLeastPath(self, end, canvas):
         def drawLine(vertex):
-            if not vertex.previousShortest is None:
-                line = DrawableLine(vertex.position[0], vertex.position[1],
-                                    vertex.previousShortest.position[0], vertex.previousShortest.position[1],
+            if not vertex.previous is None:
+                line = DrawableLine(vertex.data[0], vertex.data[1],
+                                    vertex.previous.data[0], vertex.previous.data[1],
                                     width=4,
                                     fill="orange")
                 line.draw(canvas)
@@ -74,36 +89,14 @@ class VertexBag(Drawable):
         self.traverseLeastPath(end, drawLine)
 
     def draw(self, canvas):
-        for vertex in self.unvisitedVertices.values():
-            point = DrawableCircle(vertex.position[0], vertex.position[1], 0.5, fill="purple")
-            point.draw(canvas)
-            canvas.create_text(vertex.position[0] + 3, vertex.position[1],
-                               text="{:4.2f}".format(vertex.shortestDistance),
-                               fill="black")
-        for vertex in self.visitedVertices.values():
-            if not vertex.previousShortest is None:
-                line = DrawableLine(vertex.position[0], vertex.position[1],
-                                    vertex.previousShortest.position[0], vertex.previousShortest.position[1],
-                                    width=2,
-                                    fill="green")
-                line.draw(canvas)
+        for vertex in self._unvisitedVertices.values():
+            vertex.drawAsVisited = False
+            vertex.draw(canvas)
+        for vertex in self._visitedVertices.values():
+            vertex.drawAsVisited = True
+            vertex.draw(canvas)
 
-        self.drawLeastPath(self.shortestPathStart, canvas)
-
-    def setShortestPathStart(self, endPoint):
-        self.shortestPathStart = self.visitedVertices[endPoint]
-
-
-class Vertex:
-    def __init__(self, position, shortestDistance):
-        # 2D position of this vertex in
-        self.position = position
-
-        # The shortest path to this vertex from the start vertex
-        self.shortestDistance = shortestDistance
-
-        # The previous vertex which is part of the shortest path from start to this vertex
-        self.previousShortest = None
+        self.drawLeastPath(self._emphasizedPathEnd, canvas)
 
 
 class Edge:

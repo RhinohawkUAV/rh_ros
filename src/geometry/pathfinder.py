@@ -5,7 +5,7 @@ from Tkinter import Canvas
 
 from shapely.geometry import LineString
 
-from graph.graph import VertexBag, Vertex
+from graph.graph import SearchGraph
 from render.Drawable import Drawable
 from render.drawables import DrawableLine, DrawableCircle
 
@@ -17,15 +17,15 @@ class PathFinderVisualizer():
     """
 
     def __init__(self, geometry, renderer):
-        self.geometry = geometry
-        self.geometry.drawListener = self
-        self.renderer = renderer
+        self._geometry = geometry
+        self._geometry.drawListener = self
+        self._renderer = renderer
 
     def drawGeometry(self, geometry):
         # Drawing
-        if not self.renderer is None:
+        if not self._renderer is None:
             renderCopy = copy.deepcopy(geometry)
-            self.renderer.render(renderCopy)
+            self._renderer.render(renderCopy)
 
 
 class PathFinder(Drawable):
@@ -37,114 +37,105 @@ class PathFinder(Drawable):
     def __init__(self, startPoint, goalPoint, noFlyZones, drawListener=None):
 
         # Start position to search from
-        self.startPoint = startPoint
+        self._startPoint = startPoint
 
         # End/goal position to find
-        self.goalPoint = goalPoint
+        self._goalPoint = goalPoint
 
         # The NFZs to avoid
-        self.noFlyZones = noFlyZones
+        self._noFlyZones = noFlyZones
+
+        # A graph object for perform the graph algorithm
+        self._graph = SearchGraph(self._startPoint)
+
+        # Current vertex in the search algorithm
+        self._currentVertex = None
+
+        # Visible points from current position being examined
+        self._visiblePoints = []
 
         # This object is signalled, with a copy of geometry, whenever it is time to draw
         self.drawListener = drawListener
 
-        # Visible points from current position being examined
-        self.visiblePoints = []
+    def findPath(self, renderer):
+        """
+        Does the pathfinding algorithm
+        :param renderer:
+        :return:
+        """
 
-        # Current vertex in the search algorithm
-        self.currentVertex = None
+        visibleCalcTime = 0
+        totalCalcTime = 0
 
-    def isPointVisible(self, eye, point):
+        self._currentVertex = self._graph.getNextVertex()
+        while not self._currentVertex is None and not self._currentVertex.data is self._goalPoint:
+            totalCalcTime -= time.time()
+
+            visibleCalcTime -= time.time()
+            self._visiblePoints = self._findVisibleVertices(self._currentVertex.data)
+            visibleCalcTime += time.time()
+
+            for visiblePoint in self._visiblePoints:
+                if not self._graph.beenVisited(visiblePoint):
+                    x = self._currentVertex.data[0] - visiblePoint[0]
+                    y = self._currentVertex.data[1] - visiblePoint[1]
+                    distance = math.sqrt(x * x + y * y)
+
+                    self._graph.updateCost(self._currentVertex, visiblePoint, distance)
+
+            self._graph.setEmphasizedPathEnd(self._currentVertex.data)
+            totalCalcTime += time.time()
+
+            self._signalDraw()
+
+            totalCalcTime -= time.time()
+            self._currentVertex = self._graph.getNextVertex()
+            totalCalcTime += time.time()
+
+        # Visible points will be drawn wrong if not recomputed AND they are irrelevant (we are at the goal)
+        self._visiblePoints = []
+        self._graph.setEmphasizedPathEnd(self._goalPoint)
+        self._signalDraw()
+
+        # Note: 99.9% time is currently taken up in computing visibility.  This can be vastly improved if necessary.
+        print "Total Calculation Time: " + str(totalCalcTime)
+        print "Total Time Calculating Visibility: " + str(visibleCalcTime)
+        print "Visibility/Total: " + str(visibleCalcTime / totalCalcTime)
+
+    def _isPointVisible(self, eye, point):
         """
         Is the given point visible from the given eye?
         In other words is there a straight path from eye to point which does not intersect any no-fly-zones?
         """
         line = LineString([eye, point])
-        for noFlyZone in self.noFlyZones:
+        for noFlyZone in self._noFlyZones:
             if noFlyZone.blocksLineOfSight(line):
                 return False
         return True
 
-    def findVisibleVertices(self, eye):
+    def _findVisibleVertices(self, eye):
         """
         Look through all NFZ vertices and the goal and determine which are visible from eye.
         """
         visibleVertices = []
-        for noFlyZone in self.noFlyZones:
+        for noFlyZone in self._noFlyZones:
             for polygonVertex in noFlyZone.vertices:
-                if self.isPointVisible(eye, polygonVertex):
+                if self._isPointVisible(eye, polygonVertex):
                     visibleVertices.append(polygonVertex)
-        if self.isPointVisible(eye, self.goalPoint):
-            visibleVertices.append(self.goalPoint)
+        if self._isPointVisible(eye, self._goalPoint):
+            visibleVertices.append(self._goalPoint)
 
         return visibleVertices
 
-    def findPath(self, renderer):
-        self.graph = VertexBag()
-        self.graph.putVertex(Vertex(self.startPoint, 0))
-
-        visibleCalcTime = 0
-        totalCalcTime = 0
-        while self.graph.hasUnvisted():
-            totalCalcTime -= time.time()
-            self.currentVertex = self.graph.getNextVertex()
-
-            if self.currentVertex.position is self.goalPoint:
-                self.graph.setShortestPathStart(self.goalPoint)
-                totalCalcTime += time.time()
-                break
-            else:
-                self.graph.setShortestPathStart(self.currentVertex.position)
-
-            visibleCalcTime -= time.time()
-            self.visiblePoints = self.findVisibleVertices(self.currentVertex.position)
-            visibleCalcTime += time.time()
-
-            for visiblePoint in self.visiblePoints:
-                if not self.graph.beenVisited(visiblePoint):
-                    x = self.currentVertex.position[0] - visiblePoint[0]
-                    y = self.currentVertex.position[1] - visiblePoint[1]
-                    distance = math.sqrt(x * x + y * y)
-
-                    self.graph.updateVertex(visiblePoint, self.currentVertex, distance)
-
-            totalCalcTime += time.time()
-
-            if not self.drawListener is None:
-                drawCopy = self.createDrawCopy()
-                self.drawListener.drawGeometry(drawCopy)
-                #Throttle drawing rate.  Haven't researched how to set a dirty bit on the canvas and force a redraw.
-                # Currently just submit an endless queue of drawings, which can pile up.
-                time.sleep(0.1)
-
+    def _signalDraw(self):
         if not self.drawListener is None:
-            drawCopy = self.createDrawCopy()
+            drawCopy = self._createDrawCopy()
             self.drawListener.drawGeometry(drawCopy)
+            # Throttle drawing rate.  Haven't researched how to set a dirty bit on the canvas and force a redraw.
+            # Currently just submit an endless queue of drawings, which can pile up.
+            time.sleep(0.1)
 
-        print "Total Calculation Time: " + str(totalCalcTime)
-        print "Total Time Calculating Visibility: " + str(visibleCalcTime)
-        print "Visibility/Total: " + str(visibleCalcTime / totalCalcTime)
-
-    def draw(self, canvas):
-        # type: (Canvas)->None
-        """Must be called from GUI thread"""
-
-        for noFlyZone in self.noFlyZones:
-            noFlyZone.draw(canvas)
-
-        for visiblePoint in self.visiblePoints:
-            drawLine = DrawableLine(self.currentVertex.position[0], self.currentVertex.position[1], visiblePoint[0],
-                                    visiblePoint[1],
-                                    fill="blue")
-            drawLine.draw(canvas)
-
-        DrawableCircle(self.currentVertex.position[0], self.currentVertex.position[1], 1.0, fill="green").draw(canvas)
-        DrawableCircle(self.startPoint[0], self.startPoint[1], 1.0, fill="green").draw(canvas)
-        DrawableCircle(self.goalPoint[0], self.goalPoint[1], 1.0, fill="green").draw(canvas)
-
-        self.graph.draw(canvas)
-
-    def createDrawCopy(self):
+    def _createDrawCopy(self):
         """
         Creates a copy of the geometry object for drawing.
         Its not possible to deepcopy tkinter objects referenced under the self.drawListener field.
@@ -155,3 +146,22 @@ class PathFinder(Drawable):
         copyObject = copy.deepcopy(self)
         self.drawListener = drawListener
         return copyObject
+
+    def draw(self, canvas):
+        # type: (Canvas)->None
+        """Must be called from GUI thread"""
+
+        for noFlyZone in self._noFlyZones:
+            noFlyZone.draw(canvas)
+
+        for visiblePoint in self._visiblePoints:
+            drawLine = DrawableLine(self._currentVertex.data[0], self._currentVertex.data[1], visiblePoint[0],
+                                    visiblePoint[1],
+                                    fill="blue")
+            drawLine.draw(canvas)
+
+        DrawableCircle(self._currentVertex.data[0], self._currentVertex.data[1], 1.0, fill="green").draw(canvas)
+        DrawableCircle(self._startPoint[0], self._startPoint[1], 1.0, fill="green").draw(canvas)
+        DrawableCircle(self._goalPoint[0], self._goalPoint[1], 1.0, fill="green").draw(canvas)
+
+        self._graph.draw(canvas)
