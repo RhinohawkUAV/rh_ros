@@ -9,7 +9,7 @@ from typing import List
 from graph.graph import VertexBag, Vertex
 from noFlyZone import NoFlyZone
 from render.drawGroup import DrawGroup
-from render.drawables import DrawableCircle, DrawableLine
+from render.drawables import DrawableLine, DrawableCircle
 
 
 class Geometry(DrawGroup):
@@ -77,14 +77,13 @@ class Geometry(DrawGroup):
             renderCopy = copy.deepcopy(self)
             renderer.render(renderCopy)
             self.clearDrawables()
-            time.sleep(1)
+            time.sleep(0.1)
 
         self.clearDrawables()
         self.addDrawable(DrawableCircle(startPoint[0], startPoint[1], 1.0, fill="green"))
         self.addDrawable(DrawableCircle(endPoint[0], endPoint[1], 1.0, fill="green"))
         renderCopy = copy.deepcopy(self)
         renderer.render(renderCopy)
-        time.sleep(1)
 
     def draw(self, canvas):
         # type: (Canvas)->None

@@ -68,7 +68,7 @@ class VertexBag(Drawable):
                 line = DrawableLine(vertex.position[0], vertex.position[1],
                                     vertex.previousShortest.position[0], vertex.previousShortest.position[1],
                                     width=4,
-                                    fill="green")
+                                    fill="orange")
                 line.draw(canvas)
 
         self.traverseLeastPath(end, drawLine)
