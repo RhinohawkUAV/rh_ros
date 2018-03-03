@@ -1,4 +1,5 @@
 from geometry import generator
+from geometry.pathfinder import PathFinderVisualizer
 from render.renderer import Renderer
 
 renderer = Renderer()
@@ -9,7 +10,8 @@ renderer = Renderer()
 #
 # geo = Geometry([noFly1, noFly2, noFly3])
 
-geo = generator.generateGeo(25, 10, 10, 80, 80, 0.01, 0.1)
 start = (95, 95)
 end = (5, 5)
-geo.findPath(start, end, renderer)
+geo = generator.generateGeo(start, end, 25, 10, 10, 80, 80, 0.01, 0.1)
+geoVis = PathFinderVisualizer(geo, renderer)
+geo.findPath(renderer)

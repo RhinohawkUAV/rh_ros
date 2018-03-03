@@ -1,10 +1,10 @@
 import random
 
-from geometry import Geometry
+from pathfinder import PathFinder
 from noFlyZone import NoFlyZone
 
 
-def generateGeo(numNoFlyZones, x, y, width, height, minFraction, maxFraction):
+def generateGeo(start, end, numNoFlyZones, x, y, width, height, minFraction, maxFraction):
     """Generates a random Geometry object with certain properties for testing"""
 
     xDelta = width - maxFraction * width
@@ -29,4 +29,4 @@ def generateGeo(numNoFlyZones, x, y, width, height, minFraction, maxFraction):
         zone = NoFlyZone([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], (0, 0))
         noFlyZones.append(zone)
 
-    return Geometry(noFlyZones)
+    return PathFinder(start, end, noFlyZones)
