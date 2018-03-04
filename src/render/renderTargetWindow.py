@@ -25,8 +25,8 @@ class RenderTargetWindow(Toplevel):
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
 
-        x = self.viewCenterX + self.viewWidth * (canvasPoint[0] - width / 2) / width
-        y = self.viewCenterY - self.viewHeight * (canvasPoint[1] - height / 2) / height
+        x = self.viewCenterX + self.viewWidth * (canvasPoint[0] - width / 2.0) / width
+        y = self.viewCenterY - self.viewHeight * (canvasPoint[1] - height / 2.0) / height
         return (x, y)
 
     def transform(self):
