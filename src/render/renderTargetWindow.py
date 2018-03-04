@@ -21,6 +21,14 @@ class RenderTargetWindow(Toplevel):
         drawable.draw(self.canvas)
         self.transform()
 
+    def transformCanvasToPoint(self, canvasPoint):
+        width = self.canvas.winfo_width()
+        height = self.canvas.winfo_height()
+
+        x = self.viewCenterX + self.viewWidth * (canvasPoint[0] - width / 2) / width
+        y = self.viewCenterY - self.viewHeight * (canvasPoint[1] - height / 2) / height
+        return (x, y)
+
     def transform(self):
         canvas = self.canvas
         width = canvas.winfo_width()

@@ -4,7 +4,7 @@ from render.renderTargetWindow import RenderTargetWindow
 from render.renderer import Renderer
 
 
-def ass():
+def createWindow():
     renderer.setRenderTarget(RenderTargetWindow(800, 800, 50, 50, 100, 100))
 
 
@@ -15,7 +15,7 @@ def ass():
 # geo = Geometry([noFly1, noFly2, noFly3])
 
 renderer = Renderer()
-renderer.inGUIThread(ass)
+renderer.inGUIThread(createWindow)
 
 start = (95, 95)
 end = (5, 5)
