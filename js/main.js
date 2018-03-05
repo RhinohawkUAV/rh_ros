@@ -4,6 +4,7 @@ var clockInit = false;
 var centerMap = true;
 
 var uavPath=[];
+var home;
 
 // Gauge Settigns -----------------------------------------------------------------------
 var opts = {
@@ -82,17 +83,36 @@ function connectToTopics() {
         messageType : 'sensor_msgs/TimeReference'
     });
 
+    var targetLocationTopic = new ROSLIB.Topic({
+        ros : ros,
+        name : '/gopro/target_position_local',
+        messageType : 'geometry_msgs/PointStamped'
+    });
+
+    var batteryTopic = new ROSLIB.Topic({
+        ros : ros,
+        name : '/mavros/battery',
+        messageType : 'sensor_msgs/BatteryState'
+    });
+
     navSatTopic.subscribe(function(message) {
 
-        // 
-        uavPath.pushMaxLimit([message.latitude, message.longitude], 5 );
+        coords = [message.latitude, message.longitude];
+
+		if (message != null && home == null) {
+		    home = coords;
+            console.log("Got home coordinates: "+ home[0] + "," + home[1]);
+            L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
+        }
+
+        uavPath.pushMaxLimit(coords, 5 );
 
         // If uavPath was populated before, update it.
         // Else, 
         if(uavPath.length > 1){
           updateMapPath();
         }else{
-          map.setView([ message.latitude,message.longitude], 18);
+          map.setView(coords, 18);
         }
 
         document.getElementById("tel-lat").innerHTML= message.latitude;
@@ -129,7 +149,22 @@ function connectToTopics() {
     airSpeedGauge.set(message.airspeed);*/
   });
 
-  
+  targetLocationTopic.subscribe(function(message) {
+    if (message.point != null) {
+        dx = message.point.x;
+        dy = message.point.y;
+        //console.log("Got local target position: "+dx+","+dy)
+        // Formula from https://stackoverflow.com/questions/2839533/adding-distance-to-a-gps-coordinate
+        lat = home[0] + (180/Math.PI) * (dy/6378137);
+        lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
+        //console.log("    Global target position: "+lat+","+lon)
+        L.circle([lat, lon], {radius: 1, weight: 1, opacity: 0.3, color: '#ff0000'}).addTo(map);
+    }
+  });
+
+  batteryTopic.subscribe(function(message) {
+    //console.log( message );
+  });
 /* *************************************************      SET UP CLOCK
 */
 clockTopic.subscribe(function(message){
