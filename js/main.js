@@ -5,6 +5,7 @@ var centerMap = true;
 
 var uavPath=[];
 var home;
+var compass;
 
 // Gauge Settigns -----------------------------------------------------------------------
 var opts = {
@@ -103,6 +104,22 @@ function connectToTopics() {
 		    home = coords;
             console.log("Got home coordinates: "+ home[0] + "," + home[1]);
             L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
+
+            function mark(coords, label) {
+            	var marker = new L.marker(coords, { opacity: 0.75 });
+				if (label != null) {
+				    //marker.bindTooltip(label, {permanent: true, className: "label", offset: [0, 0] });
+                }    
+				marker.addTo(map);
+			}
+
+            // for bags 6,7,8 we know the marker locations
+            mark([38.9778045974, -77.3378556003], "1");
+            mark([38.9778552409, -77.3377138812], "2");
+            mark([38.9777295212, -77.3376484097], "3");
+            mark([38.9776844881, -77.3378142882], "4");
+            mark([38.977631131,  -77.3376425288], "5");
+
         }
 
         uavPath.pushMaxLimit(coords, 5 );
@@ -120,6 +137,7 @@ function connectToTopics() {
     });
 
   compassTopic.subscribe(function(message) {
+    compass = message.data;
     document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.data+'deg'+');');
     document.getElementById("compass-direction").innerHTML = getDirection(message.data);
   });
