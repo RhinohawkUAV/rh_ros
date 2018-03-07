@@ -1,10 +1,10 @@
 import random
 
-from pathfinder import PathFinder
 from noFlyZone import NoFlyZone
+from pathFinder import PathFinder
 
 
-def generateGeo(start, end, numNoFlyZones, x, y, width, height, minFraction, maxFraction):
+def generatePathfindProblem(start, end, numNoFlyZones, x, y, width, height, minFraction, maxFraction):
     """Generates a random Geometry object with certain properties for testing"""
 
     xDelta = width - maxFraction * width

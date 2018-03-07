@@ -1,5 +1,5 @@
-from render.Drawable import Drawable
-from render.drawables import DrawableLine, DrawableCircle
+from gui import Drawable
+from gui import DrawableLine, DrawableCircle
 
 
 def minCostVertex(vertices):
@@ -28,17 +28,14 @@ class Vertex(Drawable):
         # Tracked for drawing purposes only (not required for algorithm)
         self.drawAsVisited = False
 
-    def draw(self, canvas):
+    def draw(self, canvas, **kwargs):
         if self.drawAsVisited:
             if not self.previous is None:
                 line = DrawableLine(self.data[0], self.data[1],
-                                    self.previous.data[0], self.previous.data[1],
-                                    width=2,
-                                    fill="green")
-                line.draw(canvas)
+                                    self.previous.data[0], self.previous.data[1])
+                line.draw(canvas, width=2, fill="green")
         else:
-            point = DrawableCircle(self.data[0], self.data[1], 0.5, fill="purple")
-            point.draw(canvas)
+            DrawableCircle(self.data[0], self.data[1], 0.5).draw(canvas, fill="purple")
             canvas.create_text(self.data[0] + 3, self.data[1],
                                text="{:4.2f}".format(self.totalCost),
                                fill="black")

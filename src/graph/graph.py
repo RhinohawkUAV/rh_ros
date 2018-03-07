@@ -1,6 +1,6 @@
 import vertex
-from render.Drawable import Drawable
-from render.drawables import DrawableLine
+from gui import Drawable
+from gui import DrawableLine
 from vertex import Vertex
 
 
@@ -81,14 +81,12 @@ class SearchGraph(Drawable):
         def drawLine(vertex):
             if not vertex.previous is None:
                 line = DrawableLine(vertex.data[0], vertex.data[1],
-                                    vertex.previous.data[0], vertex.previous.data[1],
-                                    width=4,
-                                    fill="orange")
-                line.draw(canvas)
+                                    vertex.previous.data[0], vertex.previous.data[1])
+                line.draw(canvas, width=4, fill="orange")
 
         self.traverseLeastPath(end, drawLine)
 
-    def draw(self, canvas):
+    def draw(self, canvas, **kwargs):
         for vertex in self._unvisitedVertices.values():
             vertex.drawAsVisited = False
             vertex.draw(canvas)

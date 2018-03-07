@@ -4,16 +4,14 @@ from Tkinter import Canvas
 from shapely.geometry import Polygon
 
 import utils.geometry
-from render.Drawable import Drawable
-from render.drawables import DrawablePolygon, DrawableLine
+from gui import Drawable
+from gui.drawables import DrawablePolygon, DrawableLine
 
 
 class NoFlyZone(Drawable):
     def __init__(self, points, velocity):
         self.points = points
         self.velocity = velocity
-        self.time = 0.0
-        self.fill = "red"
 
     def blocksLineOfSight(self, line):
         polygon = Polygon(self.points)
@@ -46,14 +44,14 @@ class NoFlyZone(Drawable):
             pointsAtTime.append((vertex[0] + self.velocity[0] * time, vertex[1] + self.velocity[1] * time))
         return pointsAtTime
 
-    def draw(self, canvas):
+    def draw(self, canvas, fill="red", time=0, **kwargs):
         # type: (Canvas) -> None
-        pointsAtTime = self.getPointsAtTime(self.time)
-        DrawablePolygon(pointsAtTime, fill=self.fill).draw(canvas)
+        pointsAtTime = self.getPointsAtTime(time)
+        DrawablePolygon(pointsAtTime).draw(canvas, fill=fill, **kwargs)
         if self.velocity[0] != 0 or self.velocity[1] != 0:
             x1 = self.points[0][0]
             y1 = self.points[0][1]
             x2 = self.points[0][0] + self.velocity[0]
             y2 = self.points[0][1] + self.velocity[1]
 
-            DrawableLine(x1, y1, x2, y2, fill="black", arrow=tk.LAST).draw(canvas)
+            DrawableLine(x1, y1, x2, y2).draw(canvas, fill="black", arrow=tk.LAST)

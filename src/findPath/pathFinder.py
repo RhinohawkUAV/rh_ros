@@ -6,26 +6,8 @@ from Tkinter import Canvas
 from shapely.geometry import LineString
 
 from graph.graph import SearchGraph
-from render.Drawable import Drawable
-from render.drawables import DrawableLine, DrawableCircle
-
-
-class PathFinderVisualizer():
-    """
-    Visualizes a Geometry object during the path finding process.  Installs itself as a listener and gets a drawable
-    copy of the geometry object on a regular basis.
-    """
-
-    def __init__(self, geometry, renderer):
-        self._geometry = geometry
-        self._geometry.drawListener = self
-        self._renderer = renderer
-
-    def drawGeometry(self, geometry):
-        # Drawing
-        if not self._renderer is None:
-            renderCopy = copy.deepcopy(geometry)
-            self._renderer.render(renderCopy)
+from gui import Drawable
+from gui import DrawableLine, DrawableCircle
 
 
 class PathFinder(Drawable):
@@ -54,13 +36,12 @@ class PathFinder(Drawable):
         # Visible points from current position being examined
         self._visiblePoints = []
 
-        # This object is signalled, with a copy of geometry, whenever it is time to draw
+        # This object is signalled, with a copy of findPath, whenever it is time to draw
         self.drawListener = drawListener
 
-    def findPath(self, renderer):
+    def findPath(self):
         """
         Does the pathfinding algorithm
-        :param renderer:
         :return:
         """
 
@@ -119,7 +100,7 @@ class PathFinder(Drawable):
         """
         visibleVertices = []
         for noFlyZone in self._noFlyZones:
-            for polygonVertex in noFlyZone.vertices:
+            for polygonVertex in noFlyZone.points:
                 if self._isPointVisible(eye, polygonVertex):
                     visibleVertices.append(polygonVertex)
         if self._isPointVisible(eye, self._goalPoint):
@@ -130,14 +111,14 @@ class PathFinder(Drawable):
     def _signalDraw(self):
         if not self.drawListener is None:
             drawCopy = self._createDrawCopy()
-            self.drawListener.drawGeometry(drawCopy)
+            self.drawListener.onDraw(drawCopy)
             # Throttle drawing rate.  Haven't researched how to set a dirty bit on the canvas and force a redraw.
             # Currently just submit an endless queue of drawings, which can pile up.
             time.sleep(0.1)
 
     def _createDrawCopy(self):
         """
-        Creates a copy of the geometry object for drawing.
+        Creates a copy of the findPath object for drawing.
         Its not possible to deepcopy tkinter objects referenced under the self.drawListener field.
         This creates a copy, for drawing, which does not include that field.
         """
@@ -147,21 +128,19 @@ class PathFinder(Drawable):
         self.drawListener = drawListener
         return copyObject
 
-    def draw(self, canvas):
+    def draw(self, canvas, **kwargs):
         # type: (Canvas)->None
         """Must be called from GUI thread"""
 
         for noFlyZone in self._noFlyZones:
-            noFlyZone.draw(canvas)
+            noFlyZone.draw(canvas, **kwargs)
 
         for visiblePoint in self._visiblePoints:
-            drawLine = DrawableLine(self._currentVertex.data[0], self._currentVertex.data[1], visiblePoint[0],
-                                    visiblePoint[1],
-                                    fill="blue")
-            drawLine.draw(canvas)
+            DrawableLine(self._currentVertex.data[0], self._currentVertex.data[1], visiblePoint[0],
+                         visiblePoint[1]).draw(canvas, fill="blue")
 
-        DrawableCircle(self._currentVertex.data[0], self._currentVertex.data[1], 1.0, fill="green").draw(canvas)
-        DrawableCircle(self._startPoint[0], self._startPoint[1], 1.0, fill="green").draw(canvas)
-        DrawableCircle(self._goalPoint[0], self._goalPoint[1], 1.0, fill="green").draw(canvas)
+        DrawableCircle(self._currentVertex.data[0], self._currentVertex.data[1], 1.0).draw(canvas, fill="green")
+        DrawableCircle(self._startPoint[0], self._startPoint[1], 1.0).draw(canvas, fill="green")
+        DrawableCircle(self._goalPoint[0], self._goalPoint[1], 1.0).draw(canvas, fill="green")
 
-        self._graph.draw(canvas)
+        self._graph.draw(canvas, **kwargs)
