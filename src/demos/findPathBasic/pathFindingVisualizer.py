@@ -13,8 +13,13 @@ class PathFindingVisualizer(Visualizer):
         Visualizer.__init__(self, *args, **kwargs)
         self._pathFinder = pathFinder
         self._pathFinder.drawListener = self
+        self._startedAlgorithm = False
 
-    # TODO: Move to an onVisible or equivalent method
-    def leftClick(self, event):
+    def startPathFinding(self):
         thread = Thread(None, lambda: self._pathFinder.findPath(), "Path Finding Thread")
         thread.start()
+
+    def onResize(self, event):
+        if not self._startedAlgorithm:
+            self._startedAlgorithm = True
+            self.startPathFinding()

@@ -24,9 +24,10 @@ class Visualizer(Toplevel, core.DrawListener):
         self.title("Path Finding")
         self.canvas = Canvas(self, width=canvasWidth, height=canvasHeight)
         self.canvas.pack()
-        self.protocol("WM_DELETE_WINDOW", self.close)
-        self.bind('<Motion>', self.motion)
-        self.bind('<Button-1>', self.leftClick)
+        self.protocol("WM_DELETE_WINDOW", self.onClose)
+        self.bind('<Motion>', self.onMouseMotion)
+        self.bind('<Button-1>', self.onLeftClick)
+        self.bind("<Configure>", self.onResize)
 
     def drawInBackground(self, drawable, **kwargs):
         """Draw the given drawable in the GUI thread.
@@ -67,11 +68,14 @@ class Visualizer(Toplevel, core.DrawListener):
         """Callback for DrawListener.  This can be used by a background calculation thread to signal the GUI to draw a new state."""
         self.drawInBackground(drawable)
 
-    def leftClick(self, event):
+    def onResize(self, event):
         pass
 
-    def motion(self, event):
+    def onLeftClick(self, event):
         pass
 
-    def close(self):
+    def onMouseMotion(self, event):
+        pass
+
+    def onClose(self):
         os._exit(0)
