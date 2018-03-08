@@ -27,6 +27,7 @@ class Visualizer(Toplevel, core.DrawListener):
         self.protocol("WM_DELETE_WINDOW", self.close)
         self.bind('<Motion>', self.motion)
         self.bind('<Button-1>', self.leftClick)
+        self.bind('<Button-3>', self.rightClick)
 
     def drawInBackground(self, drawable, **kwargs):
         """Draw the given drawable in the GUI thread.
@@ -68,6 +69,9 @@ class Visualizer(Toplevel, core.DrawListener):
         self.drawInBackground(drawable)
 
     def leftClick(self, event):
+        pass
+
+    def rightClick(self, event):
         pass
 
     def motion(self, event):

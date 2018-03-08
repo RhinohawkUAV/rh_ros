@@ -3,7 +3,7 @@ from Tkinter import Canvas
 
 from shapely.geometry import Polygon
 
-import utils.geometry
+import geometry.intersection
 from gui import Drawable
 from gui.drawables import DrawablePolygon, DrawableLine
 
@@ -33,7 +33,7 @@ class NoFlyZone(Drawable):
         """
         result = []
         for point in self.points:
-            solution = utils.geometry.hitTargetAtSpeed(startPosition, speed, point, self.velocity)
+            solution = geometry.intersection.hitTargetAtSpeed(startPosition, speed, point, self.velocity)
             if not solution is None:
                 result.append(solution)
         return result
