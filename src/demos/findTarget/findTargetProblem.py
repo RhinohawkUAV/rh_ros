@@ -4,27 +4,15 @@ from gui import DrawableLine, DrawableCircle
 
 
 class FindTargetProblem:
-    def __init__(self, noFlyZones, startPoint, speed):
-        self.noFlyZones = noFlyZones
+    def __init__(self, obstacleCourse, startPoint, speed):
+        self._obstacleCourse = obstacleCourse
         self.speed = speed
         self.setStartPoint(startPoint)
 
     def setStartPoint(self, startPoint):
         """Change the problem's start point and update the set of visible points."""
         self.startPoint = startPoint
-        self._visiblePoints = self.calcVisiblePoints(self.startPoint, self.speed)
-
-    def calcVisiblePoints(self, startPoint, speed):
-        """Calculate the list of points visible
-        TODO: Create/move to noFlyZoneGroup
-        """
-        visiblePoints = []
-        for noFlyZone in self.noFlyZones:
-            results = noFlyZone.findFutureHeadingCollisions(startPoint, speed)
-            for result in results:
-                point = result[1]
-                visiblePoints.append(point)
-        return visiblePoints
+        self._visiblePoints = self._obstacleCourse.findVisibleVerticesDynamic(self.startPoint, self.speed)
 
     def calcTimeToPoint(self, point):
         """
@@ -38,12 +26,8 @@ class FindTargetProblem:
         return distance / self.speed
 
     def draw(self, canvas, time=0, **kwargs):
-
-        for noFlyZone in self.noFlyZones:
-            noFlyZone.draw(canvas, fill="red", time=0)
-
-        for noFlyZone in self.noFlyZones:
-            noFlyZone.draw(canvas, fill="purple", time=time)
+        self._obstacleCourse.draw(canvas, fill="red", time=0)
+        self._obstacleCourse.draw(canvas, fill="purple", time=time)
 
         DrawableCircle(self.startPoint[0], self.startPoint[1], 1).draw(canvas, fill="green")
 

@@ -3,8 +3,6 @@ import math
 import time
 from Tkinter import Canvas
 
-from shapely.geometry import LineString
-
 from graph.graph import SearchGraph
 from gui import Drawable
 from gui import DrawableLine, DrawableCircle
@@ -16,7 +14,7 @@ class PathFinder(Drawable):
     Path finding related queries can be be performed on this object.
     """
 
-    def __init__(self, startPoint, goalPoint, noFlyZones, drawListener=None):
+    def __init__(self, startPoint, goalPoint, obstacleCourse, drawListener=None):
 
         # Start position to search from
         self._startPoint = startPoint
@@ -24,8 +22,8 @@ class PathFinder(Drawable):
         # End/goal position to find
         self._goalPoint = goalPoint
 
-        # The NFZs to avoid
-        self._noFlyZones = noFlyZones
+        # The obstacle course to traverse
+        self._obstacleCourse = obstacleCourse
 
         # A graph object for perform the graph algorithm
         self._graph = SearchGraph(self._startPoint)
@@ -53,7 +51,9 @@ class PathFinder(Drawable):
             totalCalcTime -= time.time()
 
             visibleCalcTime -= time.time()
-            self._visiblePoints = self._findVisibleVertices(self._currentVertex.data)
+            self._visiblePoints = self._obstacleCourse.findVisibleVerticesStatic(self._currentVertex.data)
+            if self._obstacleCourse.doesLineIntersectStatic(self._currentVertex.data, self._goalPoint):
+                self._visiblePoints.append(self._goalPoint)
             visibleCalcTime += time.time()
 
             for visiblePoint in self._visiblePoints:
@@ -83,31 +83,6 @@ class PathFinder(Drawable):
         print "Total Time Calculating Visibility: " + str(visibleCalcTime)
         print "Visibility/Total: " + str(visibleCalcTime / totalCalcTime)
 
-    def _isPointVisible(self, eye, point):
-        """
-        Is the given point visible from the given eye?
-        In other words is there a straight path from eye to point which does not intersect any no-fly-zones?
-        """
-        line = LineString([eye, point])
-        for noFlyZone in self._noFlyZones:
-            if noFlyZone.blocksLineOfSight(line):
-                return False
-        return True
-
-    def _findVisibleVertices(self, eye):
-        """
-        Look through all NFZ vertices and the goal and determine which are visible from eye.
-        """
-        visibleVertices = []
-        for noFlyZone in self._noFlyZones:
-            for polygonVertex in noFlyZone.points:
-                if self._isPointVisible(eye, polygonVertex):
-                    visibleVertices.append(polygonVertex)
-        if self._isPointVisible(eye, self._goalPoint):
-            visibleVertices.append(self._goalPoint)
-
-        return visibleVertices
-
     def _signalDraw(self):
         if not self.drawListener is None:
             drawCopy = self._createDrawCopy()
@@ -128,12 +103,11 @@ class PathFinder(Drawable):
         self.drawListener = drawListener
         return copyObject
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, canvas, time=0.0, **kwargs):
         # type: (Canvas)->None
         """Must be called from GUI thread"""
 
-        for noFlyZone in self._noFlyZones:
-            noFlyZone.draw(canvas, **kwargs)
+        self._obstacleCourse.draw(canvas, time=time, **kwargs)
 
         for visiblePoint in self._visiblePoints:
             DrawableLine(self._currentVertex.data[0], self._currentVertex.data[1], visiblePoint[0],

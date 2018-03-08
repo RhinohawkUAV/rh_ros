@@ -1,5 +1,6 @@
 import random
 
+from findPath.obstacleCourse import ObstacleCourse
 from noFlyZone import NoFlyZone
 from pathFinder import PathFinder
 
@@ -29,4 +30,4 @@ def generatePathfindProblem(start, end, numNoFlyZones, x, y, width, height, minF
         zone = NoFlyZone([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], (0, 0))
         noFlyZones.append(zone)
 
-    return PathFinder(start, end, noFlyZones)
+    return PathFinder(start, end, ObstacleCourse(noFlyZones, None))
