@@ -9,6 +9,27 @@ var compass;
 
 var iconwaypointYellow;
 
+var groundSpeedGauge;
+var airSpeedGauge;
+
+//  Define Icons ---------------------------------------------
+ function setUpIcons(){ 
+  iconwaypointYellow = L.icon({
+      iconUrl: 'img/waypoint-yellow.png',
+      iconSize: [24,24],
+      popupAnchor: [0,-12],
+    });
+}
+
+function setUpGauges(){
+  groundSpeedGauge = new Gauge(document.getElementById('groundGauge')).setOptions(opts); // create sexy gauge!
+  airSpeedGauge    = new Gauge(document.getElementById('airGauge')).setOptions(opts); // create sexy gauge!
+
+  groundSpeedGauge.maxValue = gaugeTopSpeed; // set max gauge value
+  airSpeedGauge.maxValue = gaugeTopSpeed; // set max gauge value
+}
+
+
 // Gauge Settigns -----------------------------------------------------------------------
 var opts = {
   angle: -0.26, // The span of the gauge arc
@@ -40,6 +61,8 @@ function connectToROS(address){
     ros.on('error', function(error) { console.log('Error connecting to websocket server: ', error);});
     ros.on('close', function() { console.log('Connection to websocket server closed.');});
     connectToTopics();
+    setUpIcons();
+    setUpGauges();
 }
   
 
@@ -50,61 +73,50 @@ function connectToROS(address){
 
 function connectToTopics() {
 
-  var compassTopic = new ROSLIB.Topic({
-      ros: ros,
-      name: '/mavros/global_position/compass_hdg',
-      messageType: 'std_msgs/Float64'
-    });
+  //Set Up Topics -------------------------------------------------------------------------------
 
-  var altitudeTopic = new ROSLIB.Topic({
-      ros: ros,
-      name: '/mavros/global_position/local',
-      messageType: 'nav_msgs/Odometry'
-    });
+    var compassTopic = new ROSLIB.Topic({
+        ros: ros,
+        name: '/mavros/global_position/compass_hdg',
+        messageType: 'std_msgs/Float64'
+      });
 
-  var navSatTopic = new ROSLIB.Topic({
-      ros: ros,
-      name: '/mavros/global_position/raw/fix',
-      messageType: 'sensor_msgs/NavSatFix'
-    });
+    var altitudeTopic = new ROSLIB.Topic({
+        ros: ros,
+        name: '/mavros/global_position/local',
+        messageType: 'nav_msgs/Odometry'
+      });
 
-  var groundSpeedTopic = new ROSLIB.Topic({
-      ros: ros,
-      name: '/mavros/global_position/raw/gps_vel',
-      messageType: 'geometry_msgs/TwistStamped'
-    });
+    var navSatTopic = new ROSLIB.Topic({
+        ros: ros,
+        name: '/mavros/global_position/raw/fix',
+        messageType: 'sensor_msgs/NavSatFix'
+      });
 
-  var imageTopic = new ROSLIB.Topic({
-      ros : ros,
-      name : '/gopro/aruco_marker/compressed',
-      messageType : 'sensor_msgs/CompressedImage'
-    });
+    var groundSpeedTopic = new ROSLIB.Topic({
+        ros: ros,
+        name: '/mavros/global_position/raw/gps_vel',
+        messageType: 'geometry_msgs/TwistStamped'
+      });
 
-  var clockTopic = new ROSLIB.Topic({
+    var imageTopic = new ROSLIB.Topic({
         ros : ros,
-        name : '/mavros/time_reference',
-        messageType : 'sensor_msgs/TimeReference'
-    });
+        name : '/gopro/aruco_marker/compressed',
+        messageType : 'sensor_msgs/CompressedImage'
+      });
 
-<<<<<<< HEAD
-  var waypoints = new ROSLIB.Topic({
-        ros : ros,
-        name : '/mavros/mission/waypoints',
-        messageType : 'mavros_msgs/WaypointList'
-    });
+    var clockTopic = new ROSLIB.Topic({
+          ros : ros,
+          name : '/mavros/time_reference',
+          messageType : 'sensor_msgs/TimeReference'
+      });
 
-  navSatTopic.subscribe(function(message) {
-    uavPath.pushMaxLimit([message.latitude, message.longitude], 5 );
+    var waypoints = new ROSLIB.Topic({
+          ros : ros,
+          name : '/mavros/mission/waypoints',
+          messageType : 'mavros_msgs/WaypointList'
+      });
 
-    // If uavPath was populated before, update it.
-    // Else, 
-    if(uavPath.length > 1){
-      updateMapPath();
-    }else{
-      map.setView([message.latitude,message.longitude], 18);
-      addWaypoint([message.latitude,message.longitude]);
-    }
-=======
     var targetLocationTopic = new ROSLIB.Topic({
         ros : ros,
         name : '/gopro/target_position_local',
@@ -117,130 +129,107 @@ function connectToTopics() {
         messageType : 'sensor_msgs/BatteryState'
     });
 
+    
+  //Subscribe to Topics -------------------------------------------------------------------------------
+
+    compassTopic.subscribe(function(message) {
+      compass = message.data;
+      document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.data+'deg'+');');
+      document.getElementById("compass-direction").innerHTML = getDirection(message.data);
+    });
+
+    imageTopic.subscribe(function(message) {
+      var img = "data:image/png;base64," + message.data;
+      document.getElementById( 'aruco-image' ).setAttribute( 'src', img );
+    });
+
+    altitudeTopic.subscribe(function(message) {
+      var altitudeMeters = message.pose.pose.position.z;
+      msgStr = "";
+      msgStr += `<p class='tel-detail' id='altitude-feet'>${ Math.round( altitudeMeters * 3.28084 ) }<span> FT</span></p>`
+      msgStr += `<p class='tel-detail' id='altitude-meters'>${ Math.round( altitudeMeters ) }<span> M</span></p>`
+      document.getElementById("tel-altitude").innerHTML= msgStr;
+    });
+
+    groundSpeedTopic.subscribe(function(message) {
+      document.getElementById("tel-speed").innerHTML= getGroundVelocity(message.twist).toFixed(1) + "<span> M/S</span>";
+      groundSpeedGauge.set(getGroundVelocity(message.twist));
+      airSpeedGauge.set(0);
+    });
+
+    batteryTopic.subscribe(function(message) {
+      //console.log( message );
+    });
+
+    clockTopic.subscribe(function(message){     
+      var theDate = new Date();
+      theDate.setTime(message.time_ref.secs*1000);
+      //console.log(theDate.getSeconds());
+      
+      document.getElementById("tel-time").innerHTML = theDate.getHours()+":"+theDate.getMinutes()+":"+theDate.getSeconds();
+    });
+
+    waypoints.subscribe(function(message){
+        console.log("waypoint:" + message[0].x_lat);
+    });
+
     navSatTopic.subscribe(function(message) {
 
-        coords = [message.latitude, message.longitude];
+      coords = [message.latitude, message.longitude];
 
-		if (message != null && home == null) {
-		    home = coords;
-            console.log("Got home coordinates: "+ home[0] + "," + home[1]);
-            L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
+      if (message != null && home == null) {
+        home = coords;
+        console.log("Got home coordinates: "+ home[0] + "," + home[1]);
+        L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
 
-            function mark(coords, label) {
-            	var marker = new L.marker(coords, { opacity: 0.75 });
-				if (label != null) {
-				    //marker.bindTooltip(label, {permanent: true, className: "label", offset: [0, 0] });
-                }    
-				marker.addTo(map);
-			}
-
-            // for bags 6,7,8 we know the marker locations
-            mark([38.9778045974, -77.3378556003], "1");
-            mark([38.9778552409, -77.3377138812], "2");
-            mark([38.9777295212, -77.3376484097], "3");
-            mark([38.9776844881, -77.3378142882], "4");
-            mark([38.977631131,  -77.3376425288], "5");
-
+        function mark(coords, label) {
+          var marker = new L.marker(coords, { opacity: 0.75 });
+          if (label != null) {
+            //marker.bindTooltip(label, {permanent: true, className: "label", offset: [0, 0] });
+          }    
+          marker.addTo(map);
         }
 
-        uavPath.pushMaxLimit(coords, 5 );
+        // for bags 6,7,8 we know the marker locations
+        mark([38.9778045974, -77.3378556003], "1");
+        mark([38.9778552409, -77.3377138812], "2");
+        mark([38.9777295212, -77.3376484097], "3");
+        mark([38.9776844881, -77.3378142882], "4");
+        mark([38.977631131,  -77.3376425288], "5");
 
-        // If uavPath was populated before, update it.
-        // Else, 
-        if(uavPath.length > 1){
-          updateMapPath();
-        }else{
-          map.setView(coords, 18);
-        }
->>>>>>> a9dc081ea8e7867615cdac3b39035dec16b3208f
+      }
 
-    document.getElementById("tel-lat").innerHTML= message.latitude;
-    document.getElementById("tel-long").innerHTML= message.longitude;
-  });
+      uavPath.pushMaxLimit(coords, 5 );
 
-  compassTopic.subscribe(function(message) {
-    compass = message.data;
-    document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.data+'deg'+');');
-    document.getElementById("compass-direction").innerHTML = getDirection(message.data);
-  });
+      // If uavPath was populated before, update it.
+      // Else, 
+      if(uavPath.length > 1){
+        updateMapPath();
+      }else{
+        map.setView(coords, 18);
+      }
 
-  imageTopic.subscribe(function(message) {
-    var img = "data:image/png;base64," + message.data;
-    document.getElementById( 'aruco-image' ).setAttribute( 'src', img );
-  });
+      document.getElementById("tel-lat").innerHTML= message.latitude;
+      document.getElementById("tel-long").innerHTML= message.longitude;
+    });
 
-  altitudeTopic.subscribe(function(message) {
-    var altitudeMeters = message.pose.pose.position.z;
-    msgStr = "";
-    msgStr += `<p class='tel-detail' id='altitude-feet'>${ Math.round( altitudeMeters * 3.28084 ) }<span> FT</span></p>`
-    msgStr += `<p class='tel-detail' id='altitude-meters'>${ Math.round( altitudeMeters ) }<span> M</span></p>`
-    document.getElementById("tel-altitude").innerHTML= msgStr;
-  });
-
-  groundSpeedTopic.subscribe(function(message) {
-    document.getElementById("tel-speed").innerHTML= getGroundVelocity(message.twist).toFixed(1) + "<span> M/S</span>";
-    groundSpeedGauge.set(getGroundVelocity(message.twist));
-    airSpeedGauge.set(0);
-  });
-
-<<<<<<< HEAD
-  clockTopic.subscribe(function(message){
-=======
-  targetLocationTopic.subscribe(function(message) {
-    if (message.point != null) {
-        dx = message.point.x;
-        dy = message.point.y;
-        //console.log("Got local target position: "+dx+","+dy)
-        // Formula from https://stackoverflow.com/questions/2839533/adding-distance-to-a-gps-coordinate
-        lat = home[0] + (180/Math.PI) * (dy/6378137);
-        lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
-        //console.log("    Global target position: "+lat+","+lon)
-        L.circle([lat, lon], {radius: 1, weight: 1, opacity: 0.3, color: '#ff0000'}).addTo(map);
-    }
-  });
-
-  batteryTopic.subscribe(function(message) {
-    //console.log( message );
-  });
-/* *************************************************      SET UP CLOCK
-*/
-clockTopic.subscribe(function(message){
->>>>>>> a9dc081ea8e7867615cdac3b39035dec16b3208f
-    var theDate = new Date();
-    theDate.setTime(message.time_ref.secs*1000);
-    //console.log(theDate.getSeconds());
-    
-    document.getElementById("tel-time").innerHTML = theDate.getHours()+":"+theDate.getMinutes()+":"+theDate.getSeconds();
-  });
-
-  waypoints.subscribe(function(message){
-    console.log("waypoint:" + message[0].x_lat);
-  });
-
-
-
-  //  Set up Gauges ---------------------------------------------
-
-  var groundSpeedGauge = new Gauge(document.getElementById('groundGauge')).setOptions(opts); // create sexy gauge!
-  var airSpeedGauge    = new Gauge(document.getElementById('airGauge')).setOptions(opts); // create sexy gauge!
-
-  groundSpeedGauge.maxValue = gaugeTopSpeed; // set max gauge value
-  airSpeedGauge.maxValue = gaugeTopSpeed; // set max gauge value
-
-
-//  Define Icons ---------------------------------------------
-  iconwaypointYellow = L.icon({
-      iconUrl: 'img/waypoint-yellow.png',
-      iconSize: [24,24],
-      popupAnchor: [0,-12],
+  
+    targetLocationTopic.subscribe(function(message) {
+      if (message.point != null) {
+          dx = message.point.x;
+          dy = message.point.y;
+          //console.log("Got local target position: "+dx+","+dy)
+          // Formula from https://stackoverflow.com/questions/2839533/adding-distance-to-a-gps-coordinate
+          lat = home[0] + (180/Math.PI) * (dy/6378137);
+          lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
+          //console.log("    Global target position: "+lat+","+lon)
+          L.circle([lat, lon], {radius: 1, weight: 1, opacity: 0.3, color: '#ff0000'}).addTo(map);
+      }
     });
 }
 
-  
-
 
 // Calculate ground velocity using geometry_msgs/TwistStamped.
-// Change to use 
 function getGroundVelocity(data){
   var velocity = Math.sqrt(Math.abs(Math.pow(data.linear.x, 2)+Math.pow(data.linear.y, 2)));
   return velocity;
@@ -261,6 +250,7 @@ function updateMapPath(){
     map.flyTo(uavPath[uavPath.length-1]);
   }
 }
+
 
 // Add Waypoint to Map ---------------------------------------------
 
