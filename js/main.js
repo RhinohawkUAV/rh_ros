@@ -236,7 +236,7 @@ function connectToTopics() {
     });
 
     // Add placeholder icons to map, to be updated with real data -------------------
-    //addJoe([38.977810, -77.338848]);
+    addJoe([38.977810, -77.338848]);
     //addWaypoint([38.977290, -77.338628]);
 }
 
@@ -270,11 +270,12 @@ function addJoe(loc){
   var newWaypoint = L.marker([loc[0], loc[1]],{icon: joePosition}).addTo(map);
   newWaypoint.bindPopup("<p>Joe's reported location:</p><p>"+loc[0]+"<br />"+loc[1], {className:"waypointTip"});
   
-  var possibleMarkerLocation = L.circle(loc, {radius: 200, color:"#ffffff", weight:1, fillColor: "#ffffff", fillOpacity: .4}).addTo(map);
+  var possibleMarkerLocation = L.circle(loc, {radius: 200, color:"#ffffff", weight:3, fillColor: "#ffffff", fillOpacity: .4}).addTo(map);
     possibleMarkerLocation.bindTooltip("Marker's possible location", {sticky: true});
 
-  var possibleJoeLocation = L.circle(loc, {radius: 100, color:"#ffffff", weight:1, fillColor: "#ffffff", fillOpacity: .4}).addTo(map);
+  var possibleJoeLocation = L.circle(loc, {radius: 100, color:"#ffffff", weight:0, fillColor: "#4ABDE2", fillOpacity: .4}).addTo(map);
     possibleJoeLocation.bindTooltip("Joe's possible location", {sticky: true});
+  var innerMarkerLocation = L.circle(loc, {radius: 40, color:"#ffffff", weight:3, fillColor: "#ffffff", fillOpacity: 0, interactive:false}).addTo(map);
 
 }
 
