@@ -2,8 +2,8 @@ import Tkinter as tk
 
 import numpy as np
 
-import geometry.shapes
-from geometry.shapes import LineSeg
+import geometry.lineSegment
+from geometry.lineSegment import LineSeg
 from gui import Drawable
 
 
@@ -29,5 +29,5 @@ class RayLineProblem(Drawable):
             fill = "black"
 
         self._line.draw(canvas, fill=fill)
-        geometry.shapes.drawLine(canvas, self._startPoint, self._startPoint + self._rayDir * 20.0, fill="blue",
-                                 arrow=tk.LAST)
+        geometry.lineSegment.drawLine(canvas, self._startPoint, self._startPoint + self._rayDir * 20.0, fill="blue",
+                                      arrow=tk.LAST)
