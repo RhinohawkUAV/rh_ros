@@ -4,6 +4,8 @@ var clockInit = false;
 var centerMap = true;
 
 var uavPath=[];
+var home;
+var compass;
 
 var iconwaypointYellow;
 
@@ -84,6 +86,7 @@ function connectToTopics() {
         messageType : 'sensor_msgs/TimeReference'
     });
 
+<<<<<<< HEAD
   var waypoints = new ROSLIB.Topic({
         ros : ros,
         name : '/mavros/mission/waypoints',
@@ -101,12 +104,62 @@ function connectToTopics() {
       map.setView([message.latitude,message.longitude], 18);
       addWaypoint([message.latitude,message.longitude]);
     }
+=======
+    var targetLocationTopic = new ROSLIB.Topic({
+        ros : ros,
+        name : '/gopro/target_position_local',
+        messageType : 'geometry_msgs/PointStamped'
+    });
+
+    var batteryTopic = new ROSLIB.Topic({
+        ros : ros,
+        name : '/mavros/battery',
+        messageType : 'sensor_msgs/BatteryState'
+    });
+
+    navSatTopic.subscribe(function(message) {
+
+        coords = [message.latitude, message.longitude];
+
+		if (message != null && home == null) {
+		    home = coords;
+            console.log("Got home coordinates: "+ home[0] + "," + home[1]);
+            L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
+
+            function mark(coords, label) {
+            	var marker = new L.marker(coords, { opacity: 0.75 });
+				if (label != null) {
+				    //marker.bindTooltip(label, {permanent: true, className: "label", offset: [0, 0] });
+                }    
+				marker.addTo(map);
+			}
+
+            // for bags 6,7,8 we know the marker locations
+            mark([38.9778045974, -77.3378556003], "1");
+            mark([38.9778552409, -77.3377138812], "2");
+            mark([38.9777295212, -77.3376484097], "3");
+            mark([38.9776844881, -77.3378142882], "4");
+            mark([38.977631131,  -77.3376425288], "5");
+
+        }
+
+        uavPath.pushMaxLimit(coords, 5 );
+
+        // If uavPath was populated before, update it.
+        // Else, 
+        if(uavPath.length > 1){
+          updateMapPath();
+        }else{
+          map.setView(coords, 18);
+        }
+>>>>>>> a9dc081ea8e7867615cdac3b39035dec16b3208f
 
     document.getElementById("tel-lat").innerHTML= message.latitude;
     document.getElementById("tel-long").innerHTML= message.longitude;
   });
 
   compassTopic.subscribe(function(message) {
+    compass = message.data;
     document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.data+'deg'+');');
     document.getElementById("compass-direction").innerHTML = getDirection(message.data);
   });
@@ -130,7 +183,29 @@ function connectToTopics() {
     airSpeedGauge.set(0);
   });
 
+<<<<<<< HEAD
   clockTopic.subscribe(function(message){
+=======
+  targetLocationTopic.subscribe(function(message) {
+    if (message.point != null) {
+        dx = message.point.x;
+        dy = message.point.y;
+        //console.log("Got local target position: "+dx+","+dy)
+        // Formula from https://stackoverflow.com/questions/2839533/adding-distance-to-a-gps-coordinate
+        lat = home[0] + (180/Math.PI) * (dy/6378137);
+        lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
+        //console.log("    Global target position: "+lat+","+lon)
+        L.circle([lat, lon], {radius: 1, weight: 1, opacity: 0.3, color: '#ff0000'}).addTo(map);
+    }
+  });
+
+  batteryTopic.subscribe(function(message) {
+    //console.log( message );
+  });
+/* *************************************************      SET UP CLOCK
+*/
+clockTopic.subscribe(function(message){
+>>>>>>> a9dc081ea8e7867615cdac3b39035dec16b3208f
     var theDate = new Date();
     theDate.setTime(message.time_ref.secs*1000);
     //console.log(theDate.getSeconds());
