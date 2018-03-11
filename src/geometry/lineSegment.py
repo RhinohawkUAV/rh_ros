@@ -84,7 +84,7 @@ class LineSeg(Drawable):
         # As you move from start towards end you approach intersection with the infinite line defined by the one-sided
         # line segment. The crossing point will be at start + lineDir * t, for some t.
         # t is just the ratio below:
-        t = normalDistanceP1 / normalDirection
+        t = -normalDistanceP1 / normalDirection
 
         # While moving towards the line perpendicularly, we also moved along the line tangentially.
         # We don't care how far we moved in absolute space, only in "tangent-unit-space".  In this space start is 0, end is 1.
@@ -93,7 +93,7 @@ class LineSeg(Drawable):
 
         return tan >= 0 and tan <= 1
 
-    def draw(self, canvas, text="", **kwargs):
+    def draw(self, canvas, text="", time=0.0, **kwargs):
         """
         Draw on the canvas with any modifiers stored in kwargs.
         :param canvas:

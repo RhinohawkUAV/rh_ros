@@ -17,10 +17,6 @@ class NoFlyZone(Drawable):
         polygon = Polygon(self.points)
         return line.crosses(polygon) or line.within(polygon)
 
-    def blocksLineOfSightWithTime(self, line):
-        polygon = Polygon(self.points)
-        return line.crosses(polygon) or line.within(polygon)
-
     def findFutureHeadingCollisions(self, startPosition, speed):
         """
         Given the startPosition a speed of travel find headings and future collision with NFZ's points and
