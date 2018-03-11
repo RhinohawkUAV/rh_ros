@@ -5,12 +5,14 @@ class RayLineVisualizer(Visualizer):
     def __init__(self, rayLineProblem, *args, **kw):
         Visualizer.__init__(self, *args, **kw)
         self.rayLineProblem = rayLineProblem
-        self.drawToCanvas(self.rayLineProblem)
 
-    def leftClick(self, event):
+    def onLeftClick(self, event):
         self.rayLineProblem.setStartPoint(self.transformCanvasToPoint((event.x, event.y)))
         self.drawToCanvas(self.rayLineProblem)
 
-    def rightClick(self, event):
+    def onRightClick(self, event):
         self.rayLineProblem.setEndPoint(self.transformCanvasToPoint((event.x, event.y)))
+        self.drawToCanvas(self.rayLineProblem)
+
+    def onResize(self, event):
         self.drawToCanvas(self.rayLineProblem)

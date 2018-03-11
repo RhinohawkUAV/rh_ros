@@ -48,8 +48,8 @@ class LineSeg(Drawable):
             textPos = self.mid - self.n * textOffsetFactor
             canvas.create_text(textPos[0], textPos[1], text=text, fill="black")
 
-        drawLine(canvas, self.p1, self.p2)
-        drawLine(canvas, self.mid, self.mid + self.n * normalDisplayFactor)
+        drawLine(canvas, self.p1, self.p2,**kwargs)
+        drawLine(canvas, self.mid, self.mid + self.n * normalDisplayFactor,**kwargs)
 
 
 def drawLine(canvas, p1, p2, **kwargs):

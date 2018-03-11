@@ -82,7 +82,7 @@ def checkRayIntersectLine(rayStart, rayDir, p1, p2, n, invTan):
     # Distance to line segment in the direction of the normal.  If this is positive then the ray's start position is
     #  "behind" the line-segment and no intersection is possible.
     normalDistance = (n[0] * pdiffx + n[1] * pdiffy)
-    if normalDistance < 0.0:
+    if normalDistance > 0.0:
         return False
 
     # Magnitude of direction in the direction of the normal.  If this is positive then the direction is away from the
@@ -90,7 +90,7 @@ def checkRayIntersectLine(rayStart, rayDir, p1, p2, n, invTan):
     # (by our convention)
     normalDirection = (n[0] * rayDir[0] + n[1] * rayDir[1])
 
-    if normalDirection <= 0.0:
+    if normalDirection >= 0.0:
         return False
 
     # time to intersection is based on distance from line and speed in direction of the normal (speed against normal since it faces outwards)

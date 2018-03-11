@@ -28,7 +28,7 @@ class Visualizer(Toplevel, core.DrawListener):
         self.bind('<Motion>', self.onMouseMotion)
         self.bind('<Button-1>', self.onLeftClick)
         self.bind("<Configure>", self.onResize)
-        self.bind('<Button-3>', self.rightClick)
+        self.bind('<Button-3>', self.onRightClick)
     def drawInBackground(self, drawable, **kwargs):
         """Draw the given drawable in the GUI thread.
         drawable should not be touched while drawing."""
@@ -71,14 +71,14 @@ class Visualizer(Toplevel, core.DrawListener):
     def onResize(self, event):
         pass
 
-    def leftClick(self, event):
+    def onLeftClick(self, event):
         pass
 
-    def rightClick(self, event):
+    def onRightClick(self, event):
         pass
 
-    def motion(self, event):
+    def onMouseMotion(self, event):
         pass
 
-    def close(self):
+    def onClose(self):
         os._exit(0)
