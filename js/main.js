@@ -8,9 +8,25 @@ var home;
 var compass;
 
 var iconwaypointYellow;
+var joePosition;
 
 var groundSpeedGauge;
 var airSpeedGauge;
+
+
+// Connect to ROSBridge -----------------------------------------------------------------------
+
+function connectToROS(address){
+    ros = new ROSLIB.Ros({ url : address });
+    ros.on('connection', function() { console.log('Connected to websocket server.');});
+    ros.on('error', function(error) { console.log('Error connecting to websocket server: ', error);});
+    ros.on('close', function() { console.log('Connection to websocket server closed.');});
+    setUpIcons();
+    setUpGauges();
+    connectToTopics();
+}
+  
+
 
 //  Define Icons ---------------------------------------------
  function setUpIcons(){ 
@@ -19,8 +35,15 @@ var airSpeedGauge;
       iconSize: [24,24],
       popupAnchor: [0,-12],
     });
+
+  joePosition = L.icon({
+      iconUrl: 'img/joesPosition.png',
+      iconSize: [17,25],
+      popupAnchor: [0,-12],
+    });
 }
 
+//  Create Gauges ---------------------------------------------
 function setUpGauges(){
   groundSpeedGauge = new Gauge(document.getElementById('groundGauge')).setOptions(opts); // create sexy gauge!
   airSpeedGauge    = new Gauge(document.getElementById('airGauge')).setOptions(opts); // create sexy gauge!
@@ -51,21 +74,6 @@ var opts = {
 };
 
 var gaugeTopSpeed = 20;
-
-
-// Connect to ROSBridge -----------------------------------------------------------------------
-
-function connectToROS(address){
-    ros = new ROSLIB.Ros({ url : address });
-    ros.on('connection', function() { console.log('Connected to websocket server.');});
-    ros.on('error', function(error) { console.log('Error connecting to websocket server: ', error);});
-    ros.on('close', function() { console.log('Connection to websocket server closed.');});
-    connectToTopics();
-    setUpIcons();
-    setUpGauges();
-}
-  
-
 
 //Set Up Topics -------------------------------------------------------------------------------
 
@@ -226,6 +234,10 @@ function connectToTopics() {
           L.circle([lat, lon], {radius: 1, weight: 1, opacity: 0.3, color: '#ff0000'}).addTo(map);
       }
     });
+
+    // Add placeholder icons to map, to be updated with real data -------------------
+    //addJoe([38.977810, -77.338848]);
+    //addWaypoint([38.977290, -77.338628]);
 }
 
 
@@ -249,6 +261,21 @@ function updateMapPath(){
   if(centerMap){
     map.flyTo(uavPath[uavPath.length-1]);
   }
+}
+
+// Add Joe to map ---------------------------------------------
+
+function addJoe(loc){
+  console.log("add joe called");
+  var newWaypoint = L.marker([loc[0], loc[1]],{icon: joePosition}).addTo(map);
+  newWaypoint.bindPopup("<p>Joe's reported location:</p><p>"+loc[0]+"<br />"+loc[1], {className:"waypointTip"});
+  
+  var possibleMarkerLocation = L.circle(loc, {radius: 200, color:"#ffffff", weight:1, fillColor: "#ffffff", fillOpacity: .4}).addTo(map);
+    possibleMarkerLocation.bindTooltip("Marker's possible location", {sticky: true});
+
+  var possibleJoeLocation = L.circle(loc, {radius: 100, color:"#ffffff", weight:1, fillColor: "#ffffff", fillOpacity: .4}).addTo(map);
+    possibleJoeLocation.bindTooltip("Joe's possible location", {sticky: true});
+
 }
 
 
