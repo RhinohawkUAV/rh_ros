@@ -15,12 +15,12 @@ class FindTargetVisualizer(Visualizer):
         self.findTargetProblem = findTargetProblem
         self._time = 0.0
 
-    def leftClick(self, event):
+    def onLeftClick(self, event):
         self.findTargetProblem.setStartPoint(self.transformCanvasToPoint((event.x, event.y)))
         self._time = 0.0
         self.drawToCanvas(self.findTargetProblem, time=self._time)
 
-    def motion(self, event):
+    def onMouseMotion(self, event):
         point = self.transformCanvasToPoint((event.x, event.y))
         self._time = self.findTargetProblem.calcTimeToPoint(point)
         self.drawToCanvas(self.findTargetProblem, time=self._time)
