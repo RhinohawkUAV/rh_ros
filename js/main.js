@@ -5,6 +5,8 @@ var centerMap = true;
 
 var uavPath=[];
 
+var iconwaypointYellow;
+
 // Gauge Settigns -----------------------------------------------------------------------
 var opts = {
   angle: -0.26, // The span of the gauge arc
@@ -70,34 +72,39 @@ function connectToTopics() {
       messageType: 'geometry_msgs/TwistStamped'
     });
 
-   var imageTopic = new ROSLIB.Topic({
+  var imageTopic = new ROSLIB.Topic({
       ros : ros,
       name : '/gopro/aruco_marker/compressed',
       messageType : 'sensor_msgs/CompressedImage'
     });
 
-    var clockTopic = new ROSLIB.Topic({
+  var clockTopic = new ROSLIB.Topic({
         ros : ros,
         name : '/mavros/time_reference',
         messageType : 'sensor_msgs/TimeReference'
     });
 
-    navSatTopic.subscribe(function(message) {
-
-        // 
-        uavPath.pushMaxLimit([message.latitude, message.longitude], 5 );
-
-        // If uavPath was populated before, update it.
-        // Else, 
-        if(uavPath.length > 1){
-          updateMapPath();
-        }else{
-          map.setView([ message.latitude,message.longitude], 18);
-        }
-
-        document.getElementById("tel-lat").innerHTML= message.latitude;
-        document.getElementById("tel-long").innerHTML= message.longitude;
+  var waypoints = new ROSLIB.Topic({
+        ros : ros,
+        name : '/mavros/mission/waypoints',
+        messageType : 'mavros_msgs/WaypointList'
     });
+
+  navSatTopic.subscribe(function(message) {
+    uavPath.pushMaxLimit([message.latitude, message.longitude], 5 );
+
+    // If uavPath was populated before, update it.
+    // Else, 
+    if(uavPath.length > 1){
+      updateMapPath();
+    }else{
+      map.setView([message.latitude,message.longitude], 18);
+      addWaypoint([message.latitude,message.longitude]);
+    }
+
+    document.getElementById("tel-lat").innerHTML= message.latitude;
+    document.getElementById("tel-long").innerHTML= message.longitude;
+  });
 
   compassTopic.subscribe(function(message) {
     document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.data+'deg'+');');
@@ -111,9 +118,9 @@ function connectToTopics() {
 
   altitudeTopic.subscribe(function(message) {
     var altitudeMeters = message.pose.pose.position.z;
-    msgStr = ""
-    msgStr += `<p class=\"tel-detail\" id=\"altitude-feet\">${ Math.round( altitudeMeters * 3.28084 ) }<span> FT</span></p>`
-    msgStr += `<p class=\"tel-detail\" id=\"altitude-meters\">${ Math.round( altitudeMeters ) }<span> M</span></p>`
+    msgStr = "";
+    msgStr += `<p class='tel-detail' id='altitude-feet'>${ Math.round( altitudeMeters * 3.28084 ) }<span> FT</span></p>`
+    msgStr += `<p class='tel-detail' id='altitude-meters'>${ Math.round( altitudeMeters ) }<span> M</span></p>`
     document.getElementById("tel-altitude").innerHTML= msgStr;
   });
 
@@ -121,57 +128,41 @@ function connectToTopics() {
     document.getElementById("tel-speed").innerHTML= getGroundVelocity(message.twist).toFixed(1) + "<span> M/S</span>";
     groundSpeedGauge.set(getGroundVelocity(message.twist));
     airSpeedGauge.set(0);
-
-    /* ********* if using VFR_HUD
-    document.getElementById("tel-speed").innerHTML= message.groundSpeedGauge.toFixed(1) + "<span> M/S</span>";
-    document.getElementById("tel-airSpeed").innerHTML= message.airSpeedGauge.toFixed(1) + "<span> M/S</span>";
-    groundSpeedGauge.set(message.groundspeed);
-    airSpeedGauge.set(message.airspeed);*/
   });
 
-  
-/* *************************************************      SET UP CLOCK
-*/
-clockTopic.subscribe(function(message){
+  clockTopic.subscribe(function(message){
     var theDate = new Date();
     theDate.setTime(message.time_ref.secs*1000);
     //console.log(theDate.getSeconds());
     
     document.getElementById("tel-time").innerHTML = theDate.getHours()+":"+theDate.getMinutes()+":"+theDate.getSeconds();
+  });
 
-/* Old code to calculate speed. 
-    if(clockInit == false){
-      startTime = theDate;
-      lastTime = theDate;
-      currentTime = message.time_ref.secs;
-      clockInit = true;
-      currentLong = uavPath[uavPath.length-1][0];
-      currentLat = uavPath[uavPath.length-1][1];
-    }else{
-      if(message.time_ref.secs != currentTime){
-        lastLong = currentLong;
-        lastLat = currentLat;
-        currentLong = uavPath[uavPath.length-1][0];
-        currentCat = uavPath[uavPath.length-1][1];
+  waypoints.subscribe(function(message){
+    console.log("waypoint:" + message[0].x_lat);
+  });
 
-        lastTime = currentTime;
-        currentTime = message.time_ref.secs;
 
-        var deltaTime = (currentTime - lastTime);
 
-        document.getElementById("tel-speed").innerHTML = calcSpeed(lastLat, lastLong, currentLat, currentLong, deltaTime).toFixed(2) + "<span>M/S</span>";
-      }  
-    }
-    */
+  //  Set up Gauges ---------------------------------------------
 
-});
+  var groundSpeedGauge = new Gauge(document.getElementById('groundGauge')).setOptions(opts); // create sexy gauge!
+  var airSpeedGauge    = new Gauge(document.getElementById('airGauge')).setOptions(opts); // create sexy gauge!
 
-var groundSpeedGauge = new Gauge(document.getElementById('groundGauge')).setOptions(opts); // create sexy gauge!
-var airSpeedGauge    = new Gauge(document.getElementById('airGauge')).setOptions(opts); // create sexy gauge!
+  groundSpeedGauge.maxValue = gaugeTopSpeed; // set max gauge value
+  airSpeedGauge.maxValue = gaugeTopSpeed; // set max gauge value
 
-groundSpeedGauge.maxValue =gaugeTopSpeed; // set max gauge value
-airSpeedGauge.maxValue =gaugeTopSpeed; // set max gauge value
+
+//  Define Icons ---------------------------------------------
+  iconwaypointYellow = L.icon({
+      iconUrl: 'img/waypoint-yellow.png',
+      iconSize: [24,24],
+      popupAnchor: [0,-12],
+    });
 }
+
+  
+
 
 // Calculate ground velocity using geometry_msgs/TwistStamped.
 // Change to use 
@@ -181,21 +172,36 @@ function getGroundVelocity(data){
 }
 
 
+
+
   
 
-// update path on map---------------------------------------------
+// update path on map ---------------------------------------------
 
 function updateMapPath(){
   var newLine = [uavPath[uavPath.length-2],uavPath[uavPath.length-1]]
   var polyline = L.polyline(newLine, {color: '#4ABDE2'}).addTo(map);
   
   if(centerMap){
-    map.setView(uavPath[uavPath.length-1]);
+    map.flyTo(uavPath[uavPath.length-1]);
   }
+}
+
+// Add Waypoint to Map ---------------------------------------------
+
+
+
+function addWaypoint(loc){
+  
+  console.log("waypoint added");
+  var newWaypoint = L.marker([loc[0], loc[1]],  {icon: iconwaypointYellow}).addTo(map);
+  newWaypoint.bindPopup("<p>Altitude: 32m</p><p>Flight Speed: 35 m/s</p>", {className:"waypointTip"});
 }
 
 
 
+
+// Set direction ---------------------------------------------
 
 function getDirection(rotation){
   var direction; 
@@ -220,6 +226,8 @@ function getDirection(rotation){
 
   return direction;
 }
+
+// Toggle Centering ---------------------------------------------
 
 function toggleMapCenter(toToggle){
   if(centerMap){
@@ -248,6 +256,7 @@ function toggleMapCenter(toToggle){
     document.getElementById('graph-scatter-plot').appendChild(newDot);
   });
   */
+
 
 // Prop def for .pushMax() to limit size of static memory.
 // Avoids memory snowball if app is running for a long time.

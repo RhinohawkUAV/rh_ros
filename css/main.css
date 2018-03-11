@@ -172,3 +172,18 @@ body{
 	margin-top: 65px;
     margin-left: 59px;
 }
+
+
+/*******************  Waypoints *******************/
+.waypointTip .leaflet-popup-content-wrapper,.waypointTip .leaflet-popup-tip{
+	background:#FFCB00;
+	color:#222;
+	font-weight: bold;
+	box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+}
+
+.waypointTip a.leaflet-popup-close-button {
+	color:#222;
+	top: 2px;
+    right: 2px;
+}
