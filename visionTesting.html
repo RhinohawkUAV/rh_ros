@@ -89,11 +89,10 @@
         <img id="aruco-image" />
       </div>
     </div>
-    <!--<div class="row fixed-bottom scatter-plot" >
-      <div class="col" id="graph-scatter-plot">
+    <div class="row fixed-bottom" style="bottom: 150px" >
+      <div class="col" id="images-seen">
         
       </div>
-    </div>-->
   </div>
  
   <script type="text/javascript" src="js/guagemin.js"></script>
@@ -111,7 +110,7 @@
       id: 'mapbox.satellite',
       accessToken: myAccessToken,
     }).addTo(map);
-    map.zoomControl.setPosition('bottomright');
+    map.zoomControl.setPosition('topright');
 
     connectToROS('ws://'+localROSIP+':9090');
 

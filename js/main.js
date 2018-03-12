@@ -6,6 +6,8 @@ var centerMap = true;
 var uavPath=[];
 var home;
 var compass;
+var currentImg;
+var counter = 0;
 
 var iconwaypointYellow;
 var joePosition;
@@ -38,6 +40,12 @@ function connectToROS(address){
 
   joePosition = L.icon({
       iconUrl: 'img/joesPosition.png',
+      iconSize: [17,25],
+      popupAnchor: [0,-12],
+    });
+
+  startPosition = L.icon({
+      iconUrl: 'img/whiteFlag.png',
       iconSize: [17,25],
       popupAnchor: [0,-12],
     });
@@ -147,8 +155,8 @@ function connectToTopics() {
     });
 
     imageTopic.subscribe(function(message) {
-      var img = "data:image/png;base64," + message.data;
-      document.getElementById( 'aruco-image' ).setAttribute( 'src', img );
+      currentImg = "data:image/png;base64," + message.data;
+      document.getElementById( 'aruco-image' ).setAttribute( 'src', currentImg );
     });
 
     altitudeTopic.subscribe(function(message) {
@@ -178,7 +186,7 @@ function connectToTopics() {
     });
 
     waypoints.subscribe(function(message){
-        console.log("waypoint:" + message[0].x_lat);
+        //console.log("waypoint:" + message[0].x_lat);
     });
 
     navSatTopic.subscribe(function(message) {
@@ -188,8 +196,11 @@ function connectToTopics() {
       if (message != null && home == null) {
         home = coords;
         console.log("Got home coordinates: "+ home[0] + "," + home[1]);
-        L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
+        //L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
+        L.marker(home,{icon: startPosition}).addTo(map);
 
+
+        
         function mark(coords, label) {
           var marker = new L.marker(coords, { opacity: 0.75 });
           if (label != null) {
@@ -235,8 +246,42 @@ function connectToTopics() {
       }
     });
 
+
+
+    // Marker Location ---------------------------------------------
+
+    var markerLocation = new ROSLIB.Topic({
+        ros: ros,
+        name: '/gopro/landing_box_location',
+        messageType: 'geometry_msgs/PointStamped'
+      });
+    
+    markerLocation.subscribe(function(message) {
+      counter ++;
+      if(counter < 100){
+        console.log("Landing Box Location: x: "+message.point.x +", y: "+message.point.y);
+
+        var markerImage = document.createElement('div');
+        markerImage.setAttribute('class', 'aruco-image-crop');
+        markerImage.setAttribute('style', 'width:50px; height:50px; background-image:url('+currentImg+'); background-position:-'+(message.point.x-25)+'px -'+(message.point.y-25)+'px;');
+
+        document.getElementById('images-seen').appendChild(markerImage);
+
+        counter = 0;
+      }
+      
+      /*newDot.setAttribute('class', 'landing-box-loc');
+      newDot.setAttribute('style', 'left:'+message.point.x/2+'px; top:'+message.point.y/2+'px;');
+      document.getElementById('graph-scatter-plot').appendChild(newDot);*/
+    });
+  
+
+
+
+
+
     // Add placeholder icons to map, to be updated with real data -------------------
-    addJoe([38.977810, -77.338848]);
+    //addJoe([38.977810, -77.338848]);
     //addWaypoint([38.977290, -77.338628]);
 }
 
@@ -275,14 +320,13 @@ function addJoe(loc){
 
   var possibleJoeLocation = L.circle(loc, {radius: 100, color:"#ffffff", weight:0, fillColor: "#4ABDE2", fillOpacity: .4}).addTo(map);
     possibleJoeLocation.bindTooltip("Joe's possible location", {sticky: true});
+  
   var innerMarkerLocation = L.circle(loc, {radius: 40, color:"#ffffff", weight:3, fillColor: "#ffffff", fillOpacity: 0, interactive:false}).addTo(map);
 
 }
 
 
 // Add Waypoint to Map ---------------------------------------------
-
-
 
 function addWaypoint(loc){
   
@@ -334,21 +378,7 @@ function toggleMapCenter(toToggle){
 
 
 
- /* ************************************************      MARKER LOCATION
- var markerLocation = new ROSLIB.Topic({
-      ros: ros,
-      name: '/gopro/landing_box_location',
-      messageType: 'geometry_msgs/PointStamped'
-    });
- markerLocation.subscribe(function(message) {
-    console.log("Landing Box Location: x: "+message.point.x +", y: "+message.point.y +", z: "+message.point.z);
 
-    var newDot = document.createElement('div');
-    newDot.setAttribute('class', 'landing-box-loc');
-    newDot.setAttribute('style', 'left:'+message.point.x/2+'px; top:'+message.point.y/2+'px;');
-    document.getElementById('graph-scatter-plot').appendChild(newDot);
-  });
-  */
 
 
 // Prop def for .pushMax() to limit size of static memory.
