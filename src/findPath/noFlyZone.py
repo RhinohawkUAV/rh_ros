@@ -1,25 +1,25 @@
 import Tkinter as tk
 from Tkinter import Canvas
 
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, LineString
 
 import geometry.intersection
 from gui import Drawable
 from gui.drawables import DrawablePolygon, DrawableLine
-
 
 class NoFlyZone(Drawable):
     def __init__(self, points, velocity):
         self.points = points
         self.velocity = velocity
 
-    def blocksLineOfSight(self, line):
+    def checkBlocksPath(self, startPoint, endPoint, speed):
+        line = LineString([startPoint, endPoint])
         polygon = Polygon(self.points)
         return line.crosses(polygon) or line.within(polygon)
 
-    def findFutureHeadingCollisions(self, startPosition, speed):
+    def calcVelocitiesToVertices(self, startPosition, speed):
         """
-        Given the startPosition a speed of travel find headings and future collision with NFZ's points and
+        Given the startPosition a speed of travel find headings and future collision with NFZ's _points and
         headings to get there.
         Note: this does not account for solutions which require traveling through the NFZ.
         All headings have magnitude==speed (they are not normalized).
@@ -34,7 +34,7 @@ class NoFlyZone(Drawable):
                 result.append(solution)
         return result
 
-    def getPointsAtTime(self, time):
+    def _getPointsAtTime(self, time):
         pointsAtTime = []
         for vertex in self.points:
             pointsAtTime.append((vertex[0] + self.velocity[0] * time, vertex[1] + self.velocity[1] * time))
@@ -42,7 +42,7 @@ class NoFlyZone(Drawable):
 
     def draw(self, canvas, fill="red", time=0, **kwargs):
         # type: (Canvas) -> None
-        pointsAtTime = self.getPointsAtTime(time)
+        pointsAtTime = self._getPointsAtTime(time)
         DrawablePolygon(pointsAtTime).draw(canvas, fill=fill, **kwargs)
         if self.velocity[0] != 0 or self.velocity[1] != 0:
             x1 = self.points[0][0]

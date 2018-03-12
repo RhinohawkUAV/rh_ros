@@ -9,27 +9,44 @@ from geometry.lineSegment import LineSeg
 from gui import Drawable
 
 
+POINT_OFFSET_LENGTH = 0.01
+
+
 class NoFlyZoneG(Drawable):
     def __init__(self, points, velocity):
-        self.points = np.array(points, np.double)
-        self.velocity = np.array(velocity, np.double)
+        """
+        A polygon NFZ with a given _velocity.  Points must be given in CCW order.
+        :param points:
+        :param velocity:
+        """
+
+        # Points composing the border of the NFZ
+        self._points = np.array(points, np.double)
+        self._velocity = np.array(velocity, np.double)
+
+        # Outward facing normals for each point.  These are used for offsetting when computing blocksLineOfSight.
+        self._pointOffsets = []
         self._lines = []
-        self._midPoint = self.points.sum(axis=0) / len(self.points)
+        self._midPoint = self._points.sum(axis=0) / len(self._points)
 
-        for i in range(0, len(points) - 1):
-            self._lines.append(LineSeg(self.points[i], self.points[i + 1]))
-        self._lines.append(LineSeg(self.points[-1], self.points[0]))
+        for i in range(0, len(points)):
+            self._lines.append(LineSeg(self._points[i - 1], self._points[i]))
 
-    def blocksLineOfSight(self, start, end, speed):
+        for i in range(0, len(points)):
+            pointOffset = (self._lines[i - 1].n + self._lines[i].n) / 2.0
+            pointOffset *= POINT_OFFSET_LENGTH / np.linalg.norm(pointOffset)
+            self._pointOffsets.append(pointOffset)
+
+    def checkBlocksPath(self, start, end, speed):
         """
         Does this moving no-fly-zone, block a path from start to end and the given speed?
 
         To solve this we convert the problem to the case the no-fly-zone is not moving, by
-        offsetting the velocity of the moving object.
+        offsetting the _velocity of the moving object.
 
         :param start:
         :param end:
-        :param speed: MUST BE POSITIVE unless start==end (not moving in one place)
+        :param speed: MUST BE POSITIVE unless start==end (hovering in place)
         :return:
         """
 
@@ -38,11 +55,11 @@ class NoFlyZoneG(Drawable):
         if distance == 0.0:
             return False
 
-        # velocity vector - has magnitude in speed heading in direction from start to end
+        # _velocity vector - has magnitude in speed heading in direction from start to end
         velocity = (speed / distance) * direction
 
-        # Offset direction by the velocity of the no-fly-zone (pretend it is not moving)
-        velocity -= self.velocity
+        # Offset direction by the _velocity of the no-fly-zone (pretend it is not moving)
+        velocity -= self._velocity
 
         # Time to get from start to end
         t = distance / speed
@@ -55,37 +72,43 @@ class NoFlyZoneG(Drawable):
                 return True
         return False
 
-    def findFutureHeadingsAndCollisions(self, startPoint, speed):
+    def calcVelocitiesToVertices(self, startPosition, speed):
         """
-        Given the startPosition a speed of travel find headings and future collision with NFZ's points and
-        headings to get there.
-        Note: this does not account for solutions which require traveling through the NFZ.
-        All headings have magnitude==speed (they are not normalized).
-        :param startPoint:
+        Given the startPosition and a speed of travel find _velocity vectors that will reach each vertex (if possible).
+        For each _velocity vector, find the corresponding position where the vertex will be reached.
+
+        Note: this does not account for if solutions are legal (would travel through this or other NFZs)
+
+        :param startPosition:
         :param speed:
-        :return: [((headingX,headingY),(collisionPointX,collisionPointY)),...]
+        :return: numpy array of [(_velocity,collision),(velocity2,collision2),...]
         """
         result = []
-        for point in self.points:
-            solution = geometry.intersection.hitTargetAtSpeed(startPoint, speed, point, self.velocity)
+        for i in range(0, len(self._points)):
+            offsetPoint = self._points[i] + self._pointOffsets[i]
+            solution = geometry.intersection.hitTargetAtSpeed(startPosition, speed, offsetPoint, self._velocity)
             if not solution is None:
                 result.append(solution)
         return result
 
-    def getPointsAtTime(self, time):
-        pointsAtTime = []
-        for point in self.points:
-            pointsAtTime.append((point[0] + self.velocity[0] * time, point[1] + self.velocity[1] * time))
-        return pointsAtTime
+    def _getFutureCopy(self, time):
+        """Create a copy of this NFZ, as it will exist at some point in the future."""
+        futurePoints = []
+        for point in self._points:
+            futurePoints.append((point[0] + self._velocity[0] * time, point[1] + self._velocity[1] * time))
+        return NoFlyZoneG(futurePoints, self._velocity)
 
-    def draw(self, canvas, fill="red", time=0, **kwargs):
+    def draw(self, canvas, fill="red", time=0.0, **kwargs):
         # type: (Canvas) -> None
 
-        # pointsAtTime = self.getPointsAtTime(time)
-        # DrawablePolygon(pointsAtTime).draw(canvas, fill=fill, **kwargs)
-        for line in self._lines:
-            line.draw(canvas, fill=fill, time=time, **kwargs)
+        if time == 0.0:
+            # If time is 0 draw NFZ as it is now
+            for line in self._lines:
+                line.draw(canvas, fill=fill, time=time, **kwargs)
 
-        if np.linalg.norm(self.velocity) > 0.0:
-            lineSegment.drawLine(canvas, self._midPoint, self._midPoint + self.velocity * 4.0, fill="black",
-                                 arrow=tk.LAST)
+            if np.linalg.norm(self._velocity) > 0.0:
+                lineSegment.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0, fill="black",
+                                     arrow=tk.LAST)
+        else:
+            # For future times, generate a future noFlyZone and draw that with time=0.0.
+            self._getFutureCopy(time).draw(canvas, fill=fill, time=0.0, **kwargs)

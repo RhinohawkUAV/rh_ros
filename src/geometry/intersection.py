@@ -4,17 +4,17 @@ from utils import quadratic
 def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetVelocity):
     """
     Solves the following problem:
-    A projectile starts at a position with a given speed.  A target starts at another position and has a given velocity.
+    A projectile starts at a position with a given speed.  A target starts at another position and has a given _velocity.
 
-    What is the velocity vector the projectile should follow to hit the moving target?
+    What is the _velocity vector the projectile should follow to hit the moving target?
     Where will the projectile collide with the target?
 
     Note: We start knowing the speed of the projectile, but not the direction.
 
     :param projectileStart: where craft starts
-    :param projectileSpeed: magnitude of craft's velocity
+    :param projectileSpeed: magnitude of craft's _velocity
     :param targetStartPoint: the target's starting location
-    :param targetVelocity: the velocity vector of the target
+    :param targetVelocity: the _velocity vector of the target
     :return: ((velocityX,velocityY),(collisionX,collisionY)) or None, if speed is insufficient given position
     """
 
@@ -24,8 +24,8 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     towardsMagSquared = towardsX * towardsX + towardsY * towardsY
     velDotTowards = towardsX * targetVelocity[0] + towardsY * targetVelocity[1]
 
-    # We need a mixture of velocity and the towardsVector.  Its magnitude needs to be projectileSpeed.
-    # heading = velocity + towardsFactor * towardsVector.
+    # We need a mixture of _velocity and the towardsVector.  Its magnitude needs to be projectileSpeed.
+    # heading = _velocity + towardsFactor * towardsVector.
     # Solve for towardsFactor:
 
     a = -towardsMagSquared
@@ -37,8 +37,8 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     towardsFactor = quadratic.solveQuad(a, b, c)
 
     # Error!
-    # Note: 0 solutions, when projectileSpeed is too low compared to point's velocity
-    # A solution of infinity when projectileSpeed matches velocity exactly
+    # Note: 0 solutions, when projectileSpeed is too low compared to point's _velocity
+    # A solution of infinity when projectileSpeed matches _velocity exactly
     if len(towardsFactor) == 0 or towardsFactor[0] == 0.0:
         return None
 

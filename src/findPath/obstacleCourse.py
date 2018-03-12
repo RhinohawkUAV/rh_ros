@@ -1,5 +1,3 @@
-from shapely.geometry import LineString
-
 from gui import Drawable
 
 
@@ -13,42 +11,41 @@ class ObstacleCourse(Drawable):
         self._noFlyZones = noFlyZones
         self.boundary = boundary
 
-    def doesLineIntersectStatic(self, startPoint, endPoint):
+    def doesLineIntersect(self, startPoint, endPoint, speed):
         """
-        Does the line from startPoint to endPoint intersect and NFZs?
-        DOES NOT account for motion of NFZs over time.
+        Does a path from startPoint to endPoint, at the given speed intersect any NFZs at any time?
         """
-        line = LineString([startPoint, endPoint])
         for noFlyZone in self._noFlyZones:
-            if noFlyZone.blocksLineOfSight(line):
-                return False
-        return True
+            if noFlyZone.checkBlocksPath(startPoint, endPoint, speed):
+                return True
+        return False
 
-    def findVisibleVerticesStatic(self, eye):
+    def findVisibleVertices(self, startPoint, speed):
         """
-        Look through all NFZ vertices and determine which are visible from eye.
+        Look through all NFZ vertices and determine which are visible from startPoint.
         DOES NOT account for motion of NFZs over time.
         """
         visibleVertices = []
         for noFlyZone in self._noFlyZones:
             for polygonVertex in noFlyZone.points:
-                if self.doesLineIntersectStatic(eye, polygonVertex):
+                if not self.doesLineIntersect(startPoint, polygonVertex, speed):
                     visibleVertices.append(polygonVertex)
 
         return visibleVertices
 
     def findVisibleVerticesDynamic(self, startPoint, speed):
         """
-        Look through all NFZ vertices and determine which are visible from eye.
-        DOES account for motion of NFZs over time.
-        TODO: Does not account for intersections with NFZs over time yet...
+        Look through all NFZ vertices and determine which can be reached by a straight-line path from
+        startPoint to the vertex at the given speed without intersecting any NFZs.
+
         """
         visiblePoints = []
         for noFlyZone in self._noFlyZones:
-            results = noFlyZone.findFutureHeadingCollisions(startPoint, speed)
+            results = noFlyZone.calcVelocitiesToVertices(startPoint, speed)
             for result in results:
-                point = result[1]
-                visiblePoints.append(point)
+                endPoint = result[1]
+                if not self.doesLineIntersect(startPoint, endPoint, speed):
+                    visiblePoints.append(endPoint)
         return visiblePoints
 
     def draw(self, canvas, time=0.0, **kwargs):

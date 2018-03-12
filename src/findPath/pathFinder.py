@@ -22,6 +22,8 @@ class PathFinder(Drawable):
         # End/goal position to find
         self._goalPoint = goalPoint
 
+        self._speed = 1.0
+
         # The obstacle course to traverse
         self._obstacleCourse = obstacleCourse
 
@@ -31,7 +33,7 @@ class PathFinder(Drawable):
         # Current vertex in the search algorithm
         self._currentVertex = None
 
-        # Visible points from current position being examined
+        # Visible _points from current position being examined
         self._visiblePoints = []
 
         # This object is signalled, with a copy of findPath, whenever it is time to draw
@@ -51,8 +53,8 @@ class PathFinder(Drawable):
             totalCalcTime -= time.time()
 
             visibleCalcTime -= time.time()
-            self._visiblePoints = self._obstacleCourse.findVisibleVerticesStatic(self._currentVertex.data)
-            if self._obstacleCourse.doesLineIntersectStatic(self._currentVertex.data, self._goalPoint):
+            self._visiblePoints = self._obstacleCourse.findVisibleVertices(self._currentVertex.data, self._speed)
+            if not self._obstacleCourse.doesLineIntersect(self._currentVertex.data, self._goalPoint, self._speed):
                 self._visiblePoints.append(self._goalPoint)
             visibleCalcTime += time.time()
 
@@ -73,7 +75,7 @@ class PathFinder(Drawable):
             self._currentVertex = self._graph.getNextVertex()
             totalCalcTime += time.time()
 
-        # Visible points will be drawn wrong if not recomputed AND they are irrelevant (we are at the goal)
+        # Visible _points will be drawn wrong if not recomputed AND they are irrelevant (we are at the goal)
         self._visiblePoints = []
         self._graph.setEmphasizedPathEnd(self._goalPoint)
         self._signalDraw()

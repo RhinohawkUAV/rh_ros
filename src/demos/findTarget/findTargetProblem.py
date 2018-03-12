@@ -1,5 +1,7 @@
 import math
 
+import numpy as np
+
 from gui import DrawableLine, DrawableCircle
 
 
@@ -10,8 +12,8 @@ class FindTargetProblem:
         self.setStartPoint(startPoint)
 
     def setStartPoint(self, startPoint):
-        """Change the problem's start point and update the set of visible points."""
-        self.startPoint = startPoint
+        """Change the problem's start point and update the set of visible _points."""
+        self.startPoint = np.array(startPoint, np.double)
         self._visiblePoints = self._obstacleCourse.findVisibleVerticesDynamic(self.startPoint, self.speed)
 
     def calcTimeToPoint(self, point):

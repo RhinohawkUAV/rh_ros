@@ -20,7 +20,7 @@ class LineIntersectProblem(Drawable):
         self._endPoint = endPoint
 
     def draw(self, canvas, **kwargs):
-        intersected = self._noFlyZone.blocksLineOfSight(self._startPoint, self._endPoint, self._speed)
+        intersected = self._noFlyZone.checkBlocksPath(self._startPoint, self._endPoint, self._speed)
         if intersected:
             fill = "red"
         else:

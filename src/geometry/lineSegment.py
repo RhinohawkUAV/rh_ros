@@ -34,7 +34,7 @@ class LineSeg(Drawable):
         self.n = np.array([-diff[1], diff[0]], np.double)
         self.n /= np.math.sqrt(magSquared)
 
-        # Points from point 1 to point 2 with length inverse to the distance between the points.
+        # Points from point 1 to point 2 with length inverse to the distance between the _points.
         self.invTan = diff / magSquared
 
         # For drawing ONLY
@@ -88,7 +88,7 @@ class LineSeg(Drawable):
 
         # While moving towards the line perpendicularly, we also moved along the line tangentially.
         # We don't care how far we moved in absolute space, only in "tangent-unit-space".  In this space start is 0, end is 1.
-        # The provided invTan vector points in the direction from start to end with the inverse magnitude of the length between them.
+        # The provided invTan vector _points in the direction from start to end with the inverse magnitude of the length between them.
         tan = np.dot(p1diff + lineDir * t, self.invTan)
 
         return tan >= 0 and tan <= 1
