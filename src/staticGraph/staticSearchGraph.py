@@ -4,9 +4,9 @@ from gui import DrawableLine
 from vertex import Vertex
 
 
-class SearchGraph(Drawable):
+class StaticSearchGraph(Drawable):
     """
-    A graph used to find the shortest path.  Each vertex holds some piece of metadata and can be looked up using the information.
+    A staticGraph used to find the shortest path.  Each vertex holds some piece of metadata and can be looked up using the information.
     """
 
     def __init__(self, startData):

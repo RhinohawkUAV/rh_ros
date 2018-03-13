@@ -5,7 +5,7 @@ from Tkinter import Canvas
 
 import numpy as np
 
-from graph.graph import SearchGraph
+from staticGraph.staticSearchGraph import StaticSearchGraph
 from gui import Drawable
 from gui import DrawableLine, DrawableCircle
 
@@ -31,8 +31,8 @@ class StaticPathFinder(Drawable):
         # The obstacle course to traverse
         self._obstacleCourse = obstacleCourse
 
-        # A graph object for perform the graph algorithm
-        self._graph = SearchGraph(self._startPoint)
+        # A staticGraph object for perform the staticGraph algorithm
+        self._graph = StaticSearchGraph(self._startPoint)
 
         # Current vertex in the search algorithm
         self._currentVertex = None
