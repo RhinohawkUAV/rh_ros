@@ -7,9 +7,9 @@ class ObstacleCourse(Drawable):
     collision detection to be performed.
     """
 
-    def __init__(self, noFlyZones, boundary):
-        self._noFlyZones = noFlyZones
+    def __init__(self, boundary, noFlyZones):
         self.boundary = boundary
+        self._noFlyZones = noFlyZones
 
     def doesLineIntersect(self, startPoint, endPoint, speed):
         """

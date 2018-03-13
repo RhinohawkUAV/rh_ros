@@ -2,10 +2,9 @@ import random
 
 from findPath.obstacleCourse import ObstacleCourse
 from geometry.noFlyZone import NoFlyZone
-from staticPathFinder import StaticPathFinder
 
 
-def generatePathfindProblem(start, end, numNoFlyZones, x, y, width, height, minFraction, maxFraction):
+def generateNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFraction):
     """Generates a random Geometry object with certain properties for testing"""
 
     xDelta = width - maxFraction * width
@@ -30,4 +29,9 @@ def generatePathfindProblem(start, end, numNoFlyZones, x, y, width, height, minF
         zone = NoFlyZone([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], (0, 0))
         noFlyZones.append(zone)
 
-    return StaticPathFinder(start, end, ObstacleCourse(noFlyZones, None))
+    return noFlyZones
+
+
+def generateObstacleCourse(boundary, *generateNoFlyZonesArgs):
+    """Generates a random obstacle course object with certain properties for testing"""
+    return ObstacleCourse(boundary, generateNoFlyZones(*generateNoFlyZonesArgs))
