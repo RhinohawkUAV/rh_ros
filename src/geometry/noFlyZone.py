@@ -14,7 +14,7 @@ from gui import Drawable
 POINT_OFFSET_LENGTH = 0.0001
 
 
-class NoFlyZoneG(Drawable):
+class NoFlyZone(Drawable):
     def __init__(self, points, velocity):
         """
         A polygon NFZ with a given _velocity.  Points must be given in CCW order.
@@ -103,7 +103,7 @@ class NoFlyZoneG(Drawable):
         futurePoints = []
         for point in self._points:
             futurePoints.append((point[0] + self._velocity[0] * time, point[1] + self._velocity[1] * time))
-        return NoFlyZoneG(futurePoints, self._velocity)
+        return NoFlyZone(futurePoints, self._velocity)
 
     def draw(self, canvas, fill="black", time=0.0, drawVectors=True, **kwargs):
         # type: (Canvas) -> None
