@@ -1,7 +1,7 @@
 from gui import Visualizer
 
 
-class LineIntersectVisualizer(Visualizer):
+class FindNFZIntersectStaticVis(Visualizer):
     def __init__(self, lineIntersectProblem, *args, **kw):
         Visualizer.__init__(self, *args, **kw)
         self.lineIntersectProblem = lineIntersectProblem

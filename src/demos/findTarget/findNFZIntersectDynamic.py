@@ -5,7 +5,7 @@ import numpy as np
 from gui import DrawableLine, DrawableCircle
 
 
-class FindTargetProblem:
+class FindNFZIntersectDynamic:
     def __init__(self, obstacleCourse, startPoint, speed):
         self._obstacleCourse = obstacleCourse
         self.speed = speed

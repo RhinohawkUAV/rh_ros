@@ -1,4 +1,4 @@
-from findPathBasic.pathFindingVisualizer import PathFindingVisualizer
-from findTarget.findTargetVisualizer import FindTargetVisualizer
-from findTarget.findTargetProblem import FindTargetProblem
+from findPathBasic.staticPathFindingVisualizer import PathFindingVisualizer
+from findTarget.FindNFZIntersectDynamicVis import findNFZIntersectDynamicVis
+from findTarget.findNFZIntersectDynamic import FindNFZIntersectDynamic
 

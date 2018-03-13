@@ -1,7 +1,7 @@
 from gui.visualizer import Visualizer
 
 
-class FindTargetVisualizer(Visualizer):
+class findNFZIntersectDynamicVis(Visualizer):
     """Visualization/tester for the geometry.hitTargetAtSpeed method.
         Click the mouse to choose a start point.
         It will show all path to follow, at the given speed, to reach each vertex of the given NFZs in the future.

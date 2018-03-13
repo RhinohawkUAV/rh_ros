@@ -6,7 +6,7 @@ import geometry.lineSegment
 from gui import Drawable
 
 
-class LineIntersectProblem(Drawable):
+class FindNFZIntersectStatic(Drawable):
     def __init__(self, noFlyZone, startPoint, endPoint):
         self._startPoint = np.array(startPoint, np.double)
         self._endPoint = np.array(endPoint, np.double)

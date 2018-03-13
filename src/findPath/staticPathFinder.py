@@ -10,7 +10,7 @@ from gui import Drawable
 from gui import DrawableLine, DrawableCircle
 
 
-class PathFinder(Drawable):
+class StaticPathFinder(Drawable):
     """
     Holds entire geometric state of the system, including, no-fly zones, their velocities, etc.
     Path finding related queries can be be performed on this object.
