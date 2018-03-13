@@ -4,9 +4,9 @@ from demos.findNFZIntersectStatic.findNFZIntersectStaticVis import FindNFZInters
 
 # from findPath.noFlyZone import NoFlyZone
 #
-from geometry.noFlyZone import NoFlyZoneG
+from geometry.noFlyZone import NoFlyZone
 
-noFly1 = NoFlyZoneG([(40, 50), (40, 70), (50, 75), (50, 50)], (0, 0))
+noFly1 = NoFlyZone([(40, 50), (40, 70), (50, 75), (50, 50)], (0, 0))
 # noFly2 = NoFlyZone([(40, 40), (40, 45), (45, 45), (45, 40)], (-2, 2))
 
 initialLineIntersectProblem = FindNFZIntersectStatic(noFly1, (40, 30), (60, 30))
