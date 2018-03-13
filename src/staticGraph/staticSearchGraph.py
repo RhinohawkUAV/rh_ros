@@ -1,6 +1,6 @@
+import gui
 import vertex
 from gui import Drawable
-from gui import DrawableLine
 from vertex import Vertex
 
 
@@ -80,9 +80,7 @@ class StaticSearchGraph(Drawable):
     def drawLeastPath(self, end, canvas):
         def drawLine(vertex):
             if not vertex.previous is None:
-                line = DrawableLine(vertex.data[0], vertex.data[1],
-                                    vertex.previous.data[0], vertex.previous.data[1])
-                line.draw(canvas, width=4, fill="orange")
+                gui.draw.drawLine(canvas, vertex.data, vertex.previous.data, width=4, color="orange")
 
         self.traverseLeastPath(end, drawLine)
 

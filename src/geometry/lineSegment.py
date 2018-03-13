@@ -2,6 +2,7 @@ from Tkinter import Canvas
 
 import numpy as np
 
+import gui.draw
 from gui import Drawable
 
 textOffsetFactor = 4.0
@@ -104,12 +105,8 @@ class LineSeg(Drawable):
         # type: (Canvas, str) -> None
         if not text == "":
             textPos = self.mid - self.n * textOffsetFactor
-            canvas.create_text(textPos[0], textPos[1], text=text, fill="black")
+            gui.draw.drawText(canvas, textPos, text=text, **kwargs)
 
-        drawLine(canvas, self.p1, self.p2, **kwargs)
+        gui.draw.drawLine(canvas, self.p1, self.p2, **kwargs)
         if drawVectors:
-            drawLine(canvas, self.mid, self.mid + self.n * normalDisplayFactor, **kwargs)
-
-
-def drawLine(canvas, p1, p2, **kwargs):
-    canvas.create_line(p1[0], p1[1], p2[0], p2[1], **kwargs)
+            gui.draw.drawLine(canvas, self.mid, self.mid + self.n * normalDisplayFactor, **kwargs)

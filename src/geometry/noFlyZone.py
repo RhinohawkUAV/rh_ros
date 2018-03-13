@@ -4,7 +4,7 @@ from Tkinter import Canvas
 import numpy as np
 
 import geometry.intersection
-import lineSegment
+import gui.draw
 from geometry.lineSegment import LineSeg
 from gui import Drawable
 
@@ -105,23 +105,23 @@ class NoFlyZone(Drawable):
             futurePoints.append((point[0] + self._velocity[0] * time, point[1] + self._velocity[1] * time))
         return NoFlyZone(futurePoints, self._velocity)
 
-    def draw(self, canvas, fill="black", time=0.0, drawVectors=True, **kwargs):
+    def draw(self, canvas, time=0.0, drawVectors=True, **kwargs):
         # type: (Canvas) -> None
 
         if time == 0.0:
             # If time is 0 draw NFZ as it is now
             for line in self._lines:
-                line.draw(canvas, fill=fill, time=time, drawVectors=drawVectors, **kwargs)
+                line.draw(canvas, time=time, drawVectors=drawVectors, **kwargs)
 
             if drawVectors:
                 for i in range(0, len(self._points)):
                     p1 = self._points[i]
                     p2 = self._points[i] + (4.0 * self._pointOffsets[i] / POINT_OFFSET_LENGTH)
-                    lineSegment.drawLine(canvas, p1, p2, fill=fill, arrow=tk.LAST)
+                    gui.draw.drawLine(canvas, p1, p2, arrow=tk.LAST, **kwargs)
 
                 if np.linalg.norm(self._velocity) > 0.0:
-                    lineSegment.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0, fill="black",
-                                         arrow=tk.LAST)
+                    gui.draw.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0,
+                                      arrow=tk.LAST, **kwargs)
         else:
             # For future times, generate a future noFlyZone and draw that with time=0.0.
-            self._getFutureCopy(time).draw(canvas, fill=fill, time=0.0, **kwargs)
+            self._getFutureCopy(time).draw(canvas, time=0.0, **kwargs)

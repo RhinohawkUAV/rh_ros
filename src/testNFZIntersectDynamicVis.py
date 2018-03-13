@@ -1,6 +1,6 @@
 import gui
 from demos import findNFZIntersectDynamicVis, FindNFZIntersectDynamic
-from findPath.obstacleCourse import ObstacleCourse
+from geometry.obstacleCourse import ObstacleCourse
 from geometry.noFlyZone import NoFlyZone
 
 noFly1 = NoFlyZone([(40, 50), (40, 70), (50, 75), (50, 50)], (3, 0))

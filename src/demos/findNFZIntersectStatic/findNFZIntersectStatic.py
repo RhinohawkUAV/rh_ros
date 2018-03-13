@@ -2,7 +2,7 @@ import Tkinter as tk
 
 import numpy as np
 
-import geometry.lineSegment
+import gui.draw
 from gui import Drawable
 
 
@@ -22,10 +22,10 @@ class FindNFZIntersectStatic(Drawable):
     def draw(self, canvas, **kwargs):
         intersected = self._noFlyZone.checkBlocksPath(self._startPoint, self._endPoint, self._speed)
         if intersected:
-            fill = "red"
+            color = "red"
         else:
-            fill = "black"
+            color = "black"
 
-        self._noFlyZone.draw(canvas, fill=fill)
-        geometry.lineSegment.drawLine(canvas, self._startPoint, self._endPoint, fill="blue",
-                                      arrow=tk.LAST)
+        self._noFlyZone.draw(canvas, color=color)
+        gui.draw.drawLine(canvas, self._startPoint, self._endPoint, color="blue",
+                          arrow=tk.LAST)

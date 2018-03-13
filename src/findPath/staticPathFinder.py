@@ -5,9 +5,9 @@ from Tkinter import Canvas
 
 import numpy as np
 
-from staticGraph.staticSearchGraph import StaticSearchGraph
+import gui
 from gui import Drawable
-from gui import DrawableLine, DrawableCircle
+from staticGraph.staticSearchGraph import StaticSearchGraph
 
 
 class StaticPathFinder(Drawable):
@@ -24,7 +24,7 @@ class StaticPathFinder(Drawable):
         # End/goal position to find
         self._goalPoint = goalPoint
 
-        self._goalArray = np.array(goalPoint,np.double)
+        self._goalArray = np.array(goalPoint, np.double)
 
         self._speed = 1.0
 
@@ -120,14 +120,13 @@ class StaticPathFinder(Drawable):
         # type: (Canvas)->None
         """Must be called from GUI thread"""
 
-        self._obstacleCourse.draw(canvas, time=time,drawVectors = False, **kwargs)
+        self._obstacleCourse.draw(canvas, time=time, drawVectors=False, **kwargs)
 
         for visiblePoint in self._visiblePoints:
-            DrawableLine(self._currentVertex.data[0], self._currentVertex.data[1], visiblePoint[0],
-                         visiblePoint[1]).draw(canvas, fill="blue")
+            gui.draw.drawLine(canvas,self._currentVertex.data,visiblePoint,color="blue")
 
-        DrawableCircle(self._currentVertex.data[0], self._currentVertex.data[1], 1.0).draw(canvas, fill="green")
-        DrawableCircle(self._startPoint[0], self._startPoint[1], 1.0).draw(canvas, fill="green")
-        DrawableCircle(self._goalPoint[0], self._goalPoint[1], 1.0).draw(canvas, fill="green")
+        gui.draw.drawPoint(canvas, self._currentVertex.data, color="green")
+        gui.draw.drawPoint(canvas, self._startPoint, color="green")
+        gui.draw.drawPoint(canvas, self._goalPoint, color="green")
 
         self._graph.draw(canvas, **kwargs)

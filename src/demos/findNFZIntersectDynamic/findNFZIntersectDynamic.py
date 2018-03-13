@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-from gui import DrawableLine, DrawableCircle
+import gui
 
 
 class FindNFZIntersectDynamic:
@@ -31,12 +31,10 @@ class FindNFZIntersectDynamic:
         return distance / self.speed
 
     def draw(self, canvas, time=0, **kwargs):
-        self._obstacleCourse.draw(canvas, fill="black", time=0)
-        self._obstacleCourse.draw(canvas, fill="blue", time=time)
+        self._obstacleCourse.draw(canvas, color="black", time=0)
+        self._obstacleCourse.draw(canvas, color="blue", time=time)
 
-        DrawableCircle(self.startPoint[0], self.startPoint[1], 1).draw(canvas, fill="green")
+        gui.draw.drawPoint(canvas, self.startPoint, color="green")
 
         for visiblePoint in self._visiblePoints:
-            drawLine = DrawableLine(self.startPoint[0], self.startPoint[1],
-                                    visiblePoint[0], visiblePoint[1])
-            drawLine.draw(canvas, fill="black")
+            gui.draw.drawLine(canvas, self.startPoint, visiblePoint, color="black")
