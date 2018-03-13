@@ -93,7 +93,7 @@ class LineSeg(Drawable):
 
         return tan >= 0 and tan <= 1
 
-    def draw(self, canvas, text="", time=0.0, **kwargs):
+    def draw(self, canvas, text="", time=0.0, drawVectors=True, **kwargs):
         """
         Draw on the canvas with any modifiers stored in kwargs.
         :param canvas:
@@ -107,7 +107,8 @@ class LineSeg(Drawable):
             canvas.create_text(textPos[0], textPos[1], text=text, fill="black")
 
         drawLine(canvas, self.p1, self.p2, **kwargs)
-        drawLine(canvas, self.mid, self.mid + self.n * normalDisplayFactor, **kwargs)
+        if drawVectors:
+            drawLine(canvas, self.mid, self.mid + self.n * normalDisplayFactor, **kwargs)
 
 
 def drawLine(canvas, p1, p2, **kwargs):

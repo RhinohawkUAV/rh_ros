@@ -3,6 +3,8 @@ import math
 import time
 from Tkinter import Canvas
 
+import numpy as np
+
 from graph.graph import SearchGraph
 from gui import Drawable
 from gui import DrawableLine, DrawableCircle
@@ -21,6 +23,8 @@ class PathFinder(Drawable):
 
         # End/goal position to find
         self._goalPoint = goalPoint
+
+        self._goalArray = np.array(goalPoint,np.double)
 
         self._speed = 1.0
 
@@ -49,12 +53,18 @@ class PathFinder(Drawable):
         totalCalcTime = 0
 
         self._currentVertex = self._graph.getNextVertex()
-        while not self._currentVertex is None and not self._currentVertex.data is self._goalPoint:
+        self._currentPoint = np.array(self._currentVertex.data, np.double)
+        while not self._currentVertex is None and not self._currentVertex.data == self._goalPoint:
             totalCalcTime -= time.time()
 
             visibleCalcTime -= time.time()
-            self._visiblePoints = self._obstacleCourse.findVisibleVertices(self._currentVertex.data, self._speed)
-            if not self._obstacleCourse.doesLineIntersect(self._currentVertex.data, self._goalPoint, self._speed):
+            paths = self._obstacleCourse.findPathsToVertices(self._currentPoint, self._speed)
+            self._visiblePoints = []
+
+            for path in paths:
+                self._visiblePoints.append(tuple(path[1]))
+
+            if not self._obstacleCourse.doesLineIntersect(self._currentPoint, self._goalArray, self._speed):
                 self._visiblePoints.append(self._goalPoint)
             visibleCalcTime += time.time()
 
@@ -73,6 +83,7 @@ class PathFinder(Drawable):
 
             totalCalcTime -= time.time()
             self._currentVertex = self._graph.getNextVertex()
+            self._currentPoint = np.array(self._currentVertex.data, np.double)
             totalCalcTime += time.time()
 
         # Visible _points will be drawn wrong if not recomputed AND they are irrelevant (we are at the goal)
@@ -109,7 +120,7 @@ class PathFinder(Drawable):
         # type: (Canvas)->None
         """Must be called from GUI thread"""
 
-        self._obstacleCourse.draw(canvas, time=time, **kwargs)
+        self._obstacleCourse.draw(canvas, time=time,drawVectors = False, **kwargs)
 
         for visiblePoint in self._visiblePoints:
             DrawableLine(self._currentVertex.data[0], self._currentVertex.data[1], visiblePoint[0],

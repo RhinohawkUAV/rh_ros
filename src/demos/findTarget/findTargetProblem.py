@@ -14,7 +14,10 @@ class FindTargetProblem:
     def setStartPoint(self, startPoint):
         """Change the problem's start point and update the set of visible _points."""
         self.startPoint = np.array(startPoint, np.double)
-        self._visiblePoints = self._obstacleCourse.findVisibleVerticesDynamic(self.startPoint, self.speed)
+        paths = self._obstacleCourse.findPathsToVertices(self.startPoint, self.speed)
+        self._visiblePoints = []
+        for path in paths:
+            self._visiblePoints.append(path[1])
 
     def calcTimeToPoint(self, point):
         """
@@ -28,8 +31,8 @@ class FindTargetProblem:
         return distance / self.speed
 
     def draw(self, canvas, time=0, **kwargs):
-        self._obstacleCourse.draw(canvas, fill="red", time=0)
-        self._obstacleCourse.draw(canvas, fill="purple", time=time)
+        self._obstacleCourse.draw(canvas, fill="black", time=0)
+        self._obstacleCourse.draw(canvas, fill="blue", time=time)
 
         DrawableCircle(self.startPoint[0], self.startPoint[1], 1).draw(canvas, fill="green")
 

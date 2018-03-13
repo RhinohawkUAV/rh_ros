@@ -20,33 +20,23 @@ class ObstacleCourse(Drawable):
                 return True
         return False
 
-    def findVisibleVertices(self, startPoint, speed):
-        """
-        Look through all NFZ vertices and determine which are visible from startPoint.
-        DOES NOT account for motion of NFZs over time.
-        """
-        visibleVertices = []
-        for noFlyZone in self._noFlyZones:
-            for polygonVertex in noFlyZone.points:
-                if not self.doesLineIntersect(startPoint, polygonVertex, speed):
-                    visibleVertices.append(polygonVertex)
-
-        return visibleVertices
-
-    def findVisibleVerticesDynamic(self, startPoint, speed):
+    def findPathsToVertices(self, startPoint, speed):
         """
         Look through all NFZ vertices and determine which can be reached by a straight-line path from
-        startPoint to the vertex at the given speed without intersecting any NFZs.
+        startPoint at the given speed without intersecting any NFZs at any time.
 
+        :param startPoint:
+        :param speed:
+        :return: [(velocity,pathEndPoint),(velocity2,pathEndPoint),...]
         """
-        visiblePoints = []
+        paths = []
         for noFlyZone in self._noFlyZones:
-            results = noFlyZone.calcVelocitiesToVertices(startPoint, speed)
-            for result in results:
-                endPoint = result[1]
-                if not self.doesLineIntersect(startPoint, endPoint, speed):
-                    visiblePoints.append(endPoint)
-        return visiblePoints
+            NFZPaths = noFlyZone.calcVelocitiesToVertices(startPoint, speed)
+            for path in NFZPaths:
+                pathEndPoint = path[1]
+                if not self.doesLineIntersect(startPoint, pathEndPoint, speed):
+                    paths.append(path)
+        return paths
 
     def draw(self, canvas, time=0.0, **kwargs):
         for noFlyZone in self._noFlyZones:

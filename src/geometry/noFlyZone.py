@@ -8,8 +8,10 @@ import lineSegment
 from geometry.lineSegment import LineSeg
 from gui import Drawable
 
-
-POINT_OFFSET_LENGTH = 0.01
+# TODO: Tune value
+# When computing paths to vertices of no-fly-zones, choosing the exact vertex may register as a collision due to
+# round-off error.  This small delta offset, outward along the vertices's normal prevents this.
+POINT_OFFSET_LENGTH = 0.0001
 
 
 class NoFlyZoneG(Drawable):
@@ -32,10 +34,15 @@ class NoFlyZoneG(Drawable):
         for i in range(0, len(points)):
             self._lines.append(LineSeg(self._points[i - 1], self._points[i]))
 
-        for i in range(0, len(points)):
-            pointOffset = (self._lines[i - 1].n + self._lines[i].n) / 2.0
+        for i in range(0, len(points) - 1):
+            pointOffset = (self._lines[i].n + self._lines[i + 1].n) / 2.0
             pointOffset *= POINT_OFFSET_LENGTH / np.linalg.norm(pointOffset)
             self._pointOffsets.append(pointOffset)
+
+        i = -1
+        pointOffset = (self._lines[i].n + self._lines[i + 1].n) / 2.0
+        pointOffset *= POINT_OFFSET_LENGTH / np.linalg.norm(pointOffset)
+        self._pointOffsets.append(pointOffset)
 
     def checkBlocksPath(self, start, end, speed):
         """
@@ -81,7 +88,7 @@ class NoFlyZoneG(Drawable):
 
         :param startPosition:
         :param speed:
-        :return: numpy array of [(_velocity,collision),(velocity2,collision2),...]
+        :return: [(velocity,collision),(velocity2,collision2),...]
         """
         result = []
         for i in range(0, len(self._points)):
@@ -98,17 +105,23 @@ class NoFlyZoneG(Drawable):
             futurePoints.append((point[0] + self._velocity[0] * time, point[1] + self._velocity[1] * time))
         return NoFlyZoneG(futurePoints, self._velocity)
 
-    def draw(self, canvas, fill="red", time=0.0, **kwargs):
+    def draw(self, canvas, fill="black", time=0.0, drawVectors=True, **kwargs):
         # type: (Canvas) -> None
 
         if time == 0.0:
             # If time is 0 draw NFZ as it is now
             for line in self._lines:
-                line.draw(canvas, fill=fill, time=time, **kwargs)
+                line.draw(canvas, fill=fill, time=time, drawVectors=drawVectors, **kwargs)
 
-            if np.linalg.norm(self._velocity) > 0.0:
-                lineSegment.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0, fill="black",
-                                     arrow=tk.LAST)
+            if drawVectors:
+                for i in range(0, len(self._points)):
+                    p1 = self._points[i]
+                    p2 = self._points[i] + (4.0 * self._pointOffsets[i] / POINT_OFFSET_LENGTH)
+                    lineSegment.drawLine(canvas, p1, p2, fill=fill, arrow=tk.LAST)
+
+                if np.linalg.norm(self._velocity) > 0.0:
+                    lineSegment.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0, fill="black",
+                                         arrow=tk.LAST)
         else:
             # For future times, generate a future noFlyZone and draw that with time=0.0.
             self._getFutureCopy(time).draw(canvas, fill=fill, time=0.0, **kwargs)

@@ -1,7 +1,7 @@
 import gui.core
 from demos import FindTargetVisualizer, FindTargetProblem
 from findPath.obstacleCourse import ObstacleCourse
-from geometry.noFlyZoneG import NoFlyZoneG
+from geometry.noFlyZone import NoFlyZoneG
 
 noFly1 = NoFlyZoneG([(40, 50), (40, 70), (50, 75), (50, 50)], (3, 0))
 noFly2 = NoFlyZoneG([(40, 40), (40, 45), (45, 45), (45, 40)], (-2, 2))
