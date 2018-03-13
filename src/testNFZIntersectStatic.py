@@ -1,6 +1,6 @@
 import gui
-from demos.rayline.findNFZIntersectStatic import FindNFZIntersectStatic
-from demos.rayline.findNFZIntersectStaticVis import FindNFZIntersectStaticVis
+from demos.findNFZIntersectStatic.findNFZIntersectStatic import FindNFZIntersectStatic
+from demos.findNFZIntersectStatic.findNFZIntersectStaticVis import FindNFZIntersectStaticVis
 
 # from findPath.noFlyZone import NoFlyZone
 #
