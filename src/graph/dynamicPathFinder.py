@@ -3,7 +3,7 @@ from Tkinter import Canvas
 import numpy as np
 
 import gui
-from geometry import StraightPathSolution, LineSeg
+from geometry import LineSeg
 from geometry import calcs
 from graph.gridHeap import GridHeap
 from graph.vertex import Vertex
@@ -19,6 +19,8 @@ class DynamicPathFinder:
 
         # Dynamic properties used for processing and display
         self._gridHeap = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
+        self._goalHeap = GridHeap(acceptanceThreshold, 1, self._goal[0], self._goal[1], 1.0, 1.0)
+
         self._futureObstacleCourse = None
         self._currentVertex = None
         self._currentPaths = []
@@ -37,29 +39,21 @@ class DynamicPathFinder:
 
         self._futureObstacleCourse = self._obstacleCourse.getFutureCopy(self._currentVertex.time)
 
-        self._currentPaths = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
-                                                                                    self._constantSpeed)
-
         if not self._futureObstacleCourse.doesLineIntersect(self._currentVertex.position, self._goal,
                                                             self._constantSpeed):
-            (timeToGoal, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
-                                                                       self._constantSpeed)
+            (time, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
+                                                                 self._constantSpeed)
 
-            self._currentPaths.append(StraightPathSolution(timeToGoal, direction * self._constantSpeed, self._goal))
+            goalVertex = Vertex(self._goal, time, direction * self._constantSpeed, self._currentVertex)
+            self._goalHeap.push(goalVertex.position, goalVertex.time, goalVertex)
 
+        self._currentPaths = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
+                                                                                    self._constantSpeed)
         for path in self._currentPaths:
-            timeToVertex = path.time
-            velocity = path.velocity
             # TODO: convert remaining math to nparray
             destination = np.array(path.destination, np.double)
-
-            # TODO: Hack to not go to the same vertex you are already at.
-            if timeToVertex < 0.01:
-                continue
-
-            timeCost = self._currentVertex.time + timeToVertex
-
-            newVertex = Vertex(destination, timeCost, velocity, self._currentVertex)
+            time = self._currentVertex.time + path.time
+            newVertex = Vertex(destination, time, path.velocity, self._currentVertex)
 
             estimatedTimeCost = newVertex.time + self.heuristic(newVertex.position)
             self._gridHeap.push(newVertex.position, estimatedTimeCost, newVertex)
@@ -136,6 +130,10 @@ class DynamicPathFinderDrawable(Drawable):
         for vertex in self.fp._processedVertices:
             vertex.draw(canvas, color=vertexColor)
             vertex.drawEdge(canvas, color=pathColor, width=2.0)
+
+        if not self.fp._goalHeap.isEmpty():
+            shortestPathGoal = self.fp._goalHeap.getTop()
+            shortestPathGoal.drawPath(canvas, color="purple", width=4.0)
 
         if not self.fp._currentVertex is None:
             self.fp._currentVertex.drawPath(canvas, color="orange", width=4.0)

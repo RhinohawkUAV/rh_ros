@@ -37,6 +37,8 @@ class LineSeg(Drawable):
         self.n /= np.math.sqrt(magSquared)
 
         # Points from point 1 to point 2 with length inverse to the distance between the _points.
+        if magSquared == 0.0:
+            pass
         self.invTan = diff / magSquared
 
         # For drawing ONLY

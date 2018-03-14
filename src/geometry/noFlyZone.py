@@ -5,13 +5,9 @@ import numpy as np
 
 import calcs
 import gui.draw
+from constants import NO_FLY_ZONE_POINT_OFFSET
 from gui import Drawable
 from lineSegment import LineSeg
-
-# TODO: Tune value
-# When computing _currentPaths to vertices of no-fly-zones, choosing the exact vertex may register as a collision due to
-# round-off error.  This small delta offset, outward along the vertices's normal prevents this.
-POINT_OFFSET_LENGTH = 0.0001
 
 
 class NoFlyZone(Drawable):
@@ -27,7 +23,7 @@ class NoFlyZone(Drawable):
         self._velocity = np.array(velocity, np.double)
 
         # Outward facing normals for each point.  These are used for offsetting when computing blocksLineOfSight.
-        self._pointOffsets = []
+        self._offsetPoints = []
         self._lines = []
         self._midPoint = self._points.sum(axis=0) / len(self._points)
 
@@ -35,14 +31,16 @@ class NoFlyZone(Drawable):
             self._lines.append(LineSeg(self._points[i - 1], self._points[i]))
 
         for i in range(0, len(points) - 1):
-            pointOffset = (self._lines[i].n + self._lines[i + 1].n) / 2.0
-            pointOffset *= POINT_OFFSET_LENGTH / np.linalg.norm(pointOffset)
-            self._pointOffsets.append(pointOffset)
+            pointNormal = (self._lines[i].n + self._lines[i + 1].n) / 2.0
+            pointNormal /= np.linalg.norm(pointNormal)
+            offsetPoint = self._points[i] + pointNormal * NO_FLY_ZONE_POINT_OFFSET
+            self._offsetPoints.append(offsetPoint)
 
         i = -1
-        pointOffset = (self._lines[i].n + self._lines[i + 1].n) / 2.0
-        pointOffset *= POINT_OFFSET_LENGTH / np.linalg.norm(pointOffset)
-        self._pointOffsets.append(pointOffset)
+        pointNormal = (self._lines[i].n + self._lines[i + 1].n) / 2.0
+        pointNormal /= np.linalg.norm(pointNormal)
+        offsetPoint = self._points[i] + pointNormal * NO_FLY_ZONE_POINT_OFFSET
+        self._offsetPoints.append(offsetPoint)
 
     def checkBlocksPath(self, start, end, speed):
         """
@@ -91,11 +89,12 @@ class NoFlyZone(Drawable):
         :return: [StraightPathSolution1, StraightPathSolution2, ...]
         """
         result = []
-        for i in range(0, len(self._points)):
-            offsetPoint = self._points[i] + self._pointOffsets[i]
-            solution = calcs.hitTargetAtSpeed(startPosition, speed, offsetPoint, self._velocity)
-            if not solution is None:
-                result.append(solution)
+        for point in self._offsetPoints:
+            # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
+            if not calcs.arePointsClose(startPosition, point):
+                solution = calcs.hitTargetAtSpeed(startPosition, speed, point, self._velocity)
+                if not solution is None:
+                    result.append(solution)
         return result
 
     def getFutureCopy(self, time):
@@ -114,11 +113,6 @@ class NoFlyZone(Drawable):
                 line.draw(canvas, time=time, drawVectors=drawVectors, **kwargs)
 
             if drawVectors:
-                for i in range(0, len(self._points)):
-                    p1 = self._points[i]
-                    p2 = self._points[i] + (4.0 * self._pointOffsets[i] / POINT_OFFSET_LENGTH)
-                    gui.draw.drawLine(canvas, p1, p2, arrow=tk.LAST, **kwargs)
-
                 if np.linalg.norm(self._velocity) > 0.0:
                     gui.draw.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0,
                                       arrow=tk.LAST, **kwargs)

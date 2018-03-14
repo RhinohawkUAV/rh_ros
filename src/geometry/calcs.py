@@ -1,6 +1,19 @@
 import numpy as np
 
+import constants
 from utils import quadratic
+
+
+def arePointsClose(p1, p2):
+    """
+    Are 2 points almost equal (within tolerance of each other)
+    :param p1:
+    :param p2:
+    :return:
+    """
+    x = p1[0] - p2[0]
+    y = p1[0] - p2[0]
+    return x * x + y * y < constants.DISTANCE_TOLERANCE_SQUARED
 
 
 def calcTravelTime(p1, p2, speed):

@@ -54,6 +54,19 @@ class GridHeap:
     def _popNext(self):
         return heapq.heappop(self._heap)
 
+    def isEmpty(self):
+        return len(self._heap) == 0
+
+    def getTop(self):
+        (cost, self._inc, (point, data)) = self._heap[0]
+        return data
+
+
+class Heap:
+    def __init__(self):
+        self._heap = []
+        self._inc = 0
+
 
 class MinCostGrid:
     """
