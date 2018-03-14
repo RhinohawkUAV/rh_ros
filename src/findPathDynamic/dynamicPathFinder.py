@@ -5,8 +5,8 @@ import numpy as np
 import gui
 from geometry import LineSeg
 from geometry import calcs
-from graph.gridHeap import GridHeap
-from graph.vertex import Vertex
+from findPathDynamic.gridHeap import GridHeap
+from findPathDynamic.vertex import Vertex
 from gui import Drawable
 
 

@@ -1,8 +1,8 @@
 import math
 import random
 
-from geometry.obstacleCourse import ObstacleCourse
 from geometry.noFlyZone import NoFlyZone
+from geometry.obstacleCourse import ObstacleCourse
 
 
 def generateNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):

@@ -2,7 +2,7 @@ import gui
 from demos.findNFZIntersectStatic.findNFZIntersectStatic import FindNFZIntersectStatic
 from demos.findNFZIntersectStatic.findNFZIntersectStaticVis import FindNFZIntersectStaticVis
 
-# from findPath.noFlyZone import NoFlyZone
+# from findPathStatic.noFlyZone import NoFlyZone
 #
 from geometry.noFlyZone import NoFlyZone
 

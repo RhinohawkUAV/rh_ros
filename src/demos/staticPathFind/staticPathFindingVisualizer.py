@@ -6,7 +6,7 @@ from gui.visualizer import Visualizer
 class PathFindingVisualizer(Visualizer):
     """
     Visualizes a Geometry object during the path finding process.  Installs itself as a listener and gets a drawable
-    copy of the findPath object on a regular basis.
+    copy of the findPathStatic object on a regular basis.
     """
 
     def __init__(self, pathFinder, *args, **kwargs):

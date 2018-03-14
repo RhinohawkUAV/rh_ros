@@ -7,7 +7,7 @@ import numpy as np
 
 import gui
 from gui import Drawable
-from staticGraph.staticSearchGraph import StaticSearchGraph
+from findPathStatic.staticSearchGraph import StaticSearchGraph
 
 
 class StaticPathFinder(Drawable):
@@ -40,7 +40,7 @@ class StaticPathFinder(Drawable):
         # Visible _points from current position being examined
         self._visiblePoints = []
 
-        # This object is signalled, with a copy of findPath, whenever it is time to draw
+        # This object is signalled, with a copy of findPathStatic, whenever it is time to draw
         self.drawListener = drawListener
 
     def findPath(self):
@@ -106,7 +106,7 @@ class StaticPathFinder(Drawable):
 
     def _createDrawCopy(self):
         """
-        Creates a copy of the findPath object for drawing.
+        Creates a copy of the findPathStatic object for drawing.
         Its not possible to deepcopy tkinter objects referenced under the self.drawListener field.
         This creates a copy, for drawing, which does not include that field.
         """

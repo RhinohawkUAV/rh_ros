@@ -1,4 +1,4 @@
-from graph.dynamicPathFinder import DynamicPathFinderDrawable
+from findPathDynamic.dynamicPathFinder import DynamicPathFinderDrawable
 from gui.visualizer import Visualizer
 
 # TODO: Not currently used
