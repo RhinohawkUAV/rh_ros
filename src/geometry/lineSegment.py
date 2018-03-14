@@ -1,3 +1,4 @@
+import math
 from Tkinter import Canvas
 
 import numpy as np
@@ -41,6 +42,37 @@ class LineSeg(Drawable):
         # For drawing ONLY
         self.mid = (self.p1 + self.p2) / 2.0
 
+    def pointSignedDistance(self, point):
+        p1diff = point - self.p1
+        return np.dot(self.n, p1diff)
+
+    def pointDistance(self, point):
+        p1diff = point - self.p1
+        return math.fabs(np.dot(self.n, p1diff))
+
+    def projectPoint(self, point):
+        # Distance to one-sided line segment, from start, in the direction of the normal.
+        p1diff = point - self.p1
+        normalDistance = np.dot(self.n, p1diff)
+        return point - (self.n * normalDistance)
+
+    def closestPointParametric(self, point):
+        projectedPoint = self.projectPoint(point)
+        parametric = np.dot(projectedPoint - self.p1, self.invTan)
+        return parametric
+
+    def getParametricPoint(self, parametric):
+        if parametric < 0.0:
+            return self.p1
+        elif parametric > 1.0:
+            return self.p2
+        else:
+            return (1.0 - parametric) * self.p1 + parametric * self.p2
+
+    def closestPoint(self, point):
+        parametric = self.closestPointParametric(point)
+        return self.getParametricPoint(parametric)
+
     def checkLineIntersection(self, start, end):
         """
         TODO: Consider how we want to handle edge cases and tolerance
@@ -60,7 +92,7 @@ class LineSeg(Drawable):
         :return: is there an intersection
         """
 
-        # Distance to one-sided line segment, from start, in the velocity of the normal.
+        # Distance to one-sided line segment, from start, in the direction of the normal.
         p1diff = start - self.p1
         normalDistanceP1 = np.dot(self.n, p1diff)
 
@@ -68,7 +100,7 @@ class LineSeg(Drawable):
         if normalDistanceP1 < 0.0:
             return False
 
-        # Distance to one-sided line segment, from end, in the velocity of the normal.
+        # Distance to one-sided line segment, from end, in the direction of the normal.
         p2diff = end - self.p1
         normalDistanceP2 = np.dot(self.n, p2diff)
 
@@ -76,7 +108,7 @@ class LineSeg(Drawable):
         if normalDistanceP2 > 0.0:
             return False
 
-        # The velocity of the line segment
+        # The diff vector of the line segment
         lineDir = end - start
 
         # Equivalent of: normalDirection = dot(n,lineDir).  We don't normalize as the magnitude of this cancels out with itself later.
@@ -90,9 +122,9 @@ class LineSeg(Drawable):
         # While moving towards the line perpendicularly, we also moved along the line tangentially.
         # We don't care how far we moved in absolute space, only in "tangent-unit-space".  In this space start is 0, end is 1.
         # The provided invTan vector _points in the velocity from start to end with the inverse magnitude of the length between them.
-        tan = np.dot(p1diff + lineDir * t, self.invTan)
+        parametric = np.dot(p1diff + lineDir * t, self.invTan)
 
-        return tan >= 0 and tan <= 1
+        return parametric >= 0 and parametric <= 1
 
     def draw(self, canvas, text="", time=0.0, drawVectors=True, **kwargs):
         """
