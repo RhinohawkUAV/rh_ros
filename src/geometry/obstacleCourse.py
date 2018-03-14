@@ -3,13 +3,21 @@ from gui import Drawable
 
 class ObstacleCourse(Drawable):
     """
-    Defines the no fly zones and boundary of the problem.  Allows queries such as visibility from a point and
+    Defines the no fly zones and _boundary of the problem.  Allows queries such as visibility from a point and
     collision detection to be performed.
     """
 
     def __init__(self, boundary, noFlyZones):
-        self.boundary = boundary
+        self._boundary = boundary
         self._noFlyZones = noFlyZones
+
+    def getFutureCopy(self, time):
+        """Create a copy of this obstacle course, as it will exist at some point in the future."""
+
+        noFlyZonesCopy = []
+        for noFlyZone in self._noFlyZones:
+            noFlyZonesCopy.append(noFlyZone.getFutureCopy(time))
+        return ObstacleCourse(self._boundary, noFlyZonesCopy)
 
     def doesLineIntersect(self, startPoint, endPoint, speed):
         """
@@ -23,7 +31,7 @@ class ObstacleCourse(Drawable):
     def findPathsToVertices(self, startPoint, speed):
         """
         Look through all NFZ vertices and determine which can be reached by a straight-line path from
-        startPoint at the given speed without intersecting any NFZs at any time.
+        startPoint at the given speed without intersecting any NFZs.
 
         :param startPoint:
         :param speed:

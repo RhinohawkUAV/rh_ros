@@ -9,7 +9,7 @@ from geometry.lineSegment import LineSeg
 from gui import Drawable
 
 # TODO: Tune value
-# When computing paths to vertices of no-fly-zones, choosing the exact vertex may register as a collision due to
+# When computing _currentPaths to vertices of no-fly-zones, choosing the exact vertex may register as a collision due to
 # round-off error.  This small delta offset, outward along the vertices's normal prevents this.
 POINT_OFFSET_LENGTH = 0.0001
 
@@ -17,7 +17,7 @@ POINT_OFFSET_LENGTH = 0.0001
 class NoFlyZone(Drawable):
     def __init__(self, points, velocity):
         """
-        A polygon NFZ with a given _velocity.  Points must be given in CCW order.
+        A polygon NFZ with a given velocity.  Points must be given in CCW order.
         :param points:
         :param velocity:
         """
@@ -49,7 +49,7 @@ class NoFlyZone(Drawable):
         Does this moving no-fly-zone, block a path from start to end and the given speed?
 
         To solve this we convert the problem to the case the no-fly-zone is not moving, by
-        offsetting the _velocity of the moving object.
+        offsetting the velocity of the moving object.
 
         :param start:
         :param end:
@@ -62,10 +62,10 @@ class NoFlyZone(Drawable):
         if distance == 0.0:
             return False
 
-        # _velocity vector - has magnitude in speed heading in direction from start to end
+        # velocity vector - has magnitude in speed heading in direction from start to end
         velocity = (speed / distance) * direction
 
-        # Offset direction by the _velocity of the no-fly-zone (pretend it is not moving)
+        # Offset direction by the velocity of the no-fly-zone (pretend it is not moving)
         velocity -= self._velocity
 
         # Time to get from start to end
@@ -81,8 +81,8 @@ class NoFlyZone(Drawable):
 
     def calcVelocitiesToVertices(self, startPosition, speed):
         """
-        Given the startPosition and a speed of travel find _velocity vectors that will reach each vertex (if possible).
-        For each _velocity vector, find the corresponding position where the vertex will be reached.
+        Given the startPosition and a speed of travel find velocity vectors that will reach each vertex (if possible).
+        For each velocity vector, find the corresponding position where the vertex will be reached.
 
         Note: this does not account for if solutions are legal (would travel through this or other NFZs)
 
@@ -98,7 +98,7 @@ class NoFlyZone(Drawable):
                 result.append(solution)
         return result
 
-    def _getFutureCopy(self, time):
+    def getFutureCopy(self, time):
         """Create a copy of this NFZ, as it will exist at some point in the future."""
         futurePoints = []
         for point in self._points:
@@ -124,4 +124,4 @@ class NoFlyZone(Drawable):
                                       arrow=tk.LAST, **kwargs)
         else:
             # For future times, generate a future noFlyZone and draw that with time=0.0.
-            self._getFutureCopy(time).draw(canvas, time=0.0, **kwargs)
+            self.getFutureCopy(time).draw(canvas, time=0.0, **kwargs)
