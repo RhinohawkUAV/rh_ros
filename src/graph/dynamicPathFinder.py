@@ -3,13 +3,11 @@ from Tkinter import Canvas
 import numpy as np
 
 import gui
+from geometry import StraightPathSolution
+from geometry import calcs
 from graph.gridHeap import GridHeap
 from graph.vertex import Vertex
 from gui import Drawable
-
-
-def calcTimeCost(p1, p2, speed):
-    return np.linalg.norm(p2 - p1) / speed
 
 
 class DynamicPathFinder:
@@ -39,27 +37,27 @@ class DynamicPathFinder:
 
         self._futureObstacleCourse = self._obstacleCourse.getFutureCopy(self._currentVertex.timeCost)
 
-        self._currentPaths = self._futureObstacleCourse.findPathsToVertices(self._currentVertex.position,
-                                                                            self._constantSpeed)
+        self._currentPaths = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
+                                                                                    self._constantSpeed)
 
         if not self._futureObstacleCourse.doesLineIntersect(self._currentVertex.position, self._goal,
                                                             self._constantSpeed):
-            # TODO: Actually calculate this once we are using it
-            bsVelocity = np.array([1.0, 1.0], np.double)
-            self._currentPaths.append((bsVelocity, self._goal))
+            (timeToGoal, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
+                                                                       self._constantSpeed)
+
+            self._currentPaths.append(StraightPathSolution(timeToGoal, direction * self._constantSpeed, self._goal))
 
         for path in self._currentPaths:
-            velocity = path[0]
+            timeToVertex = path.time
+            velocity = path.velocity
             # TODO: convert remaining math to nparray
-            destination = np.array(path[1], np.double)
-
-            costToNextVertex = calcTimeCost(self._currentVertex.position, destination, self._constantSpeed)
+            destination = np.array(path.destination, np.double)
 
             # TODO: Hack to not go to the same vertex you are already at.
-            if costToNextVertex < 0.01:
+            if timeToVertex < 0.01:
                 continue
 
-            timeCost = self._currentVertex.timeCost + costToNextVertex
+            timeCost = self._currentVertex.timeCost + timeToVertex
 
             newVertex = Vertex(destination, timeCost, velocity, self._currentVertex)
 
@@ -70,7 +68,7 @@ class DynamicPathFinder:
         return True
 
     def heuristic(self, point):
-        return calcTimeCost(point, self._goal, self._constantSpeed)
+        return calcs.calcTravelTime(point, self._goal, self._constantSpeed)
 
     def findPath(self):
         while self.step():
@@ -96,8 +94,8 @@ class DynamicPathFinderDrawable(Drawable):
         gui.draw.drawPoint(canvas, self.fp._goal, color="black")
 
         for path in self.fp._currentPaths:
-            velocity = path[0]
-            destination = path[1]
+            velocity = path.velocity
+            destination = path.destination
             gui.draw.drawLine(canvas, self.fp._currentVertex.position, destination, color=lineOfSightColor)
 
         for vertex in self.fp._processedVertices:

@@ -14,10 +14,10 @@ class FindNFZIntersectDynamic:
     def setStartPoint(self, startPoint):
         """Change the problem's start point and update the set of visible _points."""
         self.startPoint = np.array(startPoint, np.double)
-        paths = self._obstacleCourse.findPathsToVertices(self.startPoint, self.speed)
+        paths = self._obstacleCourse.findStraightPathsToVertices(self.startPoint, self.speed)
         self._visiblePoints = []
         for path in paths:
-            self._visiblePoints.append(path[1])
+            self._visiblePoints.append(path.destination)
 
     def calcTimeToPoint(self, point):
         """

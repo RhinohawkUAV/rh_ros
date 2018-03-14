@@ -3,10 +3,10 @@ from Tkinter import Canvas
 
 import numpy as np
 
-import geometry.intersection
+import calcs
 import gui.draw
-from geometry.lineSegment import LineSeg
 from gui import Drawable
+from lineSegment import LineSeg
 
 # TODO: Tune value
 # When computing _currentPaths to vertices of no-fly-zones, choosing the exact vertex may register as a collision due to
@@ -62,10 +62,10 @@ class NoFlyZone(Drawable):
         if distance == 0.0:
             return False
 
-        # velocity vector - has magnitude in speed heading in direction from start to end
+        # velocity vector - has magnitude in speed heading in velocity from start to end
         velocity = (speed / distance) * direction
 
-        # Offset direction by the velocity of the no-fly-zone (pretend it is not moving)
+        # Offset velocity by the velocity of the no-fly-zone (pretend it is not moving)
         velocity -= self._velocity
 
         # Time to get from start to end
@@ -88,12 +88,12 @@ class NoFlyZone(Drawable):
 
         :param startPosition:
         :param speed:
-        :return: [(velocity,collision),(velocity2,collision2),...]
+        :return: [StraightPathSolution1, StraightPathSolution2, ...]
         """
         result = []
         for i in range(0, len(self._points)):
             offsetPoint = self._points[i] + self._pointOffsets[i]
-            solution = geometry.intersection.hitTargetAtSpeed(startPosition, speed, offsetPoint, self._velocity)
+            solution = calcs.hitTargetAtSpeed(startPosition, speed, offsetPoint, self._velocity)
             if not solution is None:
                 result.append(solution)
         return result

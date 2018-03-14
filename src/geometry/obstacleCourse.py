@@ -28,20 +28,20 @@ class ObstacleCourse(Drawable):
                 return True
         return False
 
-    def findPathsToVertices(self, startPoint, speed):
+    def findStraightPathsToVertices(self, startPoint, speed):
         """
         Look through all NFZ vertices and determine which can be reached by a straight-line path from
         startPoint at the given speed without intersecting any NFZs.
 
         :param startPoint:
         :param speed:
-        :return: [(velocity,pathEndPoint),(velocity2,pathEndPoint),...]
+        :return: [StraightPathSolution1, StraightPathSolution2, ...]
         """
         paths = []
         for noFlyZone in self._noFlyZones:
             NFZPaths = noFlyZone.calcVelocitiesToVertices(startPoint, speed)
             for path in NFZPaths:
-                pathEndPoint = path[1]
+                pathEndPoint = path.destination
                 if not self.doesLineIntersect(startPoint, pathEndPoint, speed):
                     paths.append(path)
         return paths

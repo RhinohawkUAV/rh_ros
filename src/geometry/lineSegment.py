@@ -12,7 +12,7 @@ normalDisplayFactor = 4.0
 class LineSeg(Drawable):
     """
     A one-sided line segment.  This allows collision detection with another directed line-segment.  A collision is
-    only considered if the direction of the other line segment opposes the normal of this line segment.
+    only considered if the velocity of the other line segment opposes the normal of this line segment.
     Normal is calculated such that if a series of these defines a polygon using counter-clockwise winding, all normals
     would face outward.  The polygon could then detect collisions with line segments directed inwards, but not outward.
 
@@ -47,8 +47,8 @@ class LineSeg(Drawable):
 
         Determine if the directed line segment, from p1 to p2, intersects this one-sided line segment.
 
-        Only considered an intersection if direction from start to end is opposed the normal vector of the line.
-        If the direction from start to end is parallel, then it does not count.
+        Only considered an intersection if velocity from start to end is opposed the normal vector of the line.
+        If the velocity from start to end is parallel, then it does not count.
         Intersection with an endpoint of this one-sided line segment does count.
 
         These decisions more or less give us the desired outcomes when considering tracings around the outside of a polygon.
@@ -60,7 +60,7 @@ class LineSeg(Drawable):
         :return: is there an intersection
         """
 
-        # Distance to one-sided line segment, from start, in the direction of the normal.
+        # Distance to one-sided line segment, from start, in the velocity of the normal.
         p1diff = start - self.p1
         normalDistanceP1 = np.dot(self.n, p1diff)
 
@@ -68,7 +68,7 @@ class LineSeg(Drawable):
         if normalDistanceP1 < 0.0:
             return False
 
-        # Distance to one-sided line segment, from end, in the direction of the normal.
+        # Distance to one-sided line segment, from end, in the velocity of the normal.
         p2diff = end - self.p1
         normalDistanceP2 = np.dot(self.n, p2diff)
 
@@ -76,7 +76,7 @@ class LineSeg(Drawable):
         if normalDistanceP2 > 0.0:
             return False
 
-        # The direction of the line segment
+        # The velocity of the line segment
         lineDir = end - start
 
         # Equivalent of: normalDirection = dot(n,lineDir).  We don't normalize as the magnitude of this cancels out with itself later.
@@ -89,7 +89,7 @@ class LineSeg(Drawable):
 
         # While moving towards the line perpendicularly, we also moved along the line tangentially.
         # We don't care how far we moved in absolute space, only in "tangent-unit-space".  In this space start is 0, end is 1.
-        # The provided invTan vector _points in the direction from start to end with the inverse magnitude of the length between them.
+        # The provided invTan vector _points in the velocity from start to end with the inverse magnitude of the length between them.
         tan = np.dot(p1diff + lineDir * t, self.invTan)
 
         return tan >= 0 and tan <= 1

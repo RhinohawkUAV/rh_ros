@@ -1,4 +1,49 @@
+import numpy as np
+
 from utils import quadratic
+
+
+def calcTravelTime(p1, p2, speed):
+    """
+    Calculate the time from p1 to p2 at speed.
+    :param p1:
+    :param p2:
+    :param speed:
+    :return:
+    """
+    return np.linalg.norm(p2 - p1) / speed
+
+
+def calcTravelTimeAndDirection(p1, p2, speed):
+    """
+    Calculate the time and direction from p1 to p2 at speed.
+    Note: direction is a unit vector.
+
+    :param p1:
+    :param p2:
+    :param speed:
+    :return: (time, direction)
+    """
+    diff = p2 - p1
+    distance = np.linalg.norm(diff)
+    if distance == 0.0:
+        direction = np.array([0, 0], np.double)
+        time = 0.0
+    else:
+        direction = diff / distance
+        time = distance / speed
+    return (time, direction)
+
+
+class StraightPathSolution:
+    """
+    Holds solution to the hitTargetAtSpeed problem.
+    """
+
+    def __init__(self, time, velocity, destination):
+        self.time = time
+        self.velocity = velocity
+        self.destination = destination
 
 
 def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetVelocity):
@@ -9,13 +54,13 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     What is the velocity vector the projectile should follow to hit the moving target?
     Where will the projectile collide with the target?
 
-    Note: We start knowing the speed of the projectile, but not the direction.
+    Note: We start knowing the speed of the projectile, but not the velocity.
 
     :param projectileStart: where craft starts
     :param projectileSpeed: magnitude of craft's velocity
     :param targetStartPoint: the target's starting location
     :param targetVelocity: the velocity vector of the target
-    :return: ((velocityX,velocityY),(collisionX,collisionY)) or None, if speed is insufficient given position
+    :return: StraightPathSolution or None, if speed is insufficient given position
     """
 
     # Vector heading from start towards point
@@ -43,9 +88,9 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
         return None
 
     # We can easily calculate time (t) from towardsFactor
-    t = 1.0 / towardsFactor[0]
+    time = 1.0 / towardsFactor[0]
 
     velocity = (towardsX * towardsFactor[0] + targetVelocity[0], towardsY * towardsFactor[0] + targetVelocity[1])
-    collision = (targetStartPoint[0] + t * targetVelocity[0], targetStartPoint[1] + t * targetVelocity[1])
+    destination = (targetStartPoint[0] + time * targetVelocity[0], targetStartPoint[1] + time * targetVelocity[1])
 
-    return (velocity, collision)
+    return StraightPathSolution(time, velocity, destination)

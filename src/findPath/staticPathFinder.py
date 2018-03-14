@@ -58,11 +58,11 @@ class StaticPathFinder(Drawable):
             totalCalcTime -= time.time()
 
             visibleCalcTime -= time.time()
-            paths = self._obstacleCourse.findPathsToVertices(self._currentPoint, self._speed)
+            paths = self._obstacleCourse.findStraightPathsToVertices(self._currentPoint, self._speed)
             self._visiblePoints = []
 
             for path in paths:
-                self._visiblePoints.append(tuple(path[1]))
+                self._visiblePoints.append(tuple(path.destination))
 
             if not self._obstacleCourse.doesLineIntersect(self._currentPoint, self._goalArray, self._speed):
                 self._visiblePoints.append(self._goalPoint)
@@ -123,7 +123,7 @@ class StaticPathFinder(Drawable):
         self._obstacleCourse.draw(canvas, time=time, drawVectors=False, **kwargs)
 
         for visiblePoint in self._visiblePoints:
-            gui.draw.drawLine(canvas,self._currentVertex.data,visiblePoint,color="blue")
+            gui.draw.drawLine(canvas, self._currentVertex.data, visiblePoint, color="blue")
 
         gui.draw.drawPoint(canvas, self._currentVertex.data, color="green")
         gui.draw.drawPoint(canvas, self._startPoint, color="green")
