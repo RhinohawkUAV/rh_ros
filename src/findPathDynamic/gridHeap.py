@@ -18,21 +18,13 @@ class GridHeap:
 
     def __init__(self, acceptanceThreshold, numBins, x, y, width, height):
         self._minCostGrid = MinCostGrid(acceptanceThreshold, numBins, x, y, width, height)
-        self._heap = []
+        self._heap = Heap()
         self._inc = 0
 
     def push(self, point, cost, data):
         # Update minimum cost at (x,y) bin if appropriate
         if self._minCostGrid.submitCost(point, cost):
-            # print str(data) + " accepted.  Min cost = " + str(self._minCostGrid.getMin(point[0], point[1]))
-
-            # Add data to heap, IF this was accepted
-            heapq.heappush(self._heap, (cost, self._inc, (point, data)))
-
-            # This is given as a 2nd argument, after cost, to break ties.  Unique incrementing value
-            self._inc += 1
-        # else:
-        # print str(data) + " rejected.  Min cost = " + str(self._minCostGrid.getMin(point[0], point[1]))
+            self._heap.push(cost, (point, data))
 
     def pop(self):
         """
@@ -40,9 +32,9 @@ class GridHeap:
         corresponding to its (x,y) coordinate.
         :return: Lowest cost, acceptable item OR None if there are no acceptable items left
         """
-        while len(self._heap) > 0:
+        while not self._heap.isEmpty():
             # Get the lowest cost item in the heap
-            (cost, dontCare, (point, data)) = self._popNext()
+            (cost, (point, data)) = self._heap.popWithCost()
 
             # While this is the lowest cost overall, it may no longer be within the acceptance threshold of the
             # corresponding (x,y) bin
@@ -51,21 +43,39 @@ class GridHeap:
 
         return None
 
-    def _popNext(self):
-        return heapq.heappop(self._heap)
+
+class Heap:
+    """
+    What you'd expect.  There is probably a better one, but this is simple and meets our needs.
+    """
+
+    def __init__(self):
+        self._heap = []
+        self._inc = 0
 
     def isEmpty(self):
         return len(self._heap) == 0
 
+    def push(self, cost, data):
+        # This is given as a 2nd argument, after cost, to break ties.  Unique incrementing value
+        heapq.heappush(self._heap, (cost, self._inc, data))
+        self._inc += 1
+
     def getTop(self):
-        (cost, self._inc, (point, data)) = self._heap[0]
+        (cost, dontCare, data) = self._heap[0]
         return data
 
+    def pop(self):
+        (cost, dontCare, data) = heapq.heappop(self._heap)
+        return data
 
-class Heap:
-    def __init__(self):
-        self._heap = []
-        self._inc = 0
+    def getTopWithCost(self):
+        (cost, dontCare, data) = self._heap[0]
+        return (cost, data)
+
+    def popWithCost(self):
+        (cost, dontCare, data) = heapq.heappop(self._heap)
+        return (cost, data)
 
 
 class MinCostGrid:

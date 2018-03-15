@@ -3,10 +3,10 @@ from Tkinter import Canvas
 import numpy as np
 
 import gui
+from findPathDynamic.gridHeap import GridHeap, Heap
+from findPathDynamic.vertex import Vertex
 from geometry import LineSeg
 from geometry import calcs
-from findPathDynamic.gridHeap import GridHeap
-from findPathDynamic.vertex import Vertex
 from gui import Drawable
 
 
@@ -19,7 +19,7 @@ class DynamicPathFinder:
 
         # Dynamic properties used for processing and display
         self._gridHeap = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
-        self._goalHeap = GridHeap(acceptanceThreshold, 1, self._goal[0], self._goal[1], 1.0, 1.0)
+        self._goalHeap = Heap()
 
         self._futureObstacleCourse = None
         self._currentVertex = None
@@ -45,7 +45,7 @@ class DynamicPathFinder:
                                                                  self._constantSpeed)
 
             goalVertex = Vertex(self._goal, time, direction * self._constantSpeed, self._currentVertex)
-            self._goalHeap.push(goalVertex.position, goalVertex.time, goalVertex)
+            self._goalHeap.push(goalVertex.time, goalVertex)
 
         self._currentPaths = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
                                                                                     self._constantSpeed)
@@ -73,28 +73,30 @@ class DynamicPathFinderDrawable(Drawable):
     def __init__(self, fp):
         self.fp = fp
 
-    def findClosestPointOnPath(self, point, snapDistance):
-        currentVertex = self.fp._currentVertex
-        if self.fp._currentVertex is None:
-            return (None, 0.0)
-        previousVertex = currentVertex.previousVertex
+    def findClosestPointOnPath(self, point, snapDistance, pathEndVertices):
 
         point = np.array(point, np.double)
+        shortestDistance = snapDistance
         closestPoint = None
         time = 0.0
-        shortestDistance = snapDistance
 
-        while not previousVertex is None:
-            line = LineSeg(currentVertex.position, previousVertex.position)
-            parametric = line.closestPointParametric(point)
-            closestPointOnLinePoint = line.getParametricPoint(parametric)
-            distance = np.linalg.norm(point - closestPointOnLinePoint)
-            if distance < shortestDistance:
-                shortestDistance = distance
-                closestPoint = closestPointOnLinePoint
-                time = (1.0 - parametric) * currentVertex.time + parametric * previousVertex.time
-            currentVertex = previousVertex
+        for currentVertex in pathEndVertices:
+            if currentVertex is None:
+                break
             previousVertex = currentVertex.previousVertex
+
+            while not previousVertex is None:
+                line = LineSeg(currentVertex.position, previousVertex.position)
+                parametric = line.closestPointParametric(point)
+                closestPointOnLinePoint = line.getParametricPoint(parametric)
+                distance = np.linalg.norm(point - closestPointOnLinePoint)
+                if distance < shortestDistance:
+                    shortestDistance = distance
+                    closestPoint = closestPointOnLinePoint
+                    time = (1.0 - parametric) * currentVertex.time + parametric * previousVertex.time
+                currentVertex = previousVertex
+                previousVertex = currentVertex.previousVertex
+
         return (closestPoint, time)
 
     def draw(self, canvas, pointOfInterest=None, snapDistance=float("inf"), obstacleColor="black",
@@ -110,11 +112,16 @@ class DynamicPathFinderDrawable(Drawable):
         """
         # type: (Canvas,**kwargs) -> None
 
+        goalVertex = None
+        if not self.fp._goalHeap.isEmpty():
+            goalVertex = self.fp._goalHeap.getTop()
+
         if pointOfInterest is None:
             closestPoint = None
             drawTime = 0.0
         else:
-            (closestPoint, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance)
+            (closestPoint, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance,
+                                                                   (self.fp._currentVertex, goalVertex))
 
         obstacleCourse = self.fp._obstacleCourse.getFutureCopy(drawTime)
         obstacleCourse.draw(canvas, color=obstacleColor)
@@ -131,12 +138,11 @@ class DynamicPathFinderDrawable(Drawable):
             vertex.draw(canvas, color=vertexColor)
             vertex.drawEdge(canvas, color=pathColor, width=2.0)
 
-        if not self.fp._goalHeap.isEmpty():
-            shortestPathGoal = self.fp._goalHeap.getTop()
-            shortestPathGoal.drawPath(canvas, color="purple", width=4.0)
-
         if not self.fp._currentVertex is None:
             self.fp._currentVertex.drawPath(canvas, color="orange", width=4.0)
+
+        if not goalVertex is None:
+            goalVertex.drawPath(canvas, color="purple", width=4.0)
 
         if not closestPoint is None:
             gui.draw.drawPoint(canvas, closestPoint, color="orange")
