@@ -3,6 +3,7 @@ from gui.visualizer import Visualizer
 
 # TODO: Not currently used
 SNAP_PIXEL_DISTANCE = 10
+STEPS_PER_CLICK = 1
 
 
 class DynamicPathFindingVisualizer(Visualizer):
@@ -16,8 +17,9 @@ class DynamicPathFindingVisualizer(Visualizer):
         self.pointOfInterest = None
 
     def onLeftClick(self, event):
-        if not self._dynamicPathFinder.step():
-            print "done"
+        for i in range(0, STEPS_PER_CLICK):
+            if not self._dynamicPathFinder.step():
+                print "done"
         self.updateDisplay()
 
     def onMouseMotion(self, event):

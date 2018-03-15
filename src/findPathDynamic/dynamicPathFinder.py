@@ -2,6 +2,7 @@ from Tkinter import Canvas
 
 import numpy as np
 
+import constants
 import gui
 from findPathDynamic.gridHeap import GridHeap, Heap
 from findPathDynamic.vertex import Vertex
@@ -16,6 +17,7 @@ class DynamicPathFinder:
         self._goal = np.array(goal, np.double)
         self._constantSpeed = constantSpeed
         self._obstacleCourse = obstacleCourse
+        self._solution = None
 
         # Dynamic properties used for processing and display
         self._gridHeap = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
@@ -26,39 +28,66 @@ class DynamicPathFinder:
         self._currentPaths = []
         self._processedVertices = []
 
-        # We aren't using velocity for anything yet
-        initialVelocity = np.array([1.0, 1.0], np.double)
+        # TODO: We assume we start with [0,0] velocity, which is considered compatible (in terms of turning) with all other velocities.
+        initialVelocity = np.array([0.0, 0.0], np.double)
         startVertex = Vertex(self._start, 0.0, initialVelocity)
         self._gridHeap.push(startVertex.position, startVertex.time, startVertex)
+        self._numQueuedVertices = 1
 
     def step(self):
-        next = self._gridHeap.pop()
+        if self._solution is None:
+            lowestCostSolution = float("inf")
+        else:
+            lowestCostSolution = self._solution.time
+
+        (lowestPossibleTimeCost, next) = self._gridHeap.popWithCost()
         if next is None:
             return False
+
+        while lowestCostSolution < lowestPossibleTimeCost:
+            (lowestPossibleTimeCost, next) = self._gridHeap.popWithCost()
+            if next is None:
+                return False
+
         self._currentVertex = next
 
         self._futureObstacleCourse = self._obstacleCourse.getFutureCopy(self._currentVertex.time)
 
         if not self._futureObstacleCourse.doesLineIntersect(self._currentVertex.position, self._goal,
                                                             self._constantSpeed):
-            (time, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
-                                                                 self._constantSpeed)
+            (travelTime, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
+                                                                       self._constantSpeed)
 
-            goalVertex = Vertex(self._goal, time, direction * self._constantSpeed, self._currentVertex)
+            goalVertex = Vertex(self._goal,
+                                self._currentVertex.time + travelTime,
+                                direction * self._constantSpeed,
+                                self._currentVertex)
             self._goalHeap.push(goalVertex.time, goalVertex)
-
+            self._solution = self._goalHeap.getTop()
+            lowestCostSolution = self._solution.time
         self._currentPaths = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
-                                                                                    self._constantSpeed)
+                                                                                    self._constantSpeed,
+                                                                                    lambda path:
+                                                                                    isTurnLegal(
+                                                                                        self._currentVertex.velocity,
+                                                                                        path.velocity,
+                                                                                        self._constantSpeed))
+
         for path in self._currentPaths:
             # TODO: convert remaining math to nparray
             destination = np.array(path.destination, np.double)
-            time = self._currentVertex.time + path.time
-            newVertex = Vertex(destination, time, path.velocity, self._currentVertex)
+            newVertex = Vertex(destination,
+                               self._currentVertex.time + path.time,
+                               path.velocity,
+                               self._currentVertex)
+            lowestPossibleTimeCost = newVertex.time + self.heuristic(newVertex.position)
 
-            estimatedTimeCost = newVertex.time + self.heuristic(newVertex.position)
-            self._gridHeap.push(newVertex.position, estimatedTimeCost, newVertex)
+            # Don't push new items if we already know that an existing solution is guarenteed to be better
+            if lowestPossibleTimeCost < lowestCostSolution:
+                self._gridHeap.push(newVertex.position, lowestPossibleTimeCost, newVertex)
 
         self._processedVertices.append(self._currentVertex)
+        print len(self._gridHeap)
         return True
 
     def heuristic(self, point):
@@ -67,6 +96,19 @@ class DynamicPathFinder:
     def findPath(self):
         while self.step():
             pass
+
+
+def isTurnLegal(velocity1, velocity2, speed):
+    """
+    Assumes all velocities have equal magnitude and only need their relative angle checked.
+    :param velocity1:
+    :param velocity2:
+    :return:
+    """
+    if velocity1[0] == 0.0 and velocity1[1] == 0.0:
+        return True
+    cosAngle = np.dot(velocity1, velocity2) / (speed * speed)
+    return cosAngle > constants.MAX_TURN_ANGLE_COS
 
 
 class DynamicPathFinderDrawable(Drawable):

@@ -50,7 +50,7 @@ def calcTravelTimeAndDirection(p1, p2, speed):
 
 class StraightPathSolution:
     """
-    Holds solution to the hitTargetAtSpeed problem.
+    Holds _solution to the hitTargetAtSpeed problem.
     """
 
     def __init__(self, time, velocity, destination):
@@ -91,12 +91,12 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     c = projectileSpeed * projectileSpeed - (
             targetVelocity[0] * targetVelocity[0] + targetVelocity[1] * targetVelocity[1])
 
-    # We always want the 1st solution
+    # We always want the 1st _solution
     towardsFactor = quadratic.solveQuad(a, b, c)
 
     # Error!
     # Note: 0 solutions, when projectileSpeed is too low compared to point's velocity
-    # A solution of infinity when projectileSpeed matches velocity exactly
+    # A _solution of infinity when projectileSpeed matches velocity exactly
     if len(towardsFactor) == 0 or towardsFactor[0] == 0.0:
         return None
 

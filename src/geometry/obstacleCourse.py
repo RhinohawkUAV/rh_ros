@@ -28,22 +28,26 @@ class ObstacleCourse(Drawable):
                 return True
         return False
 
-    def findStraightPathsToVertices(self, startPoint, speed):
+    def findStraightPathsToVertices(self, startPoint, speed, predicateFilter=(lambda path: True)):
         """
         Look through all NFZ vertices and determine which can be reached by a straight-line path from
         startPoint at the given speed without intersecting any NFZs.
 
         :param startPoint:
         :param speed:
+        :param predicateFilter: almost all calc time is spent checking if a path intersects with any NFZ over time.
+        This predicate is run BEFORE this calculation is made giving an opportunity to eliminate a path.
         :return: [StraightPathSolution1, StraightPathSolution2, ...]
         """
         paths = []
         for noFlyZone in self._noFlyZones:
             NFZPaths = noFlyZone.calcVelocitiesToVertices(startPoint, speed)
+
             for path in NFZPaths:
-                pathEndPoint = path.destination
-                if not self.doesLineIntersect(startPoint, pathEndPoint, speed):
-                    paths.append(path)
+                if predicateFilter(path):
+                    pathEndPoint = path.destination
+                    if not self.doesLineIntersect(startPoint, pathEndPoint, speed):
+                        paths.append(path)
         return paths
 
     def draw(self, canvas, time=0.0, **kwargs):

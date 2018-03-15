@@ -16,8 +16,8 @@ class GridHeap:
     needs to be within acceptance threshold of the minimum cost for the associate (x,y) coordinate in the MinCostGrid.
     """
 
-    def __init__(self, acceptanceThreshold, numBins, x, y, width, height):
-        self._minCostGrid = MinCostGrid(acceptanceThreshold, numBins, x, y, width, height)
+    def __init__(self, localAcceptanceThreshold, numBins, x, y, width, height):
+        self._minCostGrid = MinCostGrid(localAcceptanceThreshold, numBins, x, y, width, height)
         self._heap = Heap()
         self._inc = 0
 
@@ -26,7 +26,7 @@ class GridHeap:
         if self._minCostGrid.submitCost(point, cost):
             self._heap.push(cost, (point, data))
 
-    def pop(self):
+    def popWithCost(self):
         """
         Find the lowest cost item in the heap, whose cost is within acceptance, of minimum cost for the bin
         corresponding to its (x,y) coordinate.
@@ -39,43 +39,12 @@ class GridHeap:
             # While this is the lowest cost overall, it may no longer be within the acceptance threshold of the
             # corresponding (x,y) bin
             if self._minCostGrid.isCostAcceptable(point, cost):
-                return data
+                return (cost, data)
 
-        return None
+        return (float("nan"), None)
 
-
-class Heap:
-    """
-    What you'd expect.  There is probably a better one, but this is simple and meets our needs.
-    """
-
-    def __init__(self):
-        self._heap = []
-        self._inc = 0
-
-    def isEmpty(self):
-        return len(self._heap) == 0
-
-    def push(self, cost, data):
-        # This is given as a 2nd argument, after cost, to break ties.  Unique incrementing value
-        heapq.heappush(self._heap, (cost, self._inc, data))
-        self._inc += 1
-
-    def getTop(self):
-        (cost, dontCare, data) = self._heap[0]
-        return data
-
-    def pop(self):
-        (cost, dontCare, data) = heapq.heappop(self._heap)
-        return data
-
-    def getTopWithCost(self):
-        (cost, dontCare, data) = self._heap[0]
-        return (cost, data)
-
-    def popWithCost(self):
-        (cost, dontCare, data) = heapq.heappop(self._heap)
-        return (cost, data)
+    def __len__(self):
+        return len(self._heap)
 
 
 class MinCostGrid:
@@ -163,3 +132,40 @@ class GridBin:
             raise IllegalBinException
 
         return xBin + self._numBins * yBin
+
+
+class Heap:
+    """
+    What you'd expect.  There is probably a better one, but this is simple and meets our needs.
+    """
+
+    def __init__(self):
+        self._heap = []
+        self._inc = 0
+
+    def isEmpty(self):
+        return len(self._heap) == 0
+
+    def __len__(self):
+        return len(self._heap)
+
+    def push(self, cost, data):
+        # This is given as a 2nd argument, after cost, to break ties.  Unique incrementing value
+        heapq.heappush(self._heap, (cost, self._inc, data))
+        self._inc += 1
+
+    def getTop(self):
+        (cost, dontCare, data) = self._heap[0]
+        return data
+
+    def pop(self):
+        (cost, dontCare, data) = heapq.heappop(self._heap)
+        return data
+
+    def getTopWithCost(self):
+        (cost, dontCare, data) = self._heap[0]
+        return (cost, data)
+
+    def popWithCost(self):
+        (cost, dontCare, data) = heapq.heappop(self._heap)
+        return (cost, data)
