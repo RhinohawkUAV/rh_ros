@@ -112,10 +112,9 @@ class NoFlyZone(Drawable):
             for line in self._lines:
                 line.draw(canvas, time=time, drawVectors=drawVectors, **kwargs)
 
-            if drawVectors:
-                if np.linalg.norm(self._velocity) > 0.0:
-                    gui.draw.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0,
-                                      arrow=tk.LAST, **kwargs)
+            if np.linalg.norm(self._velocity) > 0.0:
+                gui.draw.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0,
+                                  arrow=tk.LAST, **kwargs)
         else:
             # For future times, generate a future noFlyZone and draw that with time=0.0.
             self.getFutureCopy(time).draw(canvas, time=0.0, **kwargs)

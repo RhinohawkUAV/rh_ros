@@ -11,7 +11,7 @@ from geometry import generator
 start = (95, 95)
 end = (5, 5)
 speed = 10.0
-obstacleCourse = generator.generateObstacleCourse(None, 30, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=4.0)
+obstacleCourse = generator.generateObstacleCourse(None, 50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=4.0)
 acceptanceThreshold = 2.0
 numBins = 20
 

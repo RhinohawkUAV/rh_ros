@@ -1,3 +1,5 @@
+import copy
+
 from findPathDynamic.dynamicPathFinder import DynamicPathFinderDrawable
 from gui.visualizer import Visualizer
 
@@ -13,13 +15,14 @@ class DynamicPathFindingVisualizer(Visualizer):
 
     def __init__(self, dynamicPathFinder, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
-        self._dynamicPathFinder = dynamicPathFinder
+        self._resetDynamicPathFinder = dynamicPathFinder
+        self._dynamicPathFinder = copy.deepcopy(self._resetDynamicPathFinder)
         self.pointOfInterest = None
 
     def onLeftClick(self, event):
         for i in range(0, STEPS_PER_CLICK):
-            if not self._dynamicPathFinder.step():
-                print "done"
+            if self._dynamicPathFinder.running:
+                self._dynamicPathFinder.step()
         self.updateDisplay()
 
     def onMouseMotion(self, event):
@@ -27,9 +30,9 @@ class DynamicPathFindingVisualizer(Visualizer):
         self.updateDisplay()
 
     def onRightClick(self, event):
-        self.pointOfInterest = self.transformCanvasToPoint((event.x, event.y))
+        self._dynamicPathFinder = copy.deepcopy(self._resetDynamicPathFinder)
         self.updateDisplay()
 
     def updateDisplay(self):
         drawable = DynamicPathFinderDrawable(self._dynamicPathFinder)
-        self.drawToCanvas(drawable, pointOfInterest=self.pointOfInterest, snapDistance=2.0)
+        self.drawToCanvas(drawable, pointOfInterest=self.pointOfInterest, snapDistance=5.0)

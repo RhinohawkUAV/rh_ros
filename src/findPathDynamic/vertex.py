@@ -6,15 +6,18 @@ TEXT_OFFSET = 3.0
 
 
 class Vertex(Drawable):
-    def __init__(self, position, time, velocity, previousVertex=None):
+    def __init__(self, position, velocity, timeToVertex, estimatedTimeThroughVertex, previousVertex=None):
         # The location of the vertex
         self.position = position
 
-        # The time from start through this vertex
-        self.time = time
-
         # The incoming velocity vector when arriving at this point
         self.velocity = velocity
+
+        # The timeToVertex from start to this vertex
+        self.time = timeToVertex
+
+        # An estimated of the timeToVertex required to traverse, the best possible path from start, through this vertex, to goal
+        self.estimatedTimeThroughVertex = estimatedTimeThroughVertex
 
         # The previous vertex which is part of the shortest path from start through this vertex
         self.previousVertex = previousVertex

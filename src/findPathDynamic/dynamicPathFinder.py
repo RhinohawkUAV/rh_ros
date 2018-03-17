@@ -17,77 +17,80 @@ class DynamicPathFinder:
         self._goal = np.array(goal, np.double)
         self._constantSpeed = constantSpeed
         self._obstacleCourse = obstacleCourse
-        self._solution = None
 
         # Dynamic properties used for processing and display
-        self._gridHeap = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
+        self._vertexQueue = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
+
+        # TODO: We keep track of every path that reaches the end currently.  No real need to do this except for debugging.
         self._goalHeap = Heap()
 
         self._futureObstacleCourse = None
-        self._currentVertex = None
-        self._currentPaths = []
-        self._processedVertices = []
 
         # TODO: We assume we start with [0,0] velocity, which is considered compatible (in terms of turning) with all other velocities.
         initialVelocity = np.array([0.0, 0.0], np.double)
-        startVertex = Vertex(self._start, 0.0, initialVelocity)
-        self._gridHeap.push(startVertex.position, startVertex.time, startVertex)
+        self._currentVertex = Vertex(position=self._start,
+                                     velocity=initialVelocity,
+                                     timeToVertex=0.0,
+                                     estimatedTimeThroughVertex=self.heuristic(self._start))
+        self._nextEdges = []
+        self._processedVertices = []
+        self._solution = None
+        self._bestSolutionTime = float("inf")
+        self.running = True
+
+        self._vertexQueue.push(self._currentVertex)
         self._numQueuedVertices = 1
 
     def step(self):
-        if self._solution is None:
-            lowestCostSolution = float("inf")
-        else:
-            lowestCostSolution = self._solution.time
+        self._currentVertex = self._vertexQueue.pop()
+        while (not self._currentVertex is None) and (
+                self._currentVertex.estimatedTimeThroughVertex > self._bestSolutionTime):
+            self._currentVertex = self._vertexQueue.pop()
 
-        (lowestPossibleTimeCost, next) = self._gridHeap.popWithCost()
-        if next is None:
+        if self._currentVertex is None:
+            self.running = False
             return False
-
-        while lowestCostSolution < lowestPossibleTimeCost:
-            (lowestPossibleTimeCost, next) = self._gridHeap.popWithCost()
-            if next is None:
-                return False
-
-        self._currentVertex = next
 
         self._futureObstacleCourse = self._obstacleCourse.getFutureCopy(self._currentVertex.time)
 
         if not self._futureObstacleCourse.doesLineIntersect(self._currentVertex.position, self._goal,
                                                             self._constantSpeed):
-            (travelTime, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
-                                                                       self._constantSpeed)
+            (time, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
+                                                                 self._constantSpeed)
 
-            goalVertex = Vertex(self._goal,
-                                self._currentVertex.time + travelTime,
-                                direction * self._constantSpeed,
-                                self._currentVertex)
+            goalVertex = Vertex(position=self._goal,
+                                velocity=direction * self._constantSpeed,
+                                timeToVertex=self._currentVertex.time + time,
+                                estimatedTimeThroughVertex=self._currentVertex.time + time,
+                                previousVertex=self._currentVertex)
             self._goalHeap.push(goalVertex.time, goalVertex)
             self._solution = self._goalHeap.getTop()
-            lowestCostSolution = self._solution.time
-        self._currentPaths = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
-                                                                                    self._constantSpeed,
-                                                                                    lambda path:
-                                                                                    isTurnLegal(
-                                                                                        self._currentVertex.velocity,
-                                                                                        path.velocity,
-                                                                                        self._constantSpeed))
+            self._bestSolutionTime = self._solution.time
 
-        for path in self._currentPaths:
+        self._nextEdges = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
+                                                                                 self._constantSpeed,
+                                                                                 lambda path:
+                                                                                 isTurnLegal(
+                                                                                     self._currentVertex.velocity,
+                                                                                     path.velocity,
+                                                                                     self._constantSpeed))
+
+        for edge in self._nextEdges:
             # TODO: convert remaining math to nparray
-            destination = np.array(path.destination, np.double)
-            newVertex = Vertex(destination,
-                               self._currentVertex.time + path.time,
-                               path.velocity,
-                               self._currentVertex)
-            lowestPossibleTimeCost = newVertex.time + self.heuristic(newVertex.position)
+            destination = np.array(edge.destination, np.double)
+            timeToVertex = self._currentVertex.time + edge.time
+            newVertex = Vertex(position=destination,
+                               velocity=edge.velocity,
+                               timeToVertex=timeToVertex,
+                               estimatedTimeThroughVertex=timeToVertex + self.heuristic(destination),
+                               previousVertex=self._currentVertex)
 
-            # Don't push new items if we already know that an existing solution is guarenteed to be better
-            if lowestPossibleTimeCost < lowestCostSolution:
-                self._gridHeap.push(newVertex.position, lowestPossibleTimeCost, newVertex)
+            # Don't push new items if we already know that an existing solution is guaranteed to be better
+            if newVertex.estimatedTimeThroughVertex < self._bestSolutionTime:
+                self._vertexQueue.push(newVertex)
 
         self._processedVertices.append(self._currentVertex)
-        print len(self._gridHeap)
+        print len(self._vertexQueue)
         return True
 
     def heuristic(self, point):
@@ -162,26 +165,28 @@ class DynamicPathFinderDrawable(Drawable):
             closestPoint = None
             drawTime = 0.0
         else:
-            (closestPoint, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance,
-                                                                   (self.fp._currentVertex, goalVertex))
+            if self.fp.running:
+                searchPaths = [self.fp._currentVertex, goalVertex]
+            else:
+                searchPaths = [goalVertex]
+            (closestPoint, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance, searchPaths)
 
         obstacleCourse = self.fp._obstacleCourse.getFutureCopy(drawTime)
-        obstacleCourse.draw(canvas, color=obstacleColor)
+        obstacleCourse.draw(canvas, color=obstacleColor, drawVectors=False)
 
         gui.draw.drawPoint(canvas, self.fp._start, color="black")
         gui.draw.drawPoint(canvas, self.fp._goal, color="black")
-
-        for path in self.fp._currentPaths:
-            velocity = path.velocity
-            destination = path.destination
-            gui.draw.drawLine(canvas, self.fp._currentVertex.position, destination, color=lineOfSightColor)
 
         for vertex in self.fp._processedVertices:
             vertex.draw(canvas, color=vertexColor)
             vertex.drawEdge(canvas, color=pathColor, width=2.0)
 
-        if not self.fp._currentVertex is None:
+        if self.fp.running:
             self.fp._currentVertex.drawPath(canvas, color="orange", width=4.0)
+            for edge in self.fp._nextEdges:
+                velocity = edge.velocity
+                destination = edge.destination
+                gui.draw.drawLine(canvas, self.fp._currentVertex.position, destination, color=lineOfSightColor)
 
         if not goalVertex is None:
             goalVertex.drawPath(canvas, color="purple", width=4.0)

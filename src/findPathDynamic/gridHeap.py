@@ -1,16 +1,17 @@
-import heapq
+from findPathDynamic.heap import Heap
+from findPathDynamic.vertexPriorityQueue import VertexPriorityQueue
 
 
 class IllegalBinException(BaseException):
     pass
 
 
-class GridHeap:
+class GridHeap(VertexPriorityQueue):
     """
-    A heap-ish data structure for storing data which is associated with a cost and an (x,y) coordinate.
+    A heap-ish data structure for storing vertices.
 
     Push operation, will lookup the minimum cost of the (x,y) coordinate in a MinCostGrid.  If within acceptance threshold,
-    the min cost will be updated and this block of data will be added to the heap.
+    the min cost will be updated and the vertex will be added to the heap.
 
     Pop operation, will return the cheapest AND "acceptable" item in the heap (or None).  To be acceptable, the item
     needs to be within acceptance threshold of the minimum cost for the associate (x,y) coordinate in the MinCostGrid.
@@ -21,12 +22,12 @@ class GridHeap:
         self._heap = Heap()
         self._inc = 0
 
-    def push(self, point, cost, data):
+    def push(self, vertex):
         # Update minimum cost at (x,y) bin if appropriate
-        if self._minCostGrid.submitCost(point, cost):
-            self._heap.push(cost, (point, data))
+        if self._minCostGrid.submitCost(vertex.position, vertex.estimatedTimeThroughVertex):
+            self._heap.push(vertex.estimatedTimeThroughVertex, vertex)
 
-    def popWithCost(self):
+    def pop(self):
         """
         Find the lowest cost item in the heap, whose cost is within acceptance, of minimum cost for the bin
         corresponding to its (x,y) coordinate.
@@ -34,14 +35,14 @@ class GridHeap:
         """
         while not self._heap.isEmpty():
             # Get the lowest cost item in the heap
-            (cost, (point, data)) = self._heap.popWithCost()
+            (cost, vertex) = self._heap.popWithCost()
 
             # While this is the lowest cost overall, it may no longer be within the acceptance threshold of the
             # corresponding (x,y) bin
-            if self._minCostGrid.isCostAcceptable(point, cost):
-                return (cost, data)
+            if self._minCostGrid.isCostAcceptable(vertex.position, cost):
+                return vertex
 
-        return (float("nan"), None)
+        return None
 
     def __len__(self):
         return len(self._heap)
@@ -132,40 +133,3 @@ class GridBin:
             raise IllegalBinException
 
         return xBin + self._numBins * yBin
-
-
-class Heap:
-    """
-    What you'd expect.  There is probably a better one, but this is simple and meets our needs.
-    """
-
-    def __init__(self):
-        self._heap = []
-        self._inc = 0
-
-    def isEmpty(self):
-        return len(self._heap) == 0
-
-    def __len__(self):
-        return len(self._heap)
-
-    def push(self, cost, data):
-        # This is given as a 2nd argument, after cost, to break ties.  Unique incrementing value
-        heapq.heappush(self._heap, (cost, self._inc, data))
-        self._inc += 1
-
-    def getTop(self):
-        (cost, dontCare, data) = self._heap[0]
-        return data
-
-    def pop(self):
-        (cost, dontCare, data) = heapq.heappop(self._heap)
-        return data
-
-    def getTopWithCost(self):
-        (cost, dontCare, data) = self._heap[0]
-        return (cost, data)
-
-    def popWithCost(self):
-        (cost, dontCare, data) = heapq.heappop(self._heap)
-        return (cost, data)
