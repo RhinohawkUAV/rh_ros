@@ -1,8 +1,8 @@
 import numpy as np
 
-from findPathDynamic.interfaces import VertexPriorityQueue
-from findPathDynamic.minheap import MinHeap
-from findPathDynamic.uniqueTree import UniqueTree
+from findPathDynamic.vertexPriorityQueue.vertexPriorityQueue import VertexPriorityQueue
+from uniqueVertexTree import UniqueTree
+from utils.minheap import MinHeap
 
 
 class UniqueVertexQueue(VertexPriorityQueue):
@@ -45,3 +45,7 @@ class UniqueVertexQueue(VertexPriorityQueue):
         if self._heap.isEmpty():
             return None
         return self._heap.pop()
+
+    def __iter__(self):
+        """Should allow iteration over vertices"""
+        return self._heap.__iter__()

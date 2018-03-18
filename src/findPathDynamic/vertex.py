@@ -14,7 +14,7 @@ class Vertex(Drawable):
         self.velocity = velocity
 
         # The timeToVertex from start to this vertex
-        self.time = timeToVertex
+        self.timeToVertex = timeToVertex
 
         # An estimated of the timeToVertex required to traverse, the best possible path from start, through this vertex, to goal
         self.estimatedTimeThroughVertex = estimatedTimeThroughVertex
@@ -30,11 +30,11 @@ class Vertex(Drawable):
     def draw(self, canvas, **kwargs):
         gui.draw.drawPoint(canvas, self.position, **kwargs)
         gui.draw.drawText(canvas, (self.position[0] + TEXT_OFFSET, self.position[1]),
-                          text="{:4.2f}".format(self.time), **kwargs)
+                          text="{:4.2f}".format(self.timeToVertex), **kwargs)
 
     def drawEdge(self, canvas, **kwargs):
         if not self.previousVertex is None:
             gui.draw.drawLine(canvas, self.previousVertex.position, self.position, **kwargs)
 
     def __str__(self):
-        return "(" + str(self.position[0]) + "," + str(self.position[1]) + ") with cost: " + str(self.time)
+        return "(" + str(self.position[0]) + "," + str(self.position[1]) + ") with cost: " + str(self.timeToVertex)

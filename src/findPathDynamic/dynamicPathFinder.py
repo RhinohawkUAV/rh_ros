@@ -4,12 +4,11 @@ import numpy as np
 
 import constants
 import gui
-from findPathDynamic.gridVertexQueue import MinHeap
-from findPathDynamic.uniqueVertexQueue import UniqueVertexQueue
 from findPathDynamic.vertex import Vertex
 from geometry import LineSeg
 from geometry import calcs
 from gui import Drawable
+from vertexPriorityQueue import UniqueVertexQueue
 
 
 class DynamicPathFinder:
@@ -20,11 +19,8 @@ class DynamicPathFinder:
         self._obstacleCourse = obstacleCourse
 
         # Dynamic properties used for processing and display
-        # self._vertexQueue = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
+        # self._vertexQueue = GridVertexQueue(acceptanceThreshold, numBins, x, y, width, height)
         self._vertexQueue = UniqueVertexQueue(x, y, width, height, self._constantSpeed)
-
-        # TODO: We keep track of every path that reaches the end currently.  No real need to do this except for debugging.
-        self._goalHeap = MinHeap()
 
         self._futureObstacleCourse = None
 
@@ -35,7 +31,6 @@ class DynamicPathFinder:
                                      timeToVertex=0.0,
                                      estimatedTimeThroughVertex=self.heuristic(self._start))
         self._nextEdges = []
-        self._processedVertices = []
         self._solution = None
         self._bestSolutionTime = float("inf")
         self.running = True
@@ -53,7 +48,7 @@ class DynamicPathFinder:
             self.running = False
             return False
 
-        self._futureObstacleCourse = self._obstacleCourse.getFutureCopy(self._currentVertex.time)
+        self._futureObstacleCourse = self._obstacleCourse.getFutureCopy(self._currentVertex.timeToVertex)
 
         if not self._futureObstacleCourse.doesLineIntersect(self._currentVertex.position, self._goal,
                                                             self._constantSpeed):
@@ -62,12 +57,12 @@ class DynamicPathFinder:
 
             goalVertex = Vertex(position=self._goal,
                                 velocity=direction * self._constantSpeed,
-                                timeToVertex=self._currentVertex.time + time,
-                                estimatedTimeThroughVertex=self._currentVertex.time + time,
+                                timeToVertex=self._currentVertex.timeToVertex + time,
+                                estimatedTimeThroughVertex=self._currentVertex.timeToVertex + time,
                                 previousVertex=self._currentVertex)
-            self._goalHeap.push(goalVertex.time, goalVertex)
-            self._solution = self._goalHeap.getTop()
-            self._bestSolutionTime = self._solution.time
+            if goalVertex.timeToVertex < self._bestSolutionTime:
+                self._solution = goalVertex
+                self._bestSolutionTime = self._solution.timeToVertex
 
         self._nextEdges = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
                                                                                  self._constantSpeed,
@@ -80,7 +75,8 @@ class DynamicPathFinder:
         for edge in self._nextEdges:
             # TODO: convert remaining math to nparray
             destination = np.array(edge.destination, np.double)
-            timeToVertex = self._currentVertex.time + edge.time
+            timeToVertex = self._currentVertex.timeToVertex + edge.time
+
             newVertex = Vertex(position=destination,
                                velocity=edge.velocity,
                                timeToVertex=timeToVertex,
@@ -91,7 +87,6 @@ class DynamicPathFinder:
             if newVertex.estimatedTimeThroughVertex < self._bestSolutionTime:
                 self._vertexQueue.push(newVertex)
 
-        self._processedVertices.append(self._currentVertex)
         return True
 
     def heuristic(self, point):
@@ -139,7 +134,7 @@ class DynamicPathFinderDrawable(Drawable):
                 if distance < shortestDistance:
                     shortestDistance = distance
                     closestPoint = closestPointOnLinePoint
-                    time = (1.0 - parametric) * currentVertex.time + parametric * previousVertex.time
+                    time = (1.0 - parametric) * currentVertex.timeToVertex + parametric * previousVertex.timeToVertex
                 currentVertex = previousVertex
                 previousVertex = currentVertex.previousVertex
 
@@ -158,18 +153,16 @@ class DynamicPathFinderDrawable(Drawable):
         """
         # type: (Canvas,**kwargs) -> None
 
-        goalVertex = None
-        if not self.fp._goalHeap.isEmpty():
-            goalVertex = self.fp._goalHeap.getTop()
-
         if pointOfInterest is None:
             closestPoint = None
             drawTime = 0.0
         else:
+            searchPaths = []
+
             if self.fp.running:
-                searchPaths = [self.fp._currentVertex, goalVertex]
-            else:
-                searchPaths = [goalVertex]
+                searchPaths.append(self.fp._currentVertex)
+            if not self.fp._solution is None:
+                searchPaths.append(self.fp._solution)
             (closestPoint, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance, searchPaths)
 
         obstacleCourse = self.fp._obstacleCourse.getFutureCopy(drawTime)
@@ -178,9 +171,9 @@ class DynamicPathFinderDrawable(Drawable):
         gui.draw.drawPoint(canvas, self.fp._start, color="black")
         gui.draw.drawPoint(canvas, self.fp._goal, color="black")
 
-        for vertex in self.fp._processedVertices:
+        for vertex in self.fp._vertexQueue:
             vertex.draw(canvas, color=vertexColor)
-            vertex.drawEdge(canvas, color=pathColor, width=2.0)
+            # vertex.drawEdge(canvas, color=pathColor, width=2.0)
 
         if self.fp.running:
             self.fp._currentVertex.drawPath(canvas, color="orange", width=4.0)
@@ -189,8 +182,8 @@ class DynamicPathFinderDrawable(Drawable):
                 destination = edge.destination
                 gui.draw.drawLine(canvas, self.fp._currentVertex.position, destination, color=lineOfSightColor)
 
-        if not goalVertex is None:
-            goalVertex.drawPath(canvas, color="purple", width=4.0)
+        if not self.fp._solution is None:
+            self.fp._solution.drawPath(canvas, color="purple", width=4.0)
 
         if not closestPoint is None:
             gui.draw.drawPoint(canvas, closestPoint, color="orange")

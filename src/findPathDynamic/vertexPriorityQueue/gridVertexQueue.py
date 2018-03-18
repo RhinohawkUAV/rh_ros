@@ -1,5 +1,5 @@
-from findPathDynamic.interfaces import VertexPriorityQueue
-from findPathDynamic.minheap import MinHeap
+from findPathDynamic.vertexPriorityQueue.vertexPriorityQueue import VertexPriorityQueue
+from utils.minheap import MinHeap
 
 
 class IllegalBinException(BaseException):
@@ -44,8 +44,9 @@ class GridVertexQueue(VertexPriorityQueue):
 
         return None
 
-    def __len__(self):
-        return len(self._heap)
+    def __iter__(self):
+        """Should allow iteration over vertices"""
+        return self._heap.__iter__()
 
 
 class MinCostGrid:
