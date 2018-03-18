@@ -1,5 +1,5 @@
 # TODO: Tune values
-# When computing _nextEdges to vertices of no-fly-zones, choosing the exact vertex may register as a collision due to
+# When computing _straightPaths to vertices of no-fly-zones, choosing the exact vertex may register as a collision due to
 # round-off error.  This small delta offset, outward along the vertices's normal prevents this.
 import math
 

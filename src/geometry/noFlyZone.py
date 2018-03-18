@@ -7,7 +7,7 @@ import calcs
 import gui.draw
 from constants import NO_FLY_ZONE_POINT_OFFSET
 from gui import Drawable
-from lineSegment import LineSeg
+from lineSegment import LineSegment
 
 
 class NoFlyZone(Drawable):
@@ -28,7 +28,7 @@ class NoFlyZone(Drawable):
         self._midPoint = self._points.sum(axis=0) / len(self._points)
 
         for i in range(0, len(points)):
-            self._lines.append(LineSeg(self._points[i - 1], self._points[i]))
+            self._lines.append(LineSegment(self._points[i - 1], self._points[i]))
 
         for i in range(0, len(points) - 1):
             pointNormal = (self._lines[i].n + self._lines[i + 1].n) / 2.0

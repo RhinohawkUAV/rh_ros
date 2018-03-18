@@ -44,6 +44,9 @@ class GridVertexQueue(VertexPriorityQueue):
 
         return None
 
+    def isEmpty(self):
+        return self._heap.isEmpty()
+
     def __iter__(self):
         """Should allow iteration over vertices"""
         return self._heap.__iter__()

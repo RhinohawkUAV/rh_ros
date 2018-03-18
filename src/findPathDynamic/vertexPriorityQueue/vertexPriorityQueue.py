@@ -22,6 +22,9 @@ class VertexPriorityQueue:
         """
         pass
 
+    def isEmpty(self):
+        pass
     def __iter__(self):
         """Should allow iteration over vertices"""
         pass
+

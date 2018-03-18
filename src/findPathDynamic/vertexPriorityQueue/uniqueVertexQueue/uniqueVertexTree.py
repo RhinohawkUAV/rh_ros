@@ -23,7 +23,7 @@ def checkCoincident(p1, p2):
 # kd-trees are not considered good in dynamic situations.
 # Voronoi uses n^2 space, not clear if this is good for dynamic situations.
 # R-trees are supposed to be good for dynamics, but they don't appear to be supported out of the box (there is some GIS version on the web).
-# At the moment, this is not the bottleneck on processing so we'll ignore it.
+# In a recent test, insertion into this tree accounted for ~1.2% of the computation time, so this is NOT the place to optimize.
 
 class UniqueTree:
     """

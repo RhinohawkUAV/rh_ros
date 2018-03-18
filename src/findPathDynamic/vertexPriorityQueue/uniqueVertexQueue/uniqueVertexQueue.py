@@ -46,6 +46,9 @@ class UniqueVertexQueue(VertexPriorityQueue):
             return None
         return self._heap.pop()
 
+    def isEmpty(self):
+        return self._heap.isEmpty()
+
     def __iter__(self):
         """Should allow iteration over vertices"""
         return self._heap.__iter__()

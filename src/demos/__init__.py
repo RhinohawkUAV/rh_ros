@@ -1,4 +1,4 @@
-from staticPathFind.staticPathFindingVisualizer import PathFindingVisualizer
+from dynamicPathFind import DynamicPathFindingVisualizer
 from findNFZIntersectDynamic.FindNFZIntersectDynamicVis import findNFZIntersectDynamicVis
 from findNFZIntersectDynamic.findNFZIntersectDynamic import FindNFZIntersectDynamic
-
+from staticPathFind.staticPathFindingVisualizer import PathFindingVisualizer

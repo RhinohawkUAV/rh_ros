@@ -10,7 +10,7 @@ textOffsetFactor = 4.0
 normalDisplayFactor = 4.0
 
 
-class LineSeg(Drawable):
+class LineSegment(Drawable):
     """
     A one-sided line segment.  This allows collision detection with another directed line-segment.  A collision is
     only considered if the velocity of the other line segment opposes the normal of this line segment.
