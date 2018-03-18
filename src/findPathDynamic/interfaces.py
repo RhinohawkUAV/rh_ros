@@ -16,7 +16,7 @@ class VertexPriorityQueue:
 
     def pop(self):
         """
-        Returns the vertex to visit next.  This choice will be based on vertex and previous search data.
+        Returns the vertex to visit next or None if the queue is empty.
         :return:
         """
         pass

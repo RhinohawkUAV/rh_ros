@@ -16,23 +16,23 @@ class MinHeap:
     def __len__(self):
         return len(self._heap)
 
-    def push(self, cost, data):
-        # This is given as a 2nd argument, after cost, to break ties.  Unique incrementing value
-        heapq.heappush(self._heap, (cost, self._inc, data))
+    def push(self, priority, data):
+        # This is given as a 2nd argument, after priority, to break ties.  Unique incrementing value
+        heapq.heappush(self._heap, (priority, self._inc, data))
         self._inc += 1
 
     def getTop(self):
-        (cost, dontCare, data) = self._heap[0]
+        (priority, dontCare, data) = self._heap[0]
         return data
 
     def pop(self):
         (cost, dontCare, data) = heapq.heappop(self._heap)
         return data
 
-    def getTopWithCost(self):
-        (cost, dontCare, data) = self._heap[0]
-        return (cost, data)
+    def getTopWithPriority(self):
+        (priority, dontCare, data) = self._heap[0]
+        return (priority, data)
 
-    def popWithCost(self):
-        (cost, dontCare, data) = heapq.heappop(self._heap)
-        return (cost, data)
+    def popWithPriority(self):
+        (priority, dontCare, data) = heapq.heappop(self._heap)
+        return (priority, data)

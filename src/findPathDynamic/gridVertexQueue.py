@@ -1,12 +1,12 @@
-from findPathDynamic.minheap import MinHeap
 from findPathDynamic.interfaces import VertexPriorityQueue
+from findPathDynamic.minheap import MinHeap
 
 
 class IllegalBinException(BaseException):
     pass
 
 
-class GridHeap(VertexPriorityQueue):
+class GridVertexQueue(VertexPriorityQueue):
     """
     A heap-ish data structure for storing vertices.
 
@@ -35,7 +35,7 @@ class GridHeap(VertexPriorityQueue):
         """
         while not self._heap.isEmpty():
             # Get the lowest cost item in the heap
-            (cost, vertex) = self._heap.popWithCost()
+            (cost, vertex) = self._heap.popWithPriority()
 
             # While this is the lowest cost overall, it may no longer be within the acceptance threshold of the
             # corresponding (x,y) bin

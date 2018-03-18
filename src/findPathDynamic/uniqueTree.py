@@ -31,12 +31,8 @@ class UniqueTree(VertexUniquenessGroup):
     """
 
     def __init__(self, x, y, width, height, maximumSpeed):
-        minPosition = np.array([x, y, -maximumSpeed / np.math.sqrt(2.0), -maximumSpeed / np.math.sqrt(2.0)],
-                               np.double)
-        dims = np.array([width, height,
-                         2.0 * maximumSpeed / np.math.sqrt(2.0),
-                         2.0 * maximumSpeed / np.math.sqrt(2.0)],
-                        np.double)
+        minPosition = np.array([x, y, -maximumSpeed, -maximumSpeed], np.double)
+        dims = np.array([width, height, 2.0 * maximumSpeed, 2.0 * maximumSpeed], np.double)
 
         self._root = UniqueNode(minPosition, dims, uniqueness=0.5)
         self._empty = True
@@ -73,14 +69,16 @@ class UniqueNode:
 
         subIndices = self.getSubIndices(position)
         index = _calcIndex(subIndices)
+
         # If the slot is empty just insert the position there
         if self._children[index] is None:
             self._children[index] = position
             return self._uniqueness
 
-        # If there is already a sub-tree at the location, then insert into the sub-tree
-        elif not type(self._children[index]) is UniqueNode:
+        # If there is not a sub-tree at the index we want to insert at then we need to create one
+        elif not isinstance(self._children[index], UniqueNode):
             existingPosition = self._children[index]
+
             # This point already exists.  Don't insert it and return a uniqueness of 0.0!
             if checkCoincident(position, existingPosition):
                 return 0.0

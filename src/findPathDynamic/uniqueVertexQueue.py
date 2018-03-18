@@ -2,7 +2,7 @@ import numpy as np
 
 from findPathDynamic.interfaces import VertexPriorityQueue
 from findPathDynamic.minheap import MinHeap
-from findPathDynamic.uniqueTree import UniqueNode
+from findPathDynamic.uniqueTree import UniqueTree
 
 
 class UniqueVertexQueue(VertexPriorityQueue):
@@ -33,14 +33,7 @@ class UniqueVertexQueue(VertexPriorityQueue):
 
     def __init__(self, x, y, width, height, maximumSpeed):
         self._heap = MinHeap()
-        self._uniqueTree = UniqueNode(
-            minPosition=np.array([x, y, -maximumSpeed / np.math.sqrt(2.0), -maximumSpeed / np.math.sqrt(2.0)],
-                                 np.double),
-            dims=np.array([width, height,
-                           2.0 * maximumSpeed / np.math.sqrt(2.0),
-                           2.0 * maximumSpeed / np.math.sqrt(2.0)],
-                          np.double),
-            uniqueness=0.5)
+        self._uniqueTree = UniqueTree(x, y, width, height, maximumSpeed)
         self._diagnonalTime = np.math.sqrt(width * width + height * height) / maximumSpeed
 
     def push(self, vertex):
@@ -49,4 +42,6 @@ class UniqueVertexQueue(VertexPriorityQueue):
         self._heap.push(priority, vertex)
 
     def pop(self):
+        if self._heap.isEmpty():
+            return None
         return self._heap.pop()

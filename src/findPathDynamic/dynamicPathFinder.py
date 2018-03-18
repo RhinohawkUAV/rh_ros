@@ -4,7 +4,8 @@ import numpy as np
 
 import constants
 import gui
-from findPathDynamic.gridHeap import GridHeap, MinHeap
+from findPathDynamic.gridVertexQueue import MinHeap
+from findPathDynamic.uniqueVertexQueue import UniqueVertexQueue
 from findPathDynamic.vertex import Vertex
 from geometry import LineSeg
 from geometry import calcs
@@ -19,7 +20,8 @@ class DynamicPathFinder:
         self._obstacleCourse = obstacleCourse
 
         # Dynamic properties used for processing and display
-        self._vertexQueue = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
+        # self._vertexQueue = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
+        self._vertexQueue = UniqueVertexQueue(x, y, width, height, self._constantSpeed)
 
         # TODO: We keep track of every path that reaches the end currently.  No real need to do this except for debugging.
         self._goalHeap = MinHeap()
@@ -90,7 +92,6 @@ class DynamicPathFinder:
                 self._vertexQueue.push(newVertex)
 
         self._processedVertices.append(self._currentVertex)
-        print len(self._vertexQueue)
         return True
 
     def heuristic(self, point):
