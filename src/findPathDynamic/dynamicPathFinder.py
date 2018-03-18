@@ -4,7 +4,7 @@ import numpy as np
 
 import constants
 import gui
-from findPathDynamic.gridHeap import GridHeap, Heap
+from findPathDynamic.gridHeap import GridHeap, MinHeap
 from findPathDynamic.vertex import Vertex
 from geometry import LineSeg
 from geometry import calcs
@@ -22,7 +22,7 @@ class DynamicPathFinder:
         self._vertexQueue = GridHeap(acceptanceThreshold, numBins, x, y, width, height)
 
         # TODO: We keep track of every path that reaches the end currently.  No real need to do this except for debugging.
-        self._goalHeap = Heap()
+        self._goalHeap = MinHeap()
 
         self._futureObstacleCourse = None
 

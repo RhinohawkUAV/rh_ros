@@ -1,7 +1,7 @@
 import heapq
 
 
-class Heap:
+class MinHeap:
     """
     What you'd expect.  There is probably a better one, but this is simple and meets our needs.
     """

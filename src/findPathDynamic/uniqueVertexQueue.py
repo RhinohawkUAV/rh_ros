@@ -1,0 +1,52 @@
+import numpy as np
+
+from findPathDynamic.interfaces import VertexPriorityQueue
+from findPathDynamic.minheap import MinHeap
+from findPathDynamic.uniqueTree import UniqueNode
+
+
+class UniqueVertexQueue(VertexPriorityQueue):
+    """
+    This VertexPriorityQueue uses several criteria to determine priority:
+
+    1. Estimated time - The smaller a vertex's estimatedTimeThroughVertex field is, the higher its priority.
+    2. Uniqueness - The more unique a vertex is the higher its priority.
+
+    Uniqueness depends on position and velocity of a vertex in comparison to other vertices and is given a score [0,1]:
+    1 - this is the only vertex
+    0 - this exactly matches an existing vertex
+
+
+    We define priority (lower is better) as:
+    _diagnonalTime = sqrt(width*width + height*height) / maximumSpeed
+    priority = estimatedTime - uniqueness * _diagnonalTime
+
+    The goal is to scale uniqueness so that it is on the same playing field as estimated time.
+
+    Uniqueness is judged at the time the vertex is discovered.  This achieves our goal as the first vertex in an
+    area/configuration will have a high priority, but later ones will have lesser priority.
+
+    #TODO: Future tuning considerations:
+    1. Should uniqueness of velocity be given the same weight as position?
+    2. Should uniqueness be given more or less weight compared to estimated time?
+    """
+
+    def __init__(self, x, y, width, height, maximumSpeed):
+        self._heap = MinHeap()
+        self._uniqueTree = UniqueNode(
+            minPosition=np.array([x, y, -maximumSpeed / np.math.sqrt(2.0), -maximumSpeed / np.math.sqrt(2.0)],
+                                 np.double),
+            dims=np.array([width, height,
+                           2.0 * maximumSpeed / np.math.sqrt(2.0),
+                           2.0 * maximumSpeed / np.math.sqrt(2.0)],
+                          np.double),
+            uniqueness=0.5)
+        self._diagnonalTime = np.math.sqrt(width * width + height * height) / maximumSpeed
+
+    def push(self, vertex):
+        uniqueness = self._uniqueTree.insert(vertex)
+        priority = vertex.estimatedTimeThroughVertex - uniqueness * self._diagnonalTime
+        self._heap.push(priority, vertex)
+
+    def pop(self):
+        return self._heap.pop()

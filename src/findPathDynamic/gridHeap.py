@@ -1,5 +1,5 @@
-from findPathDynamic.heap import Heap
-from findPathDynamic.vertexPriorityQueue import VertexPriorityQueue
+from findPathDynamic.minheap import MinHeap
+from findPathDynamic.interfaces import VertexPriorityQueue
 
 
 class IllegalBinException(BaseException):
@@ -19,7 +19,7 @@ class GridHeap(VertexPriorityQueue):
 
     def __init__(self, localAcceptanceThreshold, numBins, x, y, width, height):
         self._minCostGrid = MinCostGrid(localAcceptanceThreshold, numBins, x, y, width, height)
-        self._heap = Heap()
+        self._heap = MinHeap()
         self._inc = 0
 
     def push(self, vertex):
