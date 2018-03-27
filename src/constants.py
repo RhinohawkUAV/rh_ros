@@ -6,7 +6,7 @@ import math
 NO_FLY_ZONE_POINT_OFFSET = 0.0001
 
 # TODO: Used with the assumption that speed is constant.  This probably isn't going to be true ultimately
-MAX_TURN_ANGLE = 90
+MAX_TURN_ANGLE = 30
 
 # For calculation convenience
 MAX_TURN_ANGLE_COS = math.cos(math.radians(MAX_TURN_ANGLE))
