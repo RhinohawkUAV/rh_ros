@@ -75,7 +75,7 @@ body{
 #tel-compass p{
 	position:absolute;
 	width:100%;
-	top:17px;
+	top:13px;
 	text-align: center;
 }
 
@@ -123,12 +123,32 @@ body{
 	float:left;
 }
 
+.aruco-popup-img {
+	position:absolute;
+}
+
+.aruco-popup-img-holder {
+	width:100px;
+	height:100px;
+	overflow: hidden;
+	position:relative;
+}
+
 #image-seen{
 	width:500px;
 	height:500px;
 	overflow: scroll;
 	position: absolute;
 	bottom:0;
+}
+
+.aruco-popup .leaflet-popup-content-wrapper {
+	border-radius:3px;
+
+}
+
+.aruco-popup .leaflet-popup-content {
+	margin:4px;
 }
 
 /*******************  Map Controls *******************/
@@ -138,9 +158,8 @@ body{
 }
 
 .centerToggle{
-	position: absolute;
-	top: 0px;
-    right: 60px;
+	float:right;
+	margin-right: 60px;
     color:#fff;
     z-index: 1000;
 }

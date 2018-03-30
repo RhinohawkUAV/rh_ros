@@ -4,13 +4,17 @@ var clockInit = false;
 var centerMap = true;
 
 var uavPath=[];
+var coords;
 var home;
 var compass;
+var pointInImage;
 var currentImg;
 var counter = 0;
+var targetLoc;
 
 var iconwaypointYellow;
 var joePosition;
+var arucoIcon;
 
 var groundSpeedGauge;
 var airSpeedGauge;
@@ -49,6 +53,12 @@ function connectToROS(address){
       iconSize: [17,25],
       popupAnchor: [0,-12],
     });
+
+  arucoIcon = L.icon({
+    iconUrl: 'img/arucoIcon.png',
+    iconSize: [22,22],
+    popupAnchor: [0,-12],
+  });
 }
 
 //  Create Gauges ---------------------------------------------
@@ -156,6 +166,7 @@ function connectToTopics() {
 
     imageTopic.subscribe(function(message) {
       currentImg = "data:image/png;base64," + message.data;
+
       document.getElementById( 'aruco-image' ).setAttribute( 'src', currentImg );
     });
 
@@ -232,6 +243,22 @@ function connectToTopics() {
       document.getElementById("tel-long").innerHTML= message.longitude;
     });
 
+ // Marker Location in image stream ---------------------------------------------
+
+    var markerLocation = new ROSLIB.Topic({
+        ros: ros,
+        name: '/gopro/landing_box_location',
+        messageType: 'geometry_msgs/PointStamped'
+      });
+    
+    markerLocation.subscribe(function(message) {
+      pointInImage = [message.point.x, message.point.y];
+
+     
+    });
+  
+
+ // Target Location ---------------------------------------------
   
     targetLocationTopic.subscribe(function(message) {
       if (message.point != null) {
@@ -242,40 +269,15 @@ function connectToTopics() {
           lat = home[0] + (180/Math.PI) * (dy/6378137);
           lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
           //console.log("    Global target position: "+lat+","+lon)
-          L.circle([lat, lon], {radius: 1, weight: 1, opacity: 0.3, color: '#ff0000'}).addTo(map);
+          var newAruco = L.marker([lat, lon],{icon: arucoIcon}).addTo(map);
+          newAruco.bindPopup("<div class='aruco-popup-img-holder'><img src='"+currentImg+"' style='top:"+-(pointInImage[1]-50)+"px; left:"+-(pointInImage[0]-50)+"px;' class='aruco-popup-img'></div>", {className:"aruco-popup"});
+          targetLoc = [lat, lon];
       }
     });
 
 
 
-    // Marker Location ---------------------------------------------
-
-    var markerLocation = new ROSLIB.Topic({
-        ros: ros,
-        name: '/gopro/landing_box_location',
-        messageType: 'geometry_msgs/PointStamped'
-      });
-    
-    markerLocation.subscribe(function(message) {
-      counter ++;
-      if(counter < 100){
-        console.log("Landing Box Location: x: "+message.point.x +", y: "+message.point.y);
-
-        var markerImage = document.createElement('div');
-        markerImage.setAttribute('class', 'aruco-image-crop');
-        markerImage.setAttribute('style', 'width:50px; height:50px; background-image:url('+currentImg+'); background-position:-'+(message.point.x-25)+'px -'+(message.point.y-25)+'px;');
-
-        document.getElementById('images-seen').appendChild(markerImage);
-
-        counter = 0;
-      }
-      
-      /*newDot.setAttribute('class', 'landing-box-loc');
-      newDot.setAttribute('style', 'left:'+message.point.x/2+'px; top:'+message.point.y/2+'px;');
-      document.getElementById('graph-scatter-plot').appendChild(newDot);*/
-    });
-  
-
+   
 
 
 
@@ -401,3 +403,25 @@ Object.defineProperty(
         }
     }
 );
+
+
+// Get portion of image from images coming in via ROS
+// Source: https://yellowpencil.com/blog/cropping-images-with-javascript/
+function getImagePortion(imgObj, newWidth, newHeight, startX, startY, ratio){
+ /* the parameters: - the image element - the new width - the new height - the x point we start taking pixels - the y point we start taking pixels - the ratio */
+ //set up canvas for thumbnail
+ var tnCanvas = document.createElement('canvas');
+ var tnCanvasContext = tnCanvas.getContext('2d');
+ tnCanvas.width = newWidth; tnCanvas.height = newHeight;
+ 
+ /* use the sourceCanvas to duplicate the entire image. This step was crucial for iOS4 and under devices. Follow the link at the end of this post to see what happens when you don’t do this */
+ var bufferCanvas = document.createElement('canvas');
+ var bufferContext = bufferCanvas.getContext('2d');
+ bufferCanvas.width = imgObj.width;
+ bufferCanvas.height = imgObj.height;
+ bufferContext.drawImage(imgObj, 0, 0);
+ 
+ /* now we use the drawImage method to take the pixels from our bufferCanvas and draw them into our thumbnail canvas */
+ tnCanvasContext.drawImage(bufferCanvas, startX,startY,newWidth * ratio, newHeight * ratio,0,0,newWidth,newHeight);
+ return tnCanvas.toDataURL();
+}
