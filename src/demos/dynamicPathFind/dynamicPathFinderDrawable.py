@@ -3,7 +3,7 @@ from Tkinter import Canvas
 import numpy as np
 
 import gui
-from geometry import LineSegment
+from findPath.geometry import LineSegment
 from gui import Drawable
 
 

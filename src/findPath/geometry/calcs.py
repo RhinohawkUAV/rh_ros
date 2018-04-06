@@ -1,7 +1,7 @@
 import numpy as np
 
-import constants
-from utils import quadratic
+from findPath import constants
+from findPath.utils import quadratic
 
 
 def arePointsClose(p1, p2):

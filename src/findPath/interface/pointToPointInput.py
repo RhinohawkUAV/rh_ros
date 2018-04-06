@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from interface.noFlyZoneInput import NoFlyZoneInput
+from noFlyZoneInput import NoFlyZoneInput
 
 
 class PointToPointInput:

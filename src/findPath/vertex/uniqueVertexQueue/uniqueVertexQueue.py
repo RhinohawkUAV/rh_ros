@@ -1,8 +1,8 @@
 import numpy as np
 
-from findPathDynamic.vertexPriorityQueue.vertexPriorityQueue import VertexPriorityQueue
+from findPath.utils import MinHeap
+from findPath.vertex.vertexPriorityQueue import VertexPriorityQueue
 from uniqueVertexTree import UniqueTree
-from utils.minheap import MinHeap
 
 
 class UniqueVertexQueue(VertexPriorityQueue):

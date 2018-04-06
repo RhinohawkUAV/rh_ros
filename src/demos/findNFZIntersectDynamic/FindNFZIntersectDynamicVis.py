@@ -2,7 +2,7 @@ from gui.visualizer import Visualizer
 
 
 class findNFZIntersectDynamicVis(Visualizer):
-    """Visualization/tester for the geometry.hitTargetAtSpeed method.
+    """Visualization/tester for the findPath.geometry.hitTargetAtSpeed method.
         Click the mouse to choose a start point.
         It will show all path to follow, at the given speed, to reach each vertex of the given NFZs in the future.
         As you move the mouse it will show where each NFZ would be, in the future, if Rhinohawk headed straight

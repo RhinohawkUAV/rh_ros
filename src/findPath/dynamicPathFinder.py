@@ -2,13 +2,14 @@ import time
 
 import numpy as np
 
-import constants
-from findPathDynamic.vertex import Vertex
+from findPath import constants
 from geometry import calcs
+from vertex import Vertex
 
 
 class DynamicPathFinder:
     def __init__(self, start, goal, constantSpeed, obstacleCourse, vertexQueue):
+
         self._start = np.array(start, np.double)
         self._goal = np.array(goal, np.double)
         self._constantSpeed = constantSpeed

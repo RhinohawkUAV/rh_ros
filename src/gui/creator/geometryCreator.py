@@ -3,7 +3,7 @@ import tkFileDialog
 
 import numpy as np
 
-from geometry import ObstacleCourse
+from findPath.geometry import ObstacleCourse
 from gui import Drawable
 from gui import Visualizer
 from nfzBuilder import NFZBuilder

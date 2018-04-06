@@ -5,7 +5,7 @@ import numpy as np
 
 import calcs
 import gui.draw
-from constants import NO_FLY_ZONE_POINT_OFFSET
+from findPath.constants import NO_FLY_ZONE_POINT_OFFSET
 from gui import Drawable
 from lineSegment import LineSegment
 

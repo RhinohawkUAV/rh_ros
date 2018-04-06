@@ -1,4 +1,4 @@
-from findPathDynamic.vertex import Vertex
+from findPath.vertex.vertex import Vertex
 
 
 class VertexPriorityQueue:
@@ -24,7 +24,7 @@ class VertexPriorityQueue:
 
     def isEmpty(self):
         pass
+
     def __iter__(self):
         """Should allow iteration over vertices"""
         pass
-

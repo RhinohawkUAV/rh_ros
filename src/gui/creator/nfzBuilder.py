@@ -1,8 +1,8 @@
 import numpy as np
 
 import gui
-from geometry import LineSegment
-from geometry import NoFlyZone
+from findPath.geometry import LineSegment
+from findPath.geometry import NoFlyZone
 from gui import Drawable
 from subGUI import SubGUI
 

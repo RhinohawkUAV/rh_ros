@@ -1,5 +1,11 @@
-from findPathDynamic.vertexPriorityQueue.vertexPriorityQueue import VertexPriorityQueue
-from utils.minheap import MinHeap
+from findPath.utils import MinHeap
+from findPath.vertex.vertexPriorityQueue import VertexPriorityQueue
+
+
+#####
+# Note: This is no longer used.  It was Steve's 1st idea about solving the path-finding problem.  Turned out to not be
+# all that useful.
+#####
 
 
 class IllegalBinException(BaseException):

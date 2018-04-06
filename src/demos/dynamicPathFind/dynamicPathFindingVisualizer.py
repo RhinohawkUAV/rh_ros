@@ -1,6 +1,6 @@
 import copy
 
-from findPathDynamic import DynamicPathFinderDrawable
+from dynamicPathFinderDrawable import DynamicPathFinderDrawable
 from gui.visualizer import Visualizer
 
 # TODO: Not currently used
