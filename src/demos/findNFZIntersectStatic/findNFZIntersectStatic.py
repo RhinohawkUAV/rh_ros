@@ -14,7 +14,7 @@ class FindNFZIntersectStatic(Drawable):
         self._noFlyZone = noFlyZone
 
     def setStartPoint(self, startPoint):
-        self._startPoint = np.array(startPoint)
+        self._startPoint = np.array(startPoint, np.double)
 
     def setEndPoint(self, endPoint):
         self._endPoint = endPoint

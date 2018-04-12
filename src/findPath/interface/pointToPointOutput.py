@@ -12,8 +12,9 @@ class PointToPointOutput:
         # type: ([Sequence], [Sequence]) -> None
 
         # A list of of positions which should be visited
-        self._positions = positions
+        self.positions = positions
 
         # A corresponding list of velocity vectors for each position
-        # TODO: This should ultimately be a list of speeds for the flight controller, but intermediate translation code may want velocity info.
-        self._velocities = velocities
+        # TODO: This should ultimately be a list of speeds for the flight controller, but
+        # intermediate translation code may want velocity info.
+        self.velocities = velocities

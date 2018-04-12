@@ -147,9 +147,9 @@ class LineSegment(Drawable):
 
     def xRay(self, point):
         """
+        Used only by editor tool
         Used when computing if a point is inside a polygon.  This tests whether a ray from point in the +x direction
         would intersect the line.
-        TODO: Not tested very thoroughly, currently only used for the creation tool.
         :param point:
         :return:
         """
@@ -167,16 +167,3 @@ class LineSegment(Drawable):
             return point[0] < x
         else:
             return False
-
-
-if __name__ == '__main__':
-    line = LineSegment((10, 10), (0, 0))
-    line2 = LineSegment((0, 10), (10, 0))
-    line3 = LineSegment((6, 10), (6, 0))
-    line4 = LineSegment((4, 0), (4, 10))
-    print line.xRay(np.array((4.99, 5), np.double))
-    print line.xRay(np.array((5.01, 5), np.double))
-    print line2.xRay(np.array((4.99, 5), np.double))
-    print line2.xRay(np.array((5.01, 5), np.double))
-    print line3.xRay(np.array((5, 5), np.double))
-    print line4.xRay(np.array((5, 5), np.double))

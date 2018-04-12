@@ -48,6 +48,20 @@ def calcTravelTimeAndDirection(p1, p2, speed):
     return (time, direction)
 
 
+def findClosestPoint(point, points):
+    """For drawing only, not for computation."""
+    closestDistanceSquared = float("inf")
+    closestPointIndex = None
+    for i in range(0, len(points)):
+        diff = point - points[i]
+        diff *= diff
+        distSquared = diff.sum()
+        if distSquared < closestDistanceSquared:
+            closestDistanceSquared = distSquared
+            closestPointIndex = i
+    return (closestDistanceSquared, closestPointIndex)
+
+
 class StraightPathSolution:
     """
     Holds _solution to the hitTargetAtSpeed problem.

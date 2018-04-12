@@ -11,7 +11,12 @@ def drawLine(canvas, p1, p2, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, arrow=Non
     canvas.create_line(p1[0], p1[1], p2[0], p2[1], fill=color, width=width, arrow=arrow)
 
 
+def drawPoly(canvas, points, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
+    for i in range(0, len(points)):
+        drawLine(canvas, points[i - 1], points[i], color=color, width=width, **kwargs)
+
+
 def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
     canvas.create_text(position[0], position[1],
                        text=text,
-                       fill=color)
+                       fill=color, **kwargs)

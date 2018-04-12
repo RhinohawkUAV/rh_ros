@@ -1,4 +1,3 @@
-from boundaryInput import BoundaryInput
 from noFlyZoneInput import NoFlyZoneInput
 from pointToPointInput import PointToPointInput
-from staticPathFindingInput import StaticPathFindingInput
+from initialPathFindingInput import InitialPathFindingInput

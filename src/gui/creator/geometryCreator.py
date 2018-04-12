@@ -3,18 +3,23 @@ import tkFileDialog
 
 import numpy as np
 
-from findPath.geometry import ObstacleCourse
-from gui import Drawable
-from gui import Visualizer
+from boundaryBuilder import BoundaryBuilder
+from gui.creator.pointToPointEditor import PointToPointEditor
 from nfzBuilder import NFZBuilder
 from nfzPointMover import NFZPointMover
 from noFlyMover import NoFlyMover
+from pointToPointEdit import PointToPointEdit
+from .initialPathFindingEdit import InitialPathFindingEdit
+from ..core import Drawable
+from ..visualizer import Visualizer
 
 
-class NumpyEncoder(json.JSONEncoder):
+class PathInputEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif isinstance(obj, InitialPathFindingEdit):
+            return obj.toInput().__dict__
         else:
             return obj.__dict__
 
@@ -26,12 +31,20 @@ class GeometryCreator(Visualizer, Drawable):
 
     def __init__(self, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
-        self._obstacleCourse = ObstacleCourse(None, [])
-        self._nfzBuilder = NFZBuilder(self._obstacleCourse)
-        self._nfzMover = NoFlyMover(self._obstacleCourse)
-        self._nfzMove = False
-        self._nfzPointMover = NFZPointMover(self, self._obstacleCourse)
-        self._modeMap = {"i": self._nfzBuilder, "m": self._nfzMover, "p": self._nfzPointMover}
+        self._initialPathFindingEdit = InitialPathFindingEdit()
+        self._pointToPointEdit = PointToPointEdit()
+        self._nfzBuilder = NFZBuilder(self._initialPathFindingEdit)
+        self._nfzMover = NoFlyMover(self._initialPathFindingEdit)
+        self._nfzPointMover = NFZPointMover(self._initialPathFindingEdit)
+        self._boundaryBuilder = BoundaryBuilder(self._initialPathFindingEdit)
+        self._pointToPointEditor = PointToPointEditor(self._pointToPointEdit)
+
+        self._modeMap = {"i": self._nfzBuilder,
+                         "m": self._nfzMover,
+                         "p": self._nfzPointMover,
+                         "b": self._boundaryBuilder,
+                         "w": self._pointToPointEditor
+                         }
         self._mode = self._nfzBuilder
         self.bind('<Key>', self.onKeyPressed)
         self.bind('<ButtonPress-1>', self.onLeftPress)
@@ -49,7 +62,7 @@ class GeometryCreator(Visualizer, Drawable):
         elif key == "s":
             fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="../obstacles")
             file = open(fileName, 'w')
-            json.dump(self._obstacleCourse, file, cls=NumpyEncoder, indent=4)
+            json.dump(self._initialPathFindingEdit, file, cls=PathInputEncoder, indent=4)
             file.close()
         else:
             point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
@@ -90,5 +103,6 @@ class GeometryCreator(Visualizer, Drawable):
         self.drawToCanvas(self)
 
     def draw(self, canvas, **kwargs):
-        self._obstacleCourse.draw(canvas, **kwargs)
+        self._initialPathFindingEdit.draw(canvas, **kwargs)
+        self._pointToPointEdit.draw(canvas, color="blue")
         self._mode.draw(canvas, **kwargs)

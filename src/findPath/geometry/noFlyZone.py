@@ -96,6 +96,7 @@ class NoFlyZone(Drawable):
                 if not solution is None:
                     result.append(solution)
         return result
+
     def getFutureCopy(self, time):
         """Create a copy of this NFZ, as it will exist at some point in the future."""
         futurePoints = []
@@ -112,49 +113,8 @@ class NoFlyZone(Drawable):
                 line.draw(canvas, time=time, drawVectors=drawVectors, **kwargs)
 
             if np.linalg.norm(self._velocity) > 0.0:
-                gui.draw.drawLine(canvas, self._midPoint, self._midPoint + self._velocity * 4.0,
+                gui.draw.drawLine(canvas, self._midPoint, self._midPoint + self._velocity,
                                   arrow=tk.LAST, **kwargs)
         else:
             # For future times, generate a future noFlyZone and draw that with time=0.0.
             self.getFutureCopy(time).draw(canvas, time=0.0, **kwargs)
-
-    # TODO: None of the methods below has been tested very thoroughly.  They are currently only used for the creation tool.
-
-    def isPointInside(self, point):
-        """
-        Tests if a point is inside the NFZ.
-
-        :param point:
-        :return:
-        """
-        i = 0
-        for line in self._lines:
-            if line.xRay(point):
-                i += 1
-        return (i % 2) == 1
-
-    def findClosestPoint(self, point):
-        """For drawing only, not for computation."""
-        closestDistanceSquared = float("inf")
-        closestPointIndex = None
-        for i in range(0, len(self._points)):
-            diff = point - self._points[i]
-            diff *= diff
-            distSquared = diff.sum()
-            if distSquared < closestDistanceSquared:
-                closestDistanceSquared = distSquared
-                closestPointIndex = i
-        return (closestDistanceSquared, closestPointIndex)
-
-    def getTranslatedCopy(self, translation):
-        """Create a copy of this NFZ, at a translated position."""
-        points = []
-        for point in self._points:
-            points.append(point + translation)
-        return NoFlyZone(points, self._velocity)
-
-    def getPointTranslatedCopy(self, pointIndex, newPoint):
-        """Create a copy of this NFZ, with the given point replaced with the given point"""
-        points = np.copy(self._points)
-        points[pointIndex] = newPoint
-        return NoFlyZone(points, self._velocity)

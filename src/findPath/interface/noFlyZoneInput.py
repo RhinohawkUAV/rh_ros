@@ -12,15 +12,15 @@ class NoFlyZoneInput:
     def __init__(self, points, velocity, ID=0):
         # type: ([Sequence],Sequence) -> None
 
-        # TODO: No guarantee these will be in CCW order necessarily.  Either verify we can count on this or write code to CCW-ize the input
         # A list of 2-d _points, defining the no fly zone _boundary, in counter-clockwise order.
-        self._points = points
+        # TODO: Must be in clockwise order.  Must automate that.
+        self.points = points
 
         # A vector describing the velocity of the no fly zone.
-        self._velocity = velocity
+        self.velocity = velocity
 
-        # TODO:
-        # Not clear if we will need this or not.  The purpose would be for tracking changes in DFNZs over time for the
+        # TODO: Not clear if we will need this or not.  The purpose would be for tracking changes in DFNZs over time
+        # for the
         # purposes of tracking an acceleration.  Not clear this would be fruitful or worthwhile.  For now we ignore this
         # and assume no history.
-        self._ID = ID
+        self.ID = ID
