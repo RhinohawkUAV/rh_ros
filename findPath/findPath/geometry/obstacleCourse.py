@@ -1,4 +1,4 @@
-from gui import Drawable
+from gui import Drawable, draw
 
 
 class ObstacleCourse(Drawable):
@@ -50,6 +50,8 @@ class ObstacleCourse(Drawable):
                         paths.append(path)
         return paths
 
-    def draw(self, canvas, time=0.0, **kwargs):
+    def draw(self, canvas, time=0.0, boundaryColor="red", **kwargs):
+        for i in range(len(self._boundaryPoints)):
+            draw.drawLine(canvas, self._boundaryPoints[i - 1], self._boundaryPoints[i], color=boundaryColor)
         for noFlyZone in self._noFlyZones:
             noFlyZone.draw(canvas, time=time, **kwargs)

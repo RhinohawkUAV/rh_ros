@@ -16,8 +16,9 @@ class DynamicPathFinder:
         self._obstacleCourse = ObstacleCourse(initialPathFindingInput.boundaryPoints,
                                               initialPathFindingInput.noFlyZones)
 
-        # TODO: Dimensions should be calculated from obstacle course boundaries
-        self._vertexQueue = UniqueVertexQueue(0, 0, 100, 100, constantSpeed)
+        # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
+        bounds = initialPathFindingInput.calcBounds()
+        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2], bounds[3], constantSpeed)
 
     def findPath(self, pointToPointInput):
         self.initFindPath(pointToPointInput)

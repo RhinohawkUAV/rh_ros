@@ -121,3 +121,21 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     destination = (targetStartPoint[0] + time * targetVelocity[0], targetStartPoint[1] + time * targetVelocity[1])
 
     return StraightPathSolution(time, velocity, destination)
+
+
+def calcBounds(points):
+    """Calculate a bounding rectangle around a group of points"""
+    xMin = float("inf")
+    yMin = float("inf")
+    xMax = -float("inf")
+    yMax = -float("inf")
+    for point in points:
+        if point[0] < xMin:
+            xMin = point[0]
+        if point[0] > xMax:
+            xMax = point[0]
+        if point[1] < yMin:
+            yMin = point[1]
+        if point[1] > yMax:
+            yMax = point[1]
+    return [xMin, yMin, xMax, yMax]

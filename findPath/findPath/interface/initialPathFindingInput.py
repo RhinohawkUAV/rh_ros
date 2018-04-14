@@ -1,5 +1,7 @@
+import numpy as np
 from typing import Sequence
 
+from findPath.geometry import calcs
 from noFlyZoneInput import NoFlyZoneInput
 
 
@@ -17,8 +19,11 @@ class InitialPathFindingInput:
         # max 18 sided, this will accept any number of sides.
         # TODO: Automatically convert point order
         # Must be in CCW order
-        self.boundaryPoints = boundaryPoints
+        self.boundaryPoints = np.array(boundaryPoints, np.double)
 
         # A sequence of NoFlyZoneInput objects.  Not clear if rules allow dynamic NFZs can be announced initially,
         # but this allows for that case.
         self.noFlyZones = noFlyZones
+
+    def calcBounds(self):
+        return calcs.calcBounds(self.boundaryPoints)
