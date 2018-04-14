@@ -2,7 +2,7 @@ import Tkinter as tk
 
 import numpy as np
 
-from findPath.findPath import PointToPointInput
+from findPath import PointToPointInput
 from findPath.geometry import calcs
 from gui import Drawable, draw
 # TODO: Offset will not look correct for other scalings, similar problem for DEFAULT_POINT_SIZE.

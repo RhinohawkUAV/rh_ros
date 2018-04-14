@@ -7,8 +7,8 @@ class ObstacleCourse(Drawable):
     collision detection to be performed.
     """
 
-    def __init__(self, boundary, noFlyZones):
-        self._boundary = boundary
+    def __init__(self, boundaryPoints, noFlyZones):
+        self._boundaryPoints = boundaryPoints
         self._noFlyZones = noFlyZones
 
     def getFutureCopy(self, time):
@@ -17,7 +17,7 @@ class ObstacleCourse(Drawable):
         noFlyZonesCopy = []
         for noFlyZone in self._noFlyZones:
             noFlyZonesCopy.append(noFlyZone.getFutureCopy(time))
-        return ObstacleCourse(self._boundary, noFlyZonesCopy)
+        return ObstacleCourse(self._boundaryPoints, noFlyZonesCopy)
 
     def doesLineIntersect(self, startPoint, endPoint, speed):
         """

@@ -3,29 +3,37 @@ import time
 import numpy as np
 
 from constants import MAX_TURN_ANGLE_COS
+from findPath.geometry import ObstacleCourse
+from findPath.vertex import UniqueVertexQueue
 from geometry import calcs
 from vertex import Vertex
 
 
 class DynamicPathFinder:
-    def __init__(self, start, goal, constantSpeed, obstacleCourse, vertexQueue):
+    def __init__(self, initialPathFindingInput, constantSpeed):
 
-        self._start = np.array(start, np.double)
-        self._goal = np.array(goal, np.double)
         self._constantSpeed = constantSpeed
-        self._obstacleCourse = obstacleCourse
+        self._obstacleCourse = ObstacleCourse(initialPathFindingInput.boundaryPoints,
+                                              initialPathFindingInput.noFlyZones)
 
-        self._vertexQueue = vertexQueue
+        # TODO: Dimensions should be calculated from obstacle course boundaries
+        self._vertexQueue = UniqueVertexQueue(0, 0, 100, 100, constantSpeed)
 
+    def findPath(self, pointToPointInput):
+        self.initFindPath(pointToPointInput)
+        while not self.isDone():
+            self.step()
+
+    def initFindPath(self, pointToPointInput):
+        self._start = np.array(pointToPointInput.startPosition, np.double)
+        self._goal = np.array(pointToPointInput.targetPoints[0], np.double)
+        self._currentVertex = Vertex(position=self._start,
+                                     velocity=np.array(pointToPointInput.startVelocity, np.double),
+                                     timeToVertex=0.0,
+                                     estimatedTimeThroughVertex=self.heuristic(self._start))
         # Dynamic properties used for processing and display
         self._futureObstacleCourse = None
 
-        # TODO: We assume we start with [0,0] velocity, which is considered compatible (in terms of turning) with all other velocities.
-        initialVelocity = np.array([0.0, 0.0], np.double)
-        self._currentVertex = Vertex(position=self._start,
-                                     velocity=initialVelocity,
-                                     timeToVertex=0.0,
-                                     estimatedTimeThroughVertex=self.heuristic(self._start))
         self._straightPaths = []
         self._solution = None
         self._bestSolutionTime = float("inf")
@@ -102,10 +110,6 @@ class DynamicPathFinder:
 
     def heuristic(self, point):
         return calcs.calcTravelTime(point, self._goal, self._constantSpeed)
-
-    def findPath(self):
-        while not self.isDone():
-            self.step()
 
 
 def isTurnLegal(velocity1, velocity2, speed):

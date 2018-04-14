@@ -4,7 +4,7 @@ from Tkinter import Canvas
 import numpy as np
 
 import gui.draw
-from findPath.findPath import NoFlyZoneInput
+from findPath import NoFlyZoneInput
 from findPath.geometry import LineSegment, calcs
 from gui import Drawable
 

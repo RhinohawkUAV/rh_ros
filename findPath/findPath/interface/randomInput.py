@@ -3,11 +3,10 @@
 import math
 import random
 
-from noFlyZone import NoFlyZone
-from obstacleCourse import ObstacleCourse
+from findPath.geometry.noFlyZone import NoFlyZone
 
 
-def generateNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):
+def genRandomNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):
     """Generates a random Geometry object with certain properties for testing"""
 
     xDelta = width - maxFraction * width
@@ -39,8 +38,3 @@ def generateNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFract
         noFlyZones.append(zone)
 
     return noFlyZones
-
-
-def generateObstacleCourse(boundary, *generateNoFlyZonesArgs, **kwargs):
-    """Generates a random obstacle course object with certain properties for testing"""
-    return ObstacleCourse(boundary, generateNoFlyZones(*generateNoFlyZonesArgs, **kwargs))

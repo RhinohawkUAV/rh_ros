@@ -1,3 +1,4 @@
+import randomInput
+from initialPathFindingInput import InitialPathFindingInput
 from noFlyZoneInput import NoFlyZoneInput
 from pointToPointInput import PointToPointInput
-from initialPathFindingInput import InitialPathFindingInput
