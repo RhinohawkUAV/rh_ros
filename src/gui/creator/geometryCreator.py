@@ -20,6 +20,8 @@ class PathInputEncoder(json.JSONEncoder):
             return obj.tolist()
         elif isinstance(obj, InitialPathFindingEdit):
             return obj.toInput().__dict__
+        elif isinstance(obj, PointToPointEdit):
+            return obj.toInput().__dict__
         else:
             return obj.__dict__
 
@@ -62,7 +64,10 @@ class GeometryCreator(Visualizer, Drawable):
         elif key == "s":
             fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="../obstacles")
             file = open(fileName, 'w')
-            json.dump(self._initialPathFindingEdit, file, cls=PathInputEncoder, indent=4)
+            output = {}
+            output["initialInput"] = self._initialPathFindingEdit
+            output["pointToPoint"] = self._pointToPointEdit
+            json.dump(output, file, cls=PathInputEncoder, indent=4)
             file.close()
         else:
             point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)

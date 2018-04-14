@@ -2,6 +2,7 @@ import Tkinter as tk
 
 import numpy as np
 
+from findPath import PointToPointInput
 from findPath.geometry import calcs
 from gui import Drawable, draw
 # TODO: Offset will not look correct for other scalings, similar problem for DEFAULT_POINT_SIZE.
@@ -29,3 +30,6 @@ class PointToPointEdit(Drawable):
             draw.drawLine(canvas, self.points[0],
                           self.points[0] + self.initialVelocity,
                           arrow=tk.LAST)
+
+    def toInput(self):
+        return PointToPointInput(self.points[0], self.initialVelocity, self.points[1:])
