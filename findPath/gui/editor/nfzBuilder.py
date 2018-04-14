@@ -1,6 +1,6 @@
 from gui import Drawable
-from gui.creator.noFlyZoneEdit import NoFlyZoneEdit
-from gui.creator.polyBuilder import PolyBuilder
+from gui.editor.noFlyZoneEdit import NoFlyZoneEdit
+from gui.editor.polyBuilder import PolyBuilder
 
 
 class NFZBuilder(PolyBuilder, Drawable):

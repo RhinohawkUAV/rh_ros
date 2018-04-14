@@ -1,6 +1,6 @@
 import numpy as np
 
-from findPath import constants
+from constants import DISTANCE_TOLERANCE_SQUARED
 from findPath.utils import quadratic
 
 
@@ -13,7 +13,7 @@ def arePointsClose(p1, p2):
     """
     x = p1[0] - p2[0]
     y = p1[0] - p2[0]
-    return x * x + y * y < constants.DISTANCE_TOLERANCE_SQUARED
+    return x * x + y * y < DISTANCE_TOLERANCE_SQUARED
 
 
 def calcTravelTime(p1, p2, speed):

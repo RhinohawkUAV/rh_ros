@@ -4,7 +4,7 @@ import tkFileDialog
 import numpy as np
 
 from boundaryBuilder import BoundaryBuilder
-from gui.creator.pointToPointEditor import PointToPointEditor
+from gui.editor.pointToPointEditor import PointToPointEditor
 from nfzBuilder import NFZBuilder
 from nfzPointMover import NFZPointMover
 from noFlyMover import NoFlyMover

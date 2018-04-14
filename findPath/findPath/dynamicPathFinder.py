@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from findPath import constants
+from constants import MAX_TURN_ANGLE_COS
 from geometry import calcs
 from vertex import Vertex
 
@@ -118,4 +118,4 @@ def isTurnLegal(velocity1, velocity2, speed):
     if velocity1[0] == 0.0 and velocity1[1] == 0.0:
         return True
     cosAngle = np.dot(velocity1, velocity2) / (speed * speed)
-    return cosAngle > constants.MAX_TURN_ANGLE_COS
+    return cosAngle > MAX_TURN_ANGLE_COS

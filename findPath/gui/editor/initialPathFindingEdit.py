@@ -1,4 +1,4 @@
-from findPath import InitialPathFindingInput
+from findPath.findPath import InitialPathFindingInput
 from gui import Drawable, draw
 
 
