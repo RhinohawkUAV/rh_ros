@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/rhinonav.iml" filepath="$PROJECT_DIR$/rhinonav.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pathfinding.iml" filepath="$PROJECT_DIR$/pathfinding.iml" />
     </modules>
   </component>
 </project>
