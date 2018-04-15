@@ -8,7 +8,7 @@ initialVelocity = (0, 0)
 end = (5, 5)
 constantSpeed = 10.0
 boundaryPoints = [(0, 0), (0, 100), (100, 100), (100, 0)]
-noFlyZones = engine.inputSources.genRandomNoFlyZones(50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=4.0)
+noFlyZones = engine.utils.genRandomNoFlyZones(50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=4.0)
 initialInput = engine.InitialPathFindingInput(boundaryPoints, noFlyZones)
 
 acceptanceThreshold = 2.0

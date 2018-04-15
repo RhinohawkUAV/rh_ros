@@ -1,11 +1,33 @@
+import json
 import math
 import random
+
+import numpy as np
 
 from engine.geometry.noFlyZone import NoFlyZone
 
 
+class Encoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif callable(getattr(obj, "toJSONDict", None)):
+            return obj.toJSONDict()
+        else:
+            return obj.__dict__
+
+
+def saveScenario(fileName, initialPathFindingEdit, pointToPointEdit):
+    file = open(fileName, 'w')
+    output = {}
+    output["initialInput"] = initialPathFindingEdit
+    output["pointToPoint"] = pointToPointEdit
+    json.dump(output, file, cls=Encoder, indent=4)
+    file.close()
+
+
 def loadScenarioFromJSon(fileName):
-    pass
+    scenarioDict = json.load(fileName)
 
 
 def genRandomNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):

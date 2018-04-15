@@ -7,7 +7,7 @@ from findPathStaticLegacy import StaticPathFinder
 start = (95, 95)
 end = (5, 5)
 
-noFlyZones = engine.inputSources.genRandomNoFlyZones(25, 10, 10, 80, 80, 0.01, 0.1)
+noFlyZones = engine.utils.genRandomNoFlyZones(25, 10, 10, 80, 80, 0.01, 0.1)
 obstacleCourse = ObstacleCourse([], noFlyZones)
 
 pathFinder = StaticPathFinder(start, end, obstacleCourse)

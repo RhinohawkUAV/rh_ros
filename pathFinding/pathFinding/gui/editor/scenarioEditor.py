@@ -1,9 +1,9 @@
-import json
 import tkFileDialog
 
 import numpy as np
 
 from boundaryBuilder import BoundaryBuilder
+from engine.interface import utils
 from gui.editor.pointToPointEditor import PointToPointEditor
 from nfzBuilder import NFZBuilder
 from nfzPointMover import NFZPointMover
@@ -12,16 +12,6 @@ from pointToPointEdit import PointToPointEdit
 from .initialPathFindingEdit import InitialPathFindingEdit
 from ..core import Drawable
 from ..visualizer import Visualizer
-
-
-class PathInputEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif callable(getattr(obj, "toJSONDict", None)):
-            return obj.toJSONDict()
-        else:
-            return obj.__dict__
 
 
 class GeometryCreator(Visualizer, Drawable):
@@ -61,12 +51,7 @@ class GeometryCreator(Visualizer, Drawable):
             self._mode.onMotion(point)
         elif key == "s":
             fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="../obstacles")
-            file = open(fileName, 'w')
-            output = {}
-            output["initialInput"] = self._initialPathFindingEdit
-            output["pointToPoint"] = self._pointToPointEdit
-            json.dump(output, file, cls=PathInputEncoder, indent=4)
-            file.close()
+            utils.saveScenario(fileName, self._initialPathFindingEdit, self._pointToPointEdit)
         else:
             point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
             self._mode.onKey(point, key)
