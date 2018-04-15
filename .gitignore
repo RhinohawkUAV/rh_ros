@@ -1,4 +1,5 @@
 *.pyc
 /.idea/
 /pathfinding.iml
-/rhinoPathFinding.egg-info/
+/pathFinding.engine/rhinoPathFinding.egg-info/
+/pathFinding.engine/scenarios/
