@@ -1,10 +1,15 @@
 from engine import InitialPathFindingInput
 from gui import Drawable, draw
+from gui.editor import noFlyZoneEdit
 
 
 class InitialPathFindingEdit(InitialPathFindingInput, Drawable):
     def __init__(self):
         InitialPathFindingInput.__init__(self, [], [])
+
+    def setToInput(self, input):
+        self.boundaryPoints = input.boundaryPoints
+        self.noFlyZones = noFlyZoneEdit.listFromInput(input.noFlyZones)
 
     def addNoFlyZone(self, noFlyZoneEdit):
         self.noFlyZones.append(noFlyZoneEdit)

@@ -30,7 +30,7 @@ def saveScenario(fileName, initialPathFindingEdit, pointToPointEdit):
     file.close()
 
 
-def loadScenarioFromJSon(fileName):
+def loadScenario(fileName):
     file = open(fileName, 'r')
     scenarioDict = json.load(file)
     file.close()

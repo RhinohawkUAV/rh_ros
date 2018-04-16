@@ -65,3 +65,14 @@ class NoFlyZoneEdit(NoFlyZoneInput, Drawable):
 
     def toInput(self, ID):
         return NoFlyZoneInput(self.points, self.velocity, ID)
+
+
+def fromInput(noFlyZoneInput):
+    return NoFlyZoneEdit(noFlyZoneInput.points, noFlyZoneInput.velocity)
+
+
+def listFromInput(noFlyZoneInputList):
+    noFlyZones = []
+    for noFlyZoneInput in noFlyZoneInputList:
+        noFlyZones.append(fromInput(noFlyZoneInput))
+    return noFlyZones

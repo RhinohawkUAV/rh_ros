@@ -15,7 +15,13 @@ TEXT_OFFSET = np.array((2, 0), np.double)
 class PointToPointEdit(Drawable):
     def __init__(self):
         self.points = []
-        self.initialVelocity = np.array((0, 0), np.double)
+        self.startVelocity = np.array([], np.double)
+
+    def setToInput(self, input):
+        del self.points[:]
+        self.points.append(input.startPosition)
+        self.points.extend(input.targetPoints)
+        self.startVelocity = np.array(input.startVelocity, np.double)
 
     def findClosestPoint(self, point):
         return calcs.findClosestPoint(point, self.points)
@@ -28,11 +34,11 @@ class PointToPointEdit(Drawable):
 
         if len(self.points) > 0:
             draw.drawLine(canvas, self.points[0],
-                          self.points[0] + self.initialVelocity,
+                          self.points[0] + self.startVelocity,
                           arrow=tk.LAST)
 
     def toJSONDict(self):
         # If this has not been setup, then return None, which translates to null in JSON
         if len(self.points) < 2:
             return None
-        return PointToPointInput(self.points[0], self.initialVelocity, self.points[1:]).__dict__
+        return PointToPointInput(self.points[0], self.startVelocity, self.points[1:]).__dict__

@@ -1,7 +1,5 @@
 from typing import Sequence
 
-from noFlyZoneInput import NoFlyZoneInput
-
 
 class PointToPointInput:
     """
@@ -11,7 +9,7 @@ class PointToPointInput:
     """
 
     def __init__(self, startPosition, startVelocity, targetPoints):
-        # type: (Sequence, Sequence, [Sequence], [NoFlyZoneInput]) -> None
+        # type: (Sequence, Sequence, [Sequence]) -> None
 
         # The current position of Rhinohawk
         self.startPosition = startPosition

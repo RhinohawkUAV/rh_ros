@@ -53,6 +53,12 @@ class ScenarioEditor(Visualizer, Drawable):
             fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="scenarios")
             if not fileName == '':
                 utils.saveScenario(fileName, self._initialPathFindingEdit, self._pointToPointEdit)
+        elif key == "l":
+            fileName = tkFileDialog.askopenfilename(defaultextension="json", initialdir="scenarios")
+            if not fileName == '':
+                (initialInput, pointToPointInput) = utils.loadScenario(fileName)
+                self._initialPathFindingEdit.setToInput(initialInput)
+                self._pointToPointEdit.setToInput(pointToPointInput)
         else:
             point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
             self._mode.onKey(point, key)
