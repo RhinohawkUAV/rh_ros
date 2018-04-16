@@ -14,7 +14,7 @@ from ..core import Drawable
 from ..visualizer import Visualizer
 
 
-class GeometryCreator(Visualizer, Drawable):
+class ScenarioEditor(Visualizer, Drawable):
     """
     The crappiest little editor you've ever seen, but it gets the job done!
     """
@@ -50,8 +50,9 @@ class GeometryCreator(Visualizer, Drawable):
             point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
             self._mode.onMotion(point)
         elif key == "s":
-            fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="../obstacles")
-            utils.saveScenario(fileName, self._initialPathFindingEdit, self._pointToPointEdit)
+            fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="scenarios")
+            if not fileName == '':
+                utils.saveScenario(fileName, self._initialPathFindingEdit, self._pointToPointEdit)
         else:
             point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
             self._mode.onKey(point, key)

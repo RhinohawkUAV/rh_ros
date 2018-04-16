@@ -1,1 +1,0 @@
-from scenarioEditor import GeometryCreator
