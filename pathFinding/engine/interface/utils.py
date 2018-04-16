@@ -4,7 +4,11 @@ import random
 
 import numpy as np
 
-from engine.geometry.noFlyZone import NoFlyZone
+from engine.interface import pointToPointInput, initialPathFindingInput
+from noFlyZoneInput import NoFlyZoneInput
+
+INITIAL_INPUT_KEY = "initialInput"
+POINT_TO_POINT_KEY = "pointToPoint"
 
 
 class Encoder(json.JSONEncoder):
@@ -20,17 +24,21 @@ class Encoder(json.JSONEncoder):
 def saveScenario(fileName, initialPathFindingEdit, pointToPointEdit):
     file = open(fileName, 'w')
     output = {}
-    output["initialInput"] = initialPathFindingEdit
-    output["pointToPoint"] = pointToPointEdit
+    output[INITIAL_INPUT_KEY] = initialPathFindingEdit
+    output[POINT_TO_POINT_KEY] = pointToPointEdit
     json.dump(output, file, cls=Encoder, indent=4)
     file.close()
 
 
 def loadScenarioFromJSon(fileName):
-    scenarioDict = json.load(fileName)
+    file = open(fileName, 'r')
+    scenarioDict = json.load(file)
+    file.close()
+    return [initialPathFindingInput.fromJSONDict(scenarioDict[INITIAL_INPUT_KEY]),
+            pointToPointInput.fromJSONDict(scenarioDict[POINT_TO_POINT_KEY])]
 
 
-def genRandomNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):
+def genRandomNoFlyZoneInputs(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):
     """Generates a random Geometry object with certain properties for testing"""
 
     xDelta = width - maxFraction * width
@@ -58,7 +66,7 @@ def genRandomNoFlyZones(numNoFlyZones, x, y, width, height, minFraction, maxFrac
         angle = random.random() * 2 * math.pi
         velocity = (speed * math.cos(angle), speed * math.sin(angle))
 
-        zone = NoFlyZone([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], velocity)
+        zone = NoFlyZoneInput([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], velocity)
         noFlyZones.append(zone)
 
     return noFlyZones

@@ -8,14 +8,15 @@ initialVelocity = (0, 0)
 end = (5, 5)
 constantSpeed = 10.0
 boundaryPoints = [(0, 0), (0, 100), (100, 100), (100, 0)]
-noFlyZones = engine.utils.genRandomNoFlyZones(50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=4.0)
-initialInput = engine.InitialPathFindingInput(boundaryPoints, noFlyZones)
+noFlyZoneInputs = engine.utils.genRandomNoFlyZoneInputs(50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=4.0)
+initialInput = engine.InitialPathFindingInput(boundaryPoints, noFlyZoneInputs)
+pointToPointInput = PointToPointInput(start, initialVelocity, [end])
 
-acceptanceThreshold = 2.0
-numBins = 20
+# Example of loading scenario
+# (initialInput, pointToPointInput) = engine.utils.loadScenarioFromJSon("../scenarios/test1.json")
 
 pathFinder = DynamicPathFinder(initialInput, constantSpeed)
-pathFinder.initFindPath(PointToPointInput(start, initialVelocity, [end]))
+pathFinder.initFindPath(pointToPointInput)
 
 bounds = initialInput.calcBounds()
 centerX = (bounds[0] + bounds[2]) / 2.0

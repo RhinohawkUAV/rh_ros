@@ -2,6 +2,7 @@ import numpy as np
 from typing import Sequence
 
 from engine.geometry import calcs
+from engine.interface import noFlyZoneInput
 from noFlyZoneInput import NoFlyZoneInput
 
 
@@ -27,3 +28,10 @@ class InitialPathFindingInput:
 
     def calcBounds(self):
         return calcs.calcBounds(self.boundaryPoints)
+
+
+def fromJSONDict(objDict):
+    noFlyZones = []
+    for noFlyDict in objDict["noFlyZones"]:
+        noFlyZones.append(noFlyZoneInput.fromJSONDict(noFlyDict))
+    return InitialPathFindingInput(objDict["boundaryPoints"], noFlyZones)

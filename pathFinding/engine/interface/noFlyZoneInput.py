@@ -24,3 +24,7 @@ class NoFlyZoneInput:
         # purposes of tracking an acceleration.  Not clear this would be fruitful or worthwhile.  For now we ignore this
         # and assume no history.
         self.ID = ID
+
+
+def fromJSONDict(objDict):
+    return NoFlyZoneInput(objDict["points"], objDict["velocity"], objDict["ID"])

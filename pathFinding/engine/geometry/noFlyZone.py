@@ -118,3 +118,14 @@ class NoFlyZone(Drawable):
         else:
             # For future times, generate a future noFlyZone and draw that with time=0.0.
             self.getFutureCopy(time).draw(canvas, time=0.0, **kwargs)
+
+
+def fromInput(noFlyZoneInput):
+    return NoFlyZone(noFlyZoneInput.points, noFlyZoneInput.velocity)
+
+
+def listFromInput(noFlyZoneInputList):
+    noFlyZones = []
+    for noFlyZoneInput in noFlyZoneInputList:
+        noFlyZones.append(fromInput(noFlyZoneInput))
+    return noFlyZones

@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 from constants import MAX_TURN_ANGLE_COS
-from engine.geometry import ObstacleCourse
+from engine.geometry import ObstacleCourse, noFlyZone
 from engine.vertex import UniqueVertexQueue
 from geometry import calcs
 from vertex import Vertex
@@ -14,7 +14,7 @@ class DynamicPathFinder:
 
         self._constantSpeed = constantSpeed
         self._obstacleCourse = ObstacleCourse(initialPathFindingInput.boundaryPoints,
-                                              initialPathFindingInput.noFlyZones)
+                                              noFlyZone.listFromInput(initialPathFindingInput.noFlyZones))
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = initialPathFindingInput.calcBounds()

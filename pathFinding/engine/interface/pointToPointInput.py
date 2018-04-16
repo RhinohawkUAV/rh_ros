@@ -20,5 +20,9 @@ class PointToPointInput:
         self.startVelocity = startVelocity
 
         # TODO: This is not supported yet and may not be necessary, we'll decide how fancy we want to get
-        # Allows for one or more ordered targets to be passed through, in order.
+        # Plan a route from start position, through these targets, in order
         self.targetPoints = targetPoints
+
+
+def fromJSONDict(objDict):
+    return PointToPointInput(objDict["startPosition"], objDict["startVelocity"], objDict["targetPoints"])
