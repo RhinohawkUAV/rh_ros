@@ -3,14 +3,14 @@ from Tkinter import Canvas
 
 import numpy as np
 
-import calcs
+import engine.geometry.calcs
 import gui.draw
 from constants import NO_FLY_ZONE_POINT_OFFSET
 from gui import Drawable
-from lineSegment import LineSegment
+from engine.geometry.lineSegment import LineSegment
 
 
-class NoFlyZone(Drawable):
+class NoFlyZoneLegacy(Drawable):
     def __init__(self, points, velocity):
         """
         A polygon NFZ with a given velocity.  Points must be given in CCW order.
@@ -30,17 +30,11 @@ class NoFlyZone(Drawable):
         for i in range(0, len(points)):
             self._lines.append(LineSegment(self._points[i - 1], self._points[i]))
 
-        for i in range(0, len(points) - 1):
+        for i in range(-1, len(points) - 1):
             pointNormal = (self._lines[i].n + self._lines[i + 1].n) / 2.0
             pointNormal /= np.linalg.norm(pointNormal)
             offsetPoint = self._points[i] + pointNormal * NO_FLY_ZONE_POINT_OFFSET
             self._offsetPoints.append(offsetPoint)
-
-        i = -1
-        pointNormal = (self._lines[i].n + self._lines[i + 1].n) / 2.0
-        pointNormal /= np.linalg.norm(pointNormal)
-        offsetPoint = self._points[i] + pointNormal * NO_FLY_ZONE_POINT_OFFSET
-        self._offsetPoints.append(offsetPoint)
 
     def checkBlocksPath(self, start, end, speed):
         """
@@ -91,8 +85,8 @@ class NoFlyZone(Drawable):
         result = []
         for point in self._offsetPoints:
             # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
-            if not calcs.arePointsClose(startPosition, point):
-                solution = calcs.hitTargetAtSpeed(startPosition, speed, point, self._velocity)
+            if not engine.geometry.calcs.arePointsClose(startPosition, point):
+                solution = engine.geometry.calcs.hitTargetAtSpeed(startPosition, speed, point, self._velocity)
                 if not solution is None:
                     result.append(solution)
         return result
@@ -102,7 +96,7 @@ class NoFlyZone(Drawable):
         futurePoints = []
         for point in self._points:
             futurePoints.append((point[0] + self._velocity[0] * time, point[1] + self._velocity[1] * time))
-        return NoFlyZone(futurePoints, self._velocity)
+        return NoFlyZoneLegacy(futurePoints, self._velocity)
 
     def draw(self, canvas, time=0.0, drawVectors=True, **kwargs):
         # type: (Canvas) -> None
@@ -121,7 +115,7 @@ class NoFlyZone(Drawable):
 
 
 def fromInput(noFlyZoneInput):
-    return NoFlyZone(noFlyZoneInput.points, noFlyZoneInput.velocity)
+    return NoFlyZoneLegacy(noFlyZoneInput.points, noFlyZoneInput.velocity)
 
 
 def listFromInput(noFlyZoneInputList):

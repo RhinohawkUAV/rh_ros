@@ -3,6 +3,9 @@
 # round-off error.  This small delta offset, outward along the vertices's normal prevents this.
 import math
 
+# TODO: Default value for LineSegmentObstacleData system.  Will not be used in the future.
+TEST_CONSTANT_SPEED = 10.0
+
 NO_FLY_ZONE_POINT_OFFSET = 0.0001
 
 # TODO: Used with the assumption that speed is constant.  This probably isn't going to be true ultimately

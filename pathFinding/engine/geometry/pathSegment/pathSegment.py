@@ -13,13 +13,35 @@ class PathSegment(Drawable):
 
         The closest point on the path, to the given point.
         The distance to the closest point.
-        A parametric describing the passage of time at that point ie.
-        timeAtClosestPoint = parametric * startTime + (1-parametric) * endPoint
+        The time (in the range [0,self.time]) at the closest point
 
         :param point:
-        :return: (closestPoint,distance,timeParametric)
+        :return: (closestPoint,distance,timeAtClosestPoint)
         """
         pass
 
     def draw(self, canvas, **kwargs):
         pass
+
+
+def calcSegmentsPointDebug(point, pathSegments, minimumDistance=float("inf")):
+    """
+    For a given point, find the closest point in a list of pathSegments.
+    :param point: point to search against
+    :param pathSegments: path segments to search for closest point
+    :param minimumDistance: minimumDistance to allow (if nothing is closer than this, return None)
+    :return: (indexOfClosestPathSegment,closestPointOnPathSegment,distanceToPoint,correspondingTime)
+    """
+    closestSegmentIndex = None
+    closestPoint = None
+    closestTime = 0.0
+
+    for i in range(len(pathSegments)):
+        (closestPathPoint, distance, time) = pathSegments[i].calcPointDebug(point)
+        if distance < minimumDistance:
+            closestSegmentIndex = i
+            closestPoint = closestPathPoint
+            minimumDistance = distance
+            closestTime = time
+
+    return (closestSegmentIndex, closestPoint, minimumDistance, closestTime)

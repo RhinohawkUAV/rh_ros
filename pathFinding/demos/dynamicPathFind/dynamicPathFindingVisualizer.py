@@ -18,21 +18,24 @@ class DynamicPathFindingVisualizer(Visualizer):
         self._resetDynamicPathFinder = dynamicPathFinder
         self._dynamicPathFinder = copy.deepcopy(self._resetDynamicPathFinder)
         self.pointOfInterest = None
-
-    def onLeftClick(self, event):
-        for i in range(0, STEPS_PER_CLICK):
-            self.doRealStep()
-        self.updateDisplay()
+        self.bindWithTransform('<Motion>', self.onMouseMotion)
+        self.bindWithTransform('<Button-1>', self.onLeftClick)
+        self.bindWithTransform('<Button-3>', self.onRightClick)
 
     def doRealStep(self):
         while not self._dynamicPathFinder.isDone() and not self._dynamicPathFinder.step():
             pass
 
-    def onMouseMotion(self, event):
-        self.pointOfInterest = self.transformCanvasToPoint((event.x, event.y))
+    def onLeftClick(self, point, event):
+        for i in range(0, STEPS_PER_CLICK):
+            self.doRealStep()
         self.updateDisplay()
 
-    def onRightClick(self, event):
+    def onMouseMotion(self, point, event):
+        self.pointOfInterest = point
+        self.updateDisplay()
+
+    def onRightClick(self, point, event):
         self._dynamicPathFinder = copy.deepcopy(self._resetDynamicPathFinder)
         self.updateDisplay()
 

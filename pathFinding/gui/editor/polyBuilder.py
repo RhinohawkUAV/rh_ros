@@ -30,7 +30,7 @@ class PolyBuilder(Drawable, SubGUI):
         if len(self._points) > 0:
             self._previewLine = LineSegment(self._points[-1], self._previewPoint)
 
-    def onKey(self, point, key):
+    def onKey(self, point, key, ctrl=False):
         if key == "Delete":
             if len(self._lines) > 0:
                 self._lines = self._lines[:-1]

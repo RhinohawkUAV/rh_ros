@@ -17,7 +17,7 @@ class PointToPointEditor(Drawable, SubGUI):
     def onMotion(self, point, control=False):
         self._pointListEditor.onMotion(point, control)
 
-    def onKey(self, point, key):
+    def onKey(self, point, key, ctrl=False):
         if key == "v":
             if len(self._pointToPointEdit.points) > 0:
-                self._pointToPointEdit.initialVelocity = point - self._pointToPointEdit.points[0]
+                self._pointToPointEdit.startVelocity = point - self._pointToPointEdit.points[0]

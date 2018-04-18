@@ -1,7 +1,7 @@
 from gui import Drawable, draw
 
 
-class ObstacleCourse(Drawable):
+class ObstacleCourseLegacy(Drawable):
     """
     Defines the no fly zones and _boundary of the problem.  Allows queries such as visibility from a point and
     collision detection to be performed.
@@ -17,7 +17,7 @@ class ObstacleCourse(Drawable):
         noFlyZonesCopy = []
         for noFlyZone in self._noFlyZones:
             noFlyZonesCopy.append(noFlyZone.getFutureCopy(time))
-        return ObstacleCourse(self._boundaryPoints, noFlyZonesCopy)
+        return ObstacleCourseLegacy(self._boundaryPoints, noFlyZonesCopy)
 
     def doesLineIntersect(self, startPoint, endPoint, speed):
         """

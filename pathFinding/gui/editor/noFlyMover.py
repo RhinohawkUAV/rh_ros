@@ -42,7 +42,7 @@ class NoFlyMover(Drawable, SubGUI):
                 for dragZone in self._dragZones:
                     self._previewZones.append(dragZone.getTranslatedCopy(offset))
 
-    def onKey(self, point, key):
+    def onKey(self, point, key, ctrl=False):
         if key == "Delete":
             self._initialPathFindingEdit.removeInsideNoFlyZones(point)
 

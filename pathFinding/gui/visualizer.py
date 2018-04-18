@@ -3,6 +3,8 @@ import os
 from Tkinter import Canvas
 from Tkinter import Toplevel
 
+import numpy as np
+
 import core
 
 
@@ -25,10 +27,18 @@ class Visualizer(Toplevel, core.DrawListener):
         self.canvas = Canvas(self, width=canvasWidth, height=canvasHeight)
         self.canvas.pack()
         self.protocol("WM_DELETE_WINDOW", self.onClose)
-        self.bind('<Motion>', self.onMouseMotion)
-        self.bind('<Button-1>', self.onLeftClick)
         self.bind("<Configure>", self.onResize)
-        self.bind('<Button-3>', self.onRightClick)
+
+    def bindWithTransform(self, eventName, handler):
+        """
+        Binds non-standard handlers to events.  These handlers receive the initial event object, but also an additional
+        point parameter which holds the event's location in the "virtual coordinate system" as a numpy array.
+        :param eventName:
+        :param handler: a handler function with 2 args (point,event)
+        :return:
+        """
+        self.bind(eventName, lambda event: handler(self.transformCanvasToPoint((event.x, event.y)), event))
+
     def drawInBackground(self, drawable, **kwargs):
         """Draw the given drawable in the GUI thread.
         drawable should not be touched while drawing."""
@@ -62,22 +72,13 @@ class Visualizer(Toplevel, core.DrawListener):
         height = self.canvas.winfo_height()
         transX = self.viewCenterX + self.viewWidth * (canvasPoint[0] - width / 2.0) / width
         transY = self.viewCenterY - self.viewHeight * (canvasPoint[1] - height / 2.0) / height
-        return (transX, transY)
+        return np.array((transX, transY), np.double)
 
     def onDraw(self, drawable, **kwargs):
         """Callback for DrawListener.  This can be used by a background calculation thread to signal the GUI to draw a new state."""
         self.drawInBackground(drawable)
 
     def onResize(self, event):
-        pass
-
-    def onLeftClick(self, event):
-        pass
-
-    def onRightClick(self, event):
-        pass
-
-    def onMouseMotion(self, event):
         pass
 
     def onClose(self):

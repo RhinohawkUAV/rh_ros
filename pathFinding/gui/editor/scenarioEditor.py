@@ -1,14 +1,14 @@
 import tkFileDialog
 
-import numpy as np
-
 from boundaryBuilder import BoundaryBuilder
+from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.interface import utils
-from gui.editor.pointToPointEditor import PointToPointEditor
 from nfzBuilder import NFZBuilder
 from nfzPointMover import NFZPointMover
 from noFlyMover import NoFlyMover
+from pathSegmentTester import PathSegmentTester
 from pointToPointEdit import PointToPointEdit
+from pointToPointEditor import PointToPointEditor
 from .initialPathFindingEdit import InitialPathFindingEdit
 from ..core import Drawable
 from ..visualizer import Visualizer
@@ -28,26 +28,35 @@ class ScenarioEditor(Visualizer, Drawable):
         self._nfzPointMover = NFZPointMover(self._initialPathFindingEdit)
         self._boundaryBuilder = BoundaryBuilder(self._initialPathFindingEdit)
         self._pointToPointEditor = PointToPointEditor(self._pointToPointEdit)
+        self._pathSegmentTester = PathSegmentTester(self._initialPathFindingEdit, LineSegmentObstacleData())
 
         self._modeMap = {"i": self._nfzBuilder,
                          "m": self._nfzMover,
                          "p": self._nfzPointMover,
                          "b": self._boundaryBuilder,
-                         "w": self._pointToPointEditor
+                         "w": self._pointToPointEditor,
+                         "t": self._pathSegmentTester
                          }
         self._mode = self._nfzBuilder
-        self.bind('<Key>', self.onKeyPressed)
-        self.bind('<ButtonPress-1>', self.onLeftPress)
-        self.bind('<ButtonRelease-1>', self.onLeftRelease)
-        self.bind('<Control-ButtonPress-1>', self.onControlLeftPress)
-        self.bind('<Control-ButtonRelease-1>', self.onControlLeftRelease)
-        self.bind('<Control-Motion>', self.onControlMouseMotion)
 
-    def onKeyPressed(self, event):
+        self.bindWithTransform('<Motion>', self.onMouseMotion)
+        self.bindWithTransform('<Key>', self.onKeyPressed)
+        self.bindWithTransform('<Control-Key>', self.onCTRLKeyPressed)
+        self.bindWithTransform('<ButtonPress-1>', self.onLeftPress)
+        self.bindWithTransform('<ButtonRelease-1>', self.onLeftRelease)
+        self.bindWithTransform('<Control-ButtonPress-1>', self.onControlLeftPress)
+        self.bindWithTransform('<Control-ButtonRelease-1>', self.onControlLeftRelease)
+        self.bindWithTransform('<Control-Motion>', self.onControlMouseMotion)
+
+    def onCTRLKeyPressed(self, point, event):
+        if event.keysym != "Control_L":
+            self.onKeyPressed(point, event, ctrl=True)
+
+    def onKeyPressed(self, point, event, ctrl=False):
         key = event.keysym
         if key in self._modeMap:
             self._mode = self._modeMap[key]
-            point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
+            self._mode.onSwitch()
             self._mode.onMotion(point)
         elif key == "s":
             fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="scenarios")
@@ -60,37 +69,30 @@ class ScenarioEditor(Visualizer, Drawable):
                 self._initialPathFindingEdit.setToInput(initialInput)
                 self._pointToPointEdit.setToInput(pointToPointInput)
         else:
-            point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
-            self._mode.onKey(point, key)
+            self._mode.onKey(point, key, ctrl=ctrl)
         self.updateDisplay()
 
-    def onLeftPress(self, event):
-        point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
+    def onLeftPress(self, point, event):
         self._mode.onLeftPress(point)
         self.updateDisplay()
 
-    def onLeftRelease(self, event):
-        point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
+    def onLeftRelease(self, point, event):
         self._mode.onLeftRelease(point)
         self.updateDisplay()
 
-    def onControlLeftPress(self, event):
-        point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
+    def onControlLeftPress(self, point, event):
         self._mode.onLeftPress(point, control=True)
         self.updateDisplay()
 
-    def onControlLeftRelease(self, event):
-        point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
+    def onControlLeftRelease(self, point, event):
         self._mode.onLeftRelease(point, control=True)
         self.updateDisplay()
 
-    def onMouseMotion(self, event):
-        point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
+    def onMouseMotion(self, point, event):
         self._mode.onMotion(point)
         self.updateDisplay()
 
-    def onControlMouseMotion(self, event):
-        point = np.array(self.transformCanvasToPoint((event.x, event.y)), np.double)
+    def onControlMouseMotion(self, point, event):
         self._mode.onMotion(point, control=True)
         self.updateDisplay()
 

@@ -2,10 +2,11 @@ import time
 
 import numpy as np
 
-from engine.geometry import ObstacleCourse, noFlyZone
+from constants import NO_FLY_ZONE_POINT_OFFSET
 from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.vertex import UniqueVertexQueue
 from geometry import calcs
+from gui.obstacleDebug.obstacleDebug import ObstacleCourseDebug
 from vertex import Vertex
 
 
@@ -13,15 +14,15 @@ class DynamicPathFinder:
     def __init__(self, initialPathFindingInput, constantSpeed):
 
         self._constantSpeed = constantSpeed
-        self._obstacleCourse = ObstacleCourse(initialPathFindingInput.boundaryPoints,
-                                              noFlyZone.listFromInput(initialPathFindingInput.noFlyZones))
-
-        self._obstacleData = LineSegmentObstacleData(self._constantSpeed, initialPathFindingInput.boundaryPoints,
-                                                     noFlyZone.listFromInput(initialPathFindingInput.noFlyZones))
+        self._obstacleData = LineSegmentObstacleData(self._constantSpeed, NO_FLY_ZONE_POINT_OFFSET)
+        self._obstacleData.setInitialState(initialPathFindingInput)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = initialPathFindingInput.calcBounds()
         self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2], bounds[3], constantSpeed)
+
+        self._obstacleCourseDebug = ObstacleCourseDebug(initialPathFindingInput.boundaryPoints,
+                                                        initialPathFindingInput.noFlyZones)
 
     def findPath(self, pointToPointInput):
         self.initFindPath(pointToPointInput)
@@ -35,8 +36,6 @@ class DynamicPathFinder:
                                      velocity=np.array(pointToPointInput.startVelocity, np.double),
                                      timeToVertex=0.0,
                                      estimatedTimeThroughVertex=self.heuristic(self._start))
-        # Dynamic properties used for processing and display
-        self._futureObstacleCourse = None
 
         self._pathSegments = []
         self._solution = None
@@ -65,14 +64,12 @@ class DynamicPathFinder:
                                                                  self._currentVertex.velocity)
         self._findStraightPathsComputeTime += time.time()
         for pathSegment in self._pathSegments:
-            # TODO: convert remaining math to nparray
-            destination = np.array(pathSegment.endPoint, np.double)
             timeToVertex = self._currentVertex.timeToVertex + pathSegment.time
 
-            newVertex = Vertex(position=destination,
+            newVertex = Vertex(position=pathSegment.endPoint,
                                velocity=pathSegment.endVelocity,
                                timeToVertex=timeToVertex,
-                               estimatedTimeThroughVertex=timeToVertex + self.heuristic(destination),
+                               estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.endPoint),
                                previousVertex=self._currentVertex,
                                pathSegment=pathSegment)
 

@@ -26,7 +26,7 @@ class PointToPointEdit(Drawable):
     def findClosestPoint(self, point):
         return calcs.findClosestPoint(point, self.points)
 
-    def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR):
+    def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR,**kwargs):
         for i in range(len(self.points)):
             point = self.points[i]
             draw.drawPoint(canvas, point, radius=radius, color=color)

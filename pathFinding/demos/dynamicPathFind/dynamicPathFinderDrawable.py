@@ -1,8 +1,7 @@
 from Tkinter import Canvas
 
-import numpy as np
-
 import gui
+from engine.geometry import calcSegmentsPointDebug
 from gui import Drawable
 
 
@@ -10,28 +9,29 @@ class DynamicPathFinderDrawable(Drawable):
     def __init__(self, fp):
         self.fp = fp
 
-    def findClosestPointOnPath(self, point, snapDistance, pathEndVertices):
-        point = np.array(point, np.double)
-        shortestDistance = snapDistance
-        closestPoint = None
-        time = 0.0
-
+    def getPathSegments(self, pathEndVertices):
+        pathSegments = []
+        pathStartTimes = []
         for currentVertex in pathEndVertices:
             if currentVertex is None:
                 break
             previousVertex = currentVertex.previousVertex
 
             while not previousVertex is None:
-                pathSegment = currentVertex.pathSegment
-                (closestPathPoint, distance, timeParametric) = pathSegment.calcPointDebug(point)
-                if distance < shortestDistance:
-                    shortestDistance = distance
-                    closestPoint = closestPathPoint
-                    time = timeParametric * currentVertex.timeToVertex + \
-                           (1 - timeParametric) * previousVertex.timeToVertex
+                pathSegments.append(currentVertex.pathSegment)
+                pathStartTimes.append(previousVertex.timeToVertex)
                 currentVertex = previousVertex
                 previousVertex = currentVertex.previousVertex
-        return (closestPoint, time)
+        return (pathSegments, pathStartTimes)
+
+    def findClosestPointOnPath(self, point, snapDistance, pathEndVertices):
+        (pathSegments, pathStartTimes) = self.getPathSegments(pathEndVertices)
+        (closestSegmentIndex, closestPoint, minimumDistance, closestTime) = calcSegmentsPointDebug(point, pathSegments,
+                                                                                                   snapDistance)
+        if closestSegmentIndex is not None:
+            return (closestPoint, pathStartTimes[closestSegmentIndex] + closestTime)
+        else:
+            return (None, 0.0)
 
     def draw(self, canvas, pointOfInterest=None, snapDistance=float("inf"), obstacleColor="black",
              lineOfSightColor="blue",
@@ -58,8 +58,7 @@ class DynamicPathFinderDrawable(Drawable):
                 searchPaths.append(self.fp._solution)
             (closestPoint, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance, searchPaths)
 
-        obstacleCourse = self.fp._obstacleCourse.getFutureCopy(drawTime)
-        obstacleCourse.draw(canvas, color=obstacleColor, drawVectors=False)
+        self.fp._obstacleCourseDebug.draw(canvas, time=drawTime, boundaryColor="red", nfzColor="black")
 
         gui.draw.drawPoint(canvas, self.fp._start, color="black")
         gui.draw.drawPoint(canvas, self.fp._goal, color="black")

@@ -1,22 +1,16 @@
 from collections import Sequence
 
-import numpy as np
-
 from pathSegment import PathSegment
 
 
 class ObstacleData:
-    def __init__(self, boundaryPoints, noFlyZones):
-
-        self.targetPoints = []
-        self.targetVelocities = []
-
-        pointIndex = 0
-        for noFlyZone in noFlyZones:
-            for point in noFlyZone._offsetPoints:
-                self.targetPoints.append(np.array(point, np.double))
-                self.targetVelocities.append(np.array(noFlyZone._velocity, np.double))
-                pointIndex += 1
+    def setInitialState(self, initialPathFindingInput):
+        """
+        Set the initial state of the obstacle data at time=0.0.
+        :param initialPathFindingInput:
+        :return:
+        """
+        pass
 
     def setQueryTime(self, time):
         """
@@ -26,6 +20,19 @@ class ObstacleData:
         :return:
         """
         pass
+
+    def findPathSegmentsToMovingTarget(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+        # type: (Sequence,Sequence,Sequence,Sequence) -> [PathSegment]
+        """
+        Find legal path segments from a given starting point and velocity to the moving target.
+        This takes into account the time at which this query is made, which will affect the position of DNFZs.
+        This should suggest routes at different speeds if possible.
+        :param startPoint:
+        :param startVelocity:
+        :param targetPoint:
+        :param velocityOfTarget:
+        :return:
+        """
 
     def findPathSegments(self, startPoint, startVelocity):
         # type: (Sequence,Sequence) -> [PathSegment]
@@ -41,7 +48,7 @@ class ObstacleData:
         pass
 
     def findPathToGoal(self, startPoint, startVelocity, goalPoint):
-        # type: (Sequence,Sequence) -> [PathSegment]
+        # type: (Sequence,Sequence) -> PathSegment
         """
         Find the fastest legal path segment from a given starting point and velocity to the goal, which is assumed to
         be stationary.

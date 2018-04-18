@@ -12,3 +12,6 @@ class SubGUI:
 
     def onKey(self, point, key):
         pass
+
+    def onSwitch(self):
+        pass

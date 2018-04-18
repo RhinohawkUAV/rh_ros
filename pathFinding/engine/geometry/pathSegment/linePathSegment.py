@@ -19,9 +19,13 @@ class LinePathSegment(PathSegment):
 
     def calcPointDebug(self, point):
         timeParametric = self.lineSegment.closestPointParametric(point)
+        if timeParametric > 1.0:
+            timeParametric = 1.0
+        elif timeParametric < 0.0:
+            timeParametric = 0.0
         closestPoint = self.lineSegment.getParametricPoint(timeParametric)
         distance = np.linalg.norm(point - closestPoint)
-        return (closestPoint, distance, timeParametric)
+        return (closestPoint, distance, timeParametric * self.time)
 
     def doesLineIntersect(self, obstacleLine, obstacleLineVelocity):
         """
