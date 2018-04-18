@@ -13,7 +13,7 @@ initialInput = engine.InitialPathFindingInput(boundaryPoints, noFlyZoneInputs)
 pointToPointInput = PointToPointInput(start, initialVelocity, [end])
 
 # Example of loading scenario
-# (initialInput, pointToPointInput) = engine.utils.loadScenario("../scenarios/test2.json")
+# (initialInput, pointToPointInput) = engine.utils.loadScenario("../scenarios/test1.json")
 
 pathFinder = DynamicPathFinder(initialInput, constantSpeed)
 pathFinder.initFindPath(pointToPointInput)

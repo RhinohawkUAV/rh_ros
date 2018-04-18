@@ -6,7 +6,8 @@ TEXT_OFFSET = 3.0
 
 
 class Vertex(Drawable):
-    def __init__(self, position, velocity, timeToVertex, estimatedTimeThroughVertex, previousVertex=None):
+    def __init__(self, position, velocity, timeToVertex, estimatedTimeThroughVertex, previousVertex=None,
+                 pathSegment=None):
         # The location of the vertex
         self.position = position
 
@@ -21,6 +22,9 @@ class Vertex(Drawable):
 
         # The previous vertex which is part of the shortest path from start through this vertex
         self.previousVertex = previousVertex
+
+        # A path segment from the previous vertex to this vertex.  Stored for rendering/debug.
+        self.pathSegment = pathSegment
 
     def drawPath(self, canvas, **kwargs):
         if not self.previousVertex is None:

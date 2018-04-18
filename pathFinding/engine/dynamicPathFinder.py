@@ -2,8 +2,8 @@ import time
 
 import numpy as np
 
-from constants import MAX_TURN_ANGLE_COS
 from engine.geometry import ObstacleCourse, noFlyZone
+from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.vertex import UniqueVertexQueue
 from geometry import calcs
 from vertex import Vertex
@@ -15,6 +15,9 @@ class DynamicPathFinder:
         self._constantSpeed = constantSpeed
         self._obstacleCourse = ObstacleCourse(initialPathFindingInput.boundaryPoints,
                                               noFlyZone.listFromInput(initialPathFindingInput.noFlyZones))
+
+        self._obstacleData = LineSegmentObstacleData(self._constantSpeed, initialPathFindingInput.boundaryPoints,
+                                                     noFlyZone.listFromInput(initialPathFindingInput.noFlyZones))
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = initialPathFindingInput.calcBounds()
@@ -35,7 +38,7 @@ class DynamicPathFinder:
         # Dynamic properties used for processing and display
         self._futureObstacleCourse = None
 
-        self._straightPaths = []
+        self._pathSegments = []
         self._solution = None
         self._bestSolutionTime = float("inf")
 
@@ -55,28 +58,24 @@ class DynamicPathFinder:
             self._computeTime += time.time()
             return False
 
-        self._futureObstacleCourse = self._obstacleCourse.getFutureCopy(self._currentVertex.timeToVertex)
+        self._obstacleData.setQueryTime(self._currentVertex.timeToVertex)
         self.checkPathToGoal()
         self._findStraightPathsComputeTime -= time.time()
-        self._straightPaths = self._futureObstacleCourse.findStraightPathsToVertices(self._currentVertex.position,
-                                                                                     self._constantSpeed,
-                                                                                     lambda path:
-                                                                                     isTurnLegal(
-                                                                                         self._currentVertex.velocity,
-                                                                                         path.velocity,
-                                                                                         self._constantSpeed))
+        self._pathSegments = self._obstacleData.findPathSegments(self._currentVertex.position,
+                                                                 self._currentVertex.velocity)
         self._findStraightPathsComputeTime += time.time()
-
-        for straightPath in self._straightPaths:
+        for pathSegment in self._pathSegments:
             # TODO: convert remaining math to nparray
-            destination = np.array(straightPath.destination, np.double)
-            timeToVertex = self._currentVertex.timeToVertex + straightPath.time
+            destination = np.array(pathSegment.endPoint, np.double)
+            timeToVertex = self._currentVertex.timeToVertex + pathSegment.time
 
             newVertex = Vertex(position=destination,
-                               velocity=straightPath.velocity,
+                               velocity=pathSegment.endVelocity,
                                timeToVertex=timeToVertex,
                                estimatedTimeThroughVertex=timeToVertex + self.heuristic(destination),
-                               previousVertex=self._currentVertex)
+                               previousVertex=self._currentVertex,
+                               pathSegment=pathSegment)
+
             self._queueComputeTime -= time.time()
             self._vertexQueue.push(newVertex)
             self._queueComputeTime += time.time()
@@ -90,20 +89,19 @@ class DynamicPathFinder:
         :return:
         """
         self._findStraightPathsComputeTime -= time.time()
-        if not self._futureObstacleCourse.doesLineIntersect(self._currentVertex.position, self._goal,
-                                                            self._constantSpeed):
-            (travelTime, direction) = calcs.calcTravelTimeAndDirection(self._currentVertex.position, self._goal,
-                                                                       self._constantSpeed)
-
-            timeToGoal = self._currentVertex.timeToVertex + travelTime
+        pathSegment = self._obstacleData.findPathToGoal(self._currentVertex.position,
+                                                        self._currentVertex.velocity,
+                                                        self._goal)
+        if pathSegment is not None:
+            timeToGoal = self._currentVertex.timeToVertex + pathSegment.time
             self._findStraightPathsComputeTime += time.time()
-
             if timeToGoal < self._bestSolutionTime:
                 self._solution = Vertex(position=self._goal,
-                                        velocity=direction * self._constantSpeed,
+                                        velocity=pathSegment.endVelocity,
                                         timeToVertex=timeToGoal,
                                         estimatedTimeThroughVertex=timeToGoal,  # timeToVertex + 0
-                                        previousVertex=self._currentVertex)
+                                        previousVertex=self._currentVertex,
+                                        pathSegment=pathSegment)
 
                 self._bestSolutionTime = timeToGoal
         else:
@@ -111,16 +109,3 @@ class DynamicPathFinder:
 
     def heuristic(self, point):
         return calcs.calcTravelTime(point, self._goal, self._constantSpeed)
-
-
-def isTurnLegal(velocity1, velocity2, speed):
-    """
-    Assumes all velocities have equal magnitude and only need their relative angle checked.
-    :param velocity1:
-    :param velocity2:
-    :return:
-    """
-    if velocity1[0] == 0.0 and velocity1[1] == 0.0:
-        return True
-    cosAngle = np.dot(velocity1, velocity2) / (speed * speed)
-    return cosAngle > MAX_TURN_ANGLE_COS

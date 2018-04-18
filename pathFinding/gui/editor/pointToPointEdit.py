@@ -15,7 +15,7 @@ TEXT_OFFSET = np.array((2, 0), np.double)
 class PointToPointEdit(Drawable):
     def __init__(self):
         self.points = []
-        self.startVelocity = np.array([], np.double)
+        self.startVelocity = np.array((0, 0), np.double)
 
     def setToInput(self, input):
         del self.points[:]

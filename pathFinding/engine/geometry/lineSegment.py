@@ -30,6 +30,10 @@ class LineSegment(Drawable):
         diff = self.p2 - self.p1
         magSquared = diff[0] * diff[0] + diff[1] * diff[1]
 
+        # TODO: This could actually happen, so we need to either prevent it or handle it.
+        if magSquared == 0.0:
+            raise Exception("Line between two identical points!")
+
         # Unit normal of the line.  Paths only intersect this line if opposing the normal.
         # Normal is chosen so that, if polygons are wound counter-clockwise,
         # normals point outwards.
