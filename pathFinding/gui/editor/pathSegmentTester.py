@@ -48,10 +48,9 @@ class PathSegmentTester(Drawable, SubGUI):
                       arrow=tk.LAST)
 
         time = 0.0
-        goalSegments = self._obstacleData.findPathSegmentsToMovingTarget(self._startPoint, self._startVelocity,
-                                                                         self._targetPoint, self._velocityOfTarget)
-        if len(goalSegments) > 0:
-            goalSegment = goalSegments[0]
+        goalSegment = self._obstacleData.findPathSegment(self._startPoint, self._startVelocity,
+                                                         self._targetPoint, self._velocityOfTarget)
+        if goalSegment is not None:
             goalSegment.draw(canvas)
 
             if self._pointOfInterest is not None:

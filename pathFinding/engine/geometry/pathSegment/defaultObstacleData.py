@@ -69,14 +69,14 @@ class DefaultObstacleData(ObstacleData):
             self.obstacleLinesAtTime[i] = LineSegment(self.obstacleLines[i].p1 + offset,
                                                       self.obstacleLines[i].p2 + offset)
 
-    def findPathSegmentsToMovingTarget(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+    def findPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
         pathSegment = self.createPathSegment(startPoint, startVelocity, targetPoint, velocityOfTarget)
 
         if pathSegment is not None and self.filterPathSegment(pathSegment, self.obstacleLinesAtTime,
                                                               self.obstacleVelocities):
-            return [pathSegment]
+            return pathSegment
         else:
-            return []
+            return None
 
     def findPathSegments(self, startPoint, startVelocity):
         pathSegments = []

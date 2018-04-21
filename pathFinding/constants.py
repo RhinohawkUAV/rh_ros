@@ -3,13 +3,12 @@
 # round-off error.  This small delta offset, outward along the vertices's normal prevents this.
 import math
 
-# TODO: Default value for LineSegmentObstacleData system.  Will not be used in the future.
-TEST_CONSTANT_SPEED = 10.0
+MAX_VEHICLE_SPEED = 10.0
 
 NO_FLY_ZONE_POINT_OFFSET = 0.0001
 
 # TODO: Used with the assumption that speed is constant.  This probably isn't going to be true ultimately
-MAX_TURN_ANGLE = 30
+MAX_TURN_ANGLE = 60
 
 # For calculation convenience
 MAX_TURN_ANGLE_COS = math.cos(math.radians(MAX_TURN_ANGLE))

@@ -11,15 +11,14 @@ from vertex import Vertex
 
 
 class DynamicPathFinder:
-    def __init__(self, initialPathFindingInput, constantSpeed):
+    def __init__(self, initialPathFindingInput, maximumSpeed):
 
-        self._constantSpeed = constantSpeed
-        self._obstacleData = LineSegmentObstacleData(self._constantSpeed, NO_FLY_ZONE_POINT_OFFSET)
+        self._obstacleData = LineSegmentObstacleData(NO_FLY_ZONE_POINT_OFFSET)
         self._obstacleData.setInitialState(initialPathFindingInput)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = initialPathFindingInput.calcBounds()
-        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2], bounds[3], constantSpeed)
+        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2], bounds[3], maximumSpeed)
 
         self._obstacleCourseDebug = ObstacleCourseDebug(initialPathFindingInput.boundaryPoints,
                                                         initialPathFindingInput.noFlyZones)
@@ -32,10 +31,11 @@ class DynamicPathFinder:
     def initFindPath(self, pointToPointInput):
         self._start = np.array(pointToPointInput.startPosition, np.double)
         self._goal = np.array(pointToPointInput.targetPoints[0], np.double)
+        velocity = np.array(pointToPointInput.startVelocity, np.double)
         self._currentVertex = Vertex(position=self._start,
-                                     velocity=np.array(pointToPointInput.startVelocity, np.double),
+                                     velocity=velocity,
                                      timeToVertex=0.0,
-                                     estimatedTimeThroughVertex=self.heuristic(self._start))
+                                     estimatedTimeThroughVertex=self.heuristic(self._start, velocity))
 
         self._pathSegments = []
         self._solution = None
@@ -69,7 +69,8 @@ class DynamicPathFinder:
             newVertex = Vertex(position=pathSegment.endPoint,
                                velocity=pathSegment.endVelocity,
                                timeToVertex=timeToVertex,
-                               estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.endPoint),
+                               estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.endPoint,
+                                                                                        pathSegment.endVelocity),
                                previousVertex=self._currentVertex,
                                pathSegment=pathSegment)
 
@@ -86,9 +87,10 @@ class DynamicPathFinder:
         :return:
         """
         self._findStraightPathsComputeTime -= time.time()
-        pathSegment = self._obstacleData.findPathToGoal(self._currentVertex.position,
-                                                        self._currentVertex.velocity,
-                                                        self._goal)
+        pathSegment = self._obstacleData.findPathSegment(self._currentVertex.position,
+                                                         self._currentVertex.velocity,
+                                                         self._goal,
+                                                         np.array((0, 0), np.double))
         if pathSegment is not None:
             timeToGoal = self._currentVertex.timeToVertex + pathSegment.time
             self._findStraightPathsComputeTime += time.time()
@@ -104,5 +106,5 @@ class DynamicPathFinder:
         else:
             self._findStraightPathsComputeTime += time.time()
 
-    def heuristic(self, point):
-        return calcs.calcTravelTime(point, self._goal, self._constantSpeed)
+    def heuristic(self, point, velocity):
+        return calcs.calcTravelTime(point, self._goal, np.linalg.norm(velocity))

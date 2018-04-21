@@ -1,6 +1,6 @@
 import numpy as np
 
-from constants import MAX_TURN_ANGLE_COS, TEST_CONSTANT_SPEED, NO_FLY_ZONE_POINT_OFFSET
+from constants import MAX_TURN_ANGLE_COS, NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs
 from linePathSegment import LinePathSegment
@@ -12,28 +12,16 @@ class LineSegmentObstacleData(DefaultObstacleData):
     at a constant speed and that it is only limited by a maximum turning angle, which ignores speed.
     """
 
-    def __init__(self, constantSpeed=TEST_CONSTANT_SPEED, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
+    def __init__(self, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
         DefaultObstacleData.__init__(self, targetOffsetLength)
-        self.constantSpeed = constantSpeed
-
-        # nfzPoints = 0
-        # for noFlyZone in noFlyZones:
-        #     nfzPoints += len(noFlyZone._points)
-        #
-        # numTargets = nfzPoints
-        # numLines = nfzPoints + len(boundaryPoints)
-
-        # self.targetPoints = np.zeros(numTargets,np.double)
-        # self.targetVelocities = np.zeros(numTargets,np.double)
-        # self.lineObstacles = np.zeros(numLines,np.double)
-        # self.lineObstacles = np.zeros(numLines,np.double)
 
     def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        solution = calcs.hitTargetAtSpeed(startPoint, self.constantSpeed, targetPoint, velocityOfTarget)
+        startSpeed = np.linalg.norm(startVelocity)
+        solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
         if solution is not None and turnIsLegal(startVelocity, solution.velocity):
             # TODO: convert remaining math to nparray
             endPoint = np.array(solution.destination, np.double)
-            return LinePathSegment(startPoint, self.constantSpeed, solution.time, endPoint, solution.velocity)
+            return LinePathSegment(startPoint, startSpeed, solution.time, endPoint, solution.velocity)
         return None
 
     def filterPathSegment(self, linePathSegment, obstacleLines, obstacleVelocities):

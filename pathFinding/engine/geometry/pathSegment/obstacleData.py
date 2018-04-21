@@ -21,16 +21,16 @@ class ObstacleData:
         """
         pass
 
-    def findPathSegmentsToMovingTarget(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        # type: (Sequence,Sequence,Sequence,Sequence) -> [PathSegment]
+    def findPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+        # type: (Sequence,Sequence,Sequence,Sequence) -> PathSegment
         """
-        Find legal path segments from a given starting point and velocity to the moving target.
+        Find legal path segments from a given starting point and velocity to the moving target, ending at finalSpeed.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
-        This should suggest routes at different speeds if possible.
-        :param startPoint:
-        :param startVelocity:
-        :param targetPoint:
-        :param velocityOfTarget:
+
+        :param startPoint: where the path starts
+        :param startVelocity: the initial velocity, of the vehicle at the start of the path
+        :param targetPoint: the destination point
+        :param velocityOfTarget: the velocity of the destination (this is usually a point on a NFZ, which may be moving)
         :return:
         """
 
@@ -39,24 +39,8 @@ class ObstacleData:
         """
         Find legal path segments from a given starting point and velocity to vertices of no fly zones.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
-        This should suggest routes at different speeds if possible.
         :param startPoint:
         :param startVelocity:
-        :return: a list of PathSegments describing routes from the start point to noFlyZone vertices.  This can suggest
-        multiple routes, at different speeds, to a given vertex.
-        """
-        pass
-
-    def findPathToGoal(self, startPoint, startVelocity, goalPoint):
-        # type: (Sequence,Sequence) -> PathSegment
-        """
-        Find the fastest legal path segment from a given starting point and velocity to the goal, which is assumed to
-        be stationary.
-        This takes into account the time at which this query is made, which will affect the position of NFZs.
-        Returns None if no route is possible.
-        :param startPoint:
-        :param startVelocity:
-        :param goalPoint:
-        :return: a single PathSegment or None
+        :return: a list of PathSegments describing routes from the start point to noFlyZone vertices.
         """
         pass
