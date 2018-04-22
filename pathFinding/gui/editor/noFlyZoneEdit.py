@@ -9,14 +9,16 @@ from engine.geometry import LineSegment, calcs
 from gui import Drawable
 
 
-class NoFlyZoneEdit(NoFlyZoneInput, Drawable):
+class NoFlyZoneEdit(Drawable):
     def __init__(self, points, velocity):
         """
-        A polygon NFZ with a given velocity.  Points must be given in CCW order.
+        A polygon NFZ with a given velocity.
         :param points:
         :param velocity:
         """
-        NoFlyZoneInput.__init__(self, points, velocity)
+
+        self.points = np.array(points, np.double)
+        self.velocity = np.array(velocity, np.double)
 
         self._midPoint = self.points.sum(axis=0) / len(self.points)
         self._lines = []

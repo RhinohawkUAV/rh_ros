@@ -4,9 +4,9 @@ from gui.editor.polyBuilder import PolyBuilder
 
 
 class NFZBuilder(PolyBuilder, Drawable):
-    def __init__(self, initialPathFindingEdit):
+    def __init__(self, obstacleCourseEdit):
         PolyBuilder.__init__(self)
-        self._initialPathFindingEdit = initialPathFindingEdit
+        self._obstacleCourseEdit = obstacleCourseEdit
 
     def _polyBuilt(self, points):
-        self._initialPathFindingEdit.addNoFlyZone(NoFlyZoneEdit(points, [0, 0]))
+        self._obstacleCourseEdit.addNoFlyZone(NoFlyZoneEdit(points, [0, 0]))

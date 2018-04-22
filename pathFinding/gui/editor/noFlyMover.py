@@ -5,18 +5,18 @@ from subGUI import SubGUI
 
 
 class NoFlyMover(Drawable, SubGUI):
-    def __init__(self, initialPathFindingEdit):
+    def __init__(self, obstacleCourseEdit):
         self._startPoint = None
-        self._initialPathFindingEdit = initialPathFindingEdit
+        self._obstacleCourseEdit = obstacleCourseEdit
         self._dragZones = []
         self._previewZones = []
 
     def onLeftPress(self, point, control=False):
         self._startPoint = point
         if control:
-            self._dragZones = self._initialPathFindingEdit.findInsideNoFlyZones(self._startPoint)
+            self._dragZones = self._obstacleCourseEdit.findInsideNoFlyZones(self._startPoint)
         else:
-            self._dragZones = self._initialPathFindingEdit.removeInsideNoFlyZones(self._startPoint)
+            self._dragZones = self._obstacleCourseEdit.removeInsideNoFlyZones(self._startPoint)
             offset = np.array([0, 0], np.double)
             for dragZone in self._dragZones:
                 self._previewZones.append(dragZone.getTranslatedCopy(offset))
@@ -26,7 +26,7 @@ class NoFlyMover(Drawable, SubGUI):
         self._startPoint = None
         del self._dragZones[:]
         if not control:
-            self._initialPathFindingEdit.addNoFlyZones(self._previewZones)
+            self._obstacleCourseEdit.addNoFlyZones(self._previewZones)
 
             del self._previewZones[:]
 
@@ -44,7 +44,7 @@ class NoFlyMover(Drawable, SubGUI):
 
     def onKey(self, point, key, ctrl=False):
         if key == "Delete":
-            self._initialPathFindingEdit.removeInsideNoFlyZones(point)
+            self._obstacleCourseEdit.removeInsideNoFlyZones(point)
 
     def draw(self, canvas, **kwargs):
         for previewZone in self._previewZones:

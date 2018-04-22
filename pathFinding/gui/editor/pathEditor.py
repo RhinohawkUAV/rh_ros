@@ -3,10 +3,10 @@ from pointListEditor import PointListEditor
 from subGUI import SubGUI
 
 
-class PointToPointEditor(Drawable, SubGUI):
-    def __init__(self, pointToPointEdit, **kwargs):
-        self._pointToPointEdit = pointToPointEdit
-        self._pointListEditor = PointListEditor(self._pointToPointEdit.points, **kwargs)
+class pathEditor(Drawable, SubGUI):
+    def __init__(self, pathEdit, **kwargs):
+        self._pathEdit = pathEdit
+        self._pointListEditor = PointListEditor(self._pathEdit.points, **kwargs)
 
     def onLeftPress(self, point, control=False):
         self._pointListEditor.onLeftPress(point, control)
@@ -19,5 +19,5 @@ class PointToPointEditor(Drawable, SubGUI):
 
     def onKey(self, point, key, ctrl=False):
         if key == "v":
-            if len(self._pointToPointEdit.points) > 0:
-                self._pointToPointEdit.startVelocity = point - self._pointToPointEdit.points[0]
+            if len(self._pathEdit.points) > 0:
+                self._pathEdit.startVelocity = point - self._pathEdit.points[0]

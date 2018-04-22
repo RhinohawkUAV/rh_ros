@@ -6,10 +6,10 @@ from engine.interface import utils
 from nfzBuilder import NFZBuilder
 from nfzPointMover import NFZPointMover
 from noFlyMover import NoFlyMover
+from pathEdit import PathEdit
+from pathEditor import pathEditor
 from pathSegmentTester import PathSegmentTester
-from pointToPointEdit import PointToPointEdit
-from pointToPointEditor import PointToPointEditor
-from .initialPathFindingEdit import InitialPathFindingEdit
+from .obstacleCourseEdit import ObstacleCourseEdit
 from ..core import Drawable
 from ..visualizer import Visualizer
 
@@ -21,20 +21,20 @@ class ScenarioEditor(Visualizer, Drawable):
 
     def __init__(self, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
-        self._initialPathFindingEdit = InitialPathFindingEdit()
-        self._pointToPointEdit = PointToPointEdit()
-        self._nfzBuilder = NFZBuilder(self._initialPathFindingEdit)
-        self._nfzMover = NoFlyMover(self._initialPathFindingEdit)
-        self._nfzPointMover = NFZPointMover(self._initialPathFindingEdit)
-        self._boundaryBuilder = BoundaryBuilder(self._initialPathFindingEdit)
-        self._pointToPointEditor = PointToPointEditor(self._pointToPointEdit)
-        self._pathSegmentTester = PathSegmentTester(self._initialPathFindingEdit, LineSegmentObstacleData())
+        self._obstacleCourseEdit = ObstacleCourseEdit()
+        self._pathEdit = PathEdit()
+        self._nfzBuilder = NFZBuilder(self._obstacleCourseEdit)
+        self._nfzMover = NoFlyMover(self._obstacleCourseEdit)
+        self._nfzPointMover = NFZPointMover(self._obstacleCourseEdit)
+        self._boundaryBuilder = BoundaryBuilder(self._obstacleCourseEdit)
+        self._pathEditor = pathEditor(self._pathEdit)
+        self._pathSegmentTester = PathSegmentTester(self._obstacleCourseEdit, LineSegmentObstacleData())
 
         self._modeMap = {"i": self._nfzBuilder,
                          "m": self._nfzMover,
                          "p": self._nfzPointMover,
                          "b": self._boundaryBuilder,
-                         "w": self._pointToPointEditor,
+                         "w": self._pathEditor,
                          "t": self._pathSegmentTester
                          }
         self._mode = self._nfzBuilder
@@ -61,13 +61,16 @@ class ScenarioEditor(Visualizer, Drawable):
         elif key == "s":
             fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="scenarios")
             if not fileName == '':
-                utils.saveScenario(fileName, self._initialPathFindingEdit, self._pointToPointEdit)
+                utils.saveScenario(fileName, self._obstacleCourseEdit, self._pathEdit)
         elif key == "l":
             fileName = tkFileDialog.askopenfilename(defaultextension="json", initialdir="scenarios")
             if not fileName == '':
-                (initialInput, pointToPointInput) = utils.loadScenario(fileName)
-                self._initialPathFindingEdit.setToInput(initialInput)
-                self._pointToPointEdit.setToInput(pointToPointInput)
+                (obstacleInput, pathInput) = utils.loadScenario(fileName)
+                if obstacleInput is not None:
+                    self._obstacleCourseEdit.setToInput(obstacleInput)
+
+                if pathInput is not None:
+                    self._pathEdit.setToInput(pathInput)
         else:
             self._mode.onKey(point, key, ctrl=ctrl)
         self.updateDisplay()
@@ -100,6 +103,6 @@ class ScenarioEditor(Visualizer, Drawable):
         self.drawToCanvas(self)
 
     def draw(self, canvas, **kwargs):
-        self._initialPathFindingEdit.draw(canvas, **kwargs)
-        self._pointToPointEdit.draw(canvas, color="blue")
+        self._obstacleCourseEdit.draw(canvas, **kwargs)
+        self._pathEdit.draw(canvas, color="blue")
         self._mode.draw(canvas, **kwargs)

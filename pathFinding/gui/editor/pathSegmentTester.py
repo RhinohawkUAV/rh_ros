@@ -9,8 +9,8 @@ from subGUI import SubGUI
 
 
 class PathSegmentTester(Drawable, SubGUI):
-    def __init__(self, initialPathFindingEdit, obstacleData):
-        self._initialPathFindingEdit = initialPathFindingEdit
+    def __init__(self, obstacleCourseEdit, obstacleData):
+        self._obstacleCourseEdit = obstacleCourseEdit
         self._startPoint = np.array((5, 5), np.double)
         self._startVelocity = np.array((1, 1), np.double)
         self._targetPoint = np.array((95, 95), np.double)
@@ -36,9 +36,9 @@ class PathSegmentTester(Drawable, SubGUI):
         self._pointOfInterest = point
 
     def onSwitch(self):
-        self._obstacleDebug = ObstacleCourseDebug(self._initialPathFindingEdit.boundaryPoints,
-                                                  self._initialPathFindingEdit.noFlyZones)
-        self._obstacleData.setInitialState(self._initialPathFindingEdit)
+        self._obstacleDebug = ObstacleCourseDebug(self._obstacleCourseEdit.boundaryPoints,
+                                                  self._obstacleCourseEdit.noFlyZones)
+        self._obstacleData.setInitialState(self._obstacleCourseEdit)
         self._obstacleData.setQueryTime(0.0)
 
     def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):

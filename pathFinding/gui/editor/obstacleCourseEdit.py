@@ -3,7 +3,7 @@ from gui import Drawable, draw
 from gui.editor import noFlyZoneEdit
 
 
-class InitialPathFindingEdit(Drawable):
+class ObstacleCourseEdit(Drawable):
     def __init__(self):
         self.boundaryPoints = []
         self.noFlyZones = []

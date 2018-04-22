@@ -16,7 +16,7 @@ initialInput = engine.InitialPathFindingInput(boundaryPoints, noFlyZoneInputs)
 pointToPointInput = PointToPointInput(start, (0, 0), [end])
 
 # Example of loading scenario
-# (initialInput, pointToPointInput) = engine.utils.loadScenario("../scenarios/test3.json")
+# (initialInput, pointToPointInput) = engine.utils.loadScenario("../scenarios/test2.json")
 
 # TODO: The most basic LinePathSegment system requires the initial velocity to be pointing in a reasonable direction
 pointToPointInput.startVelocity = np.array(pointToPointInput.targetPoints[0], np.double) - np.array(

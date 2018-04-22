@@ -12,7 +12,7 @@ from gui.draw import DEFAULT_POINT_SIZE, DEFAULT_COLOR
 TEXT_OFFSET = np.array((2, 0), np.double)
 
 
-class PointToPointEdit(Drawable):
+class PathEdit(Drawable):
     def __init__(self):
         self.points = []
         self.startVelocity = np.array((0, 0), np.double)
@@ -26,7 +26,7 @@ class PointToPointEdit(Drawable):
     def findClosestPoint(self, point):
         return calcs.findClosestPoint(point, self.points)
 
-    def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR,**kwargs):
+    def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
         for i in range(len(self.points)):
             point = self.points[i]
             draw.drawPoint(canvas, point, radius=radius, color=color)
