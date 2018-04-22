@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from engine.geometry import LineSegment, calcs
@@ -17,6 +19,9 @@ class DefaultObstacleData(ObstacleData):
 
         # Velocity of the target points (corresponding to the NFZ they belong to).
         self.targetVelocities = []
+        self.targetPointNormals = []
+        self.targetCosLimits = []
+
         self.obstacleLines = []
         self.obstacleVelocities = []
 
@@ -32,6 +37,8 @@ class DefaultObstacleData(ObstacleData):
 
     def setInitialState(self, initialPathFindingInput):
         del self.targetPoints[:]
+        del self.targetPointNormals[:]
+        del self.targetCosLimits[:]
         del self.targetVelocities[:]
         del self.obstacleLines[:]
         del self.obstacleVelocities[:]
@@ -46,6 +53,15 @@ class DefaultObstacleData(ObstacleData):
             for i in range(-1, len(points) - 1):
                 pointNormal = (nfzLines[i].n + nfzLines[i + 1].n) / 2.0
                 pointNormal /= np.linalg.norm(pointNormal)
+                # Angle between adjacent edges should mostly be large (>180) given winding direction
+                pointAngle = calcs.calcEdgeAngle(points[i - 1], points[i], points[i + 1])
+                if pointAngle > math.pi:
+                    cosLimit = math.cos(pointAngle / 2.0)
+                else:
+                    cosLimit = 1
+
+                self.targetPointNormals.append(pointNormal)
+                self.targetCosLimits.append(cosLimit)
                 self.targetPoints.append(nfzLines[i].p2 + pointNormal * self.targetOffsetLength)
                 self.targetVelocities.append(np.array(noFlyZoneInput.velocity, np.double))
 
@@ -83,11 +99,17 @@ class DefaultObstacleData(ObstacleData):
         for i in range(len(self.targetPoints)):
             velocityOfTarget = self.targetVelocities[i]
             targetPoint = self.targetPointsAtTime[i]
+
             # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
             if not calcs.arePointsClose(startPoint, targetPoint):
                 pathSegment = self.createPathSegment(startPoint, startVelocity, targetPoint, velocityOfTarget)
                 if pathSegment is not None:
-                    pathSegments.append(pathSegment)
+                    # Filter path segment based on incoming angle and known geometry around point.
+                    pointNormal = self.targetPointNormals[i]
+                    cosLimit = self.targetCosLimits[i]
+                    relativeVelocity = pathSegment.endVelocity - velocityOfTarget
+                    if np.dot(relativeVelocity, pointNormal) >= cosLimit:
+                        pathSegments.append(pathSegment)
 
         filteredPathSegments = []
         for pathSegment in pathSegments:
