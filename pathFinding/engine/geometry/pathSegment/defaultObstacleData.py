@@ -108,6 +108,7 @@ class DefaultObstacleData(ObstacleData):
                     pointNormal = self.targetPointNormals[i]
                     cosLimit = self.targetCosLimits[i]
                     relativeVelocity = pathSegment.endVelocity - velocityOfTarget
+                    relativeVelocity /= np.linalg.norm((relativeVelocity))
                     if np.dot(relativeVelocity, pointNormal) >= cosLimit:
                         pathSegments.append(pathSegment)
 
