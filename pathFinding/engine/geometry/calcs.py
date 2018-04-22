@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from constants import DISTANCE_TOLERANCE_SQUARED
@@ -139,3 +141,49 @@ def calcBounds(points):
         if point[1] > yMax:
             yMax = point[1]
     return [xMin, yMin, xMax, yMax]
+
+
+def calcEdgeAngle(prev, vertex, next):
+    """
+    Calculate the angle at a vertex in a polygon assuming CCW winding
+    """
+    diff = vertex - prev
+    length = np.linalg.norm(diff)
+    dir1 = diff / length
+
+    diff = vertex - next
+    length = np.linalg.norm(diff)
+    dir2 = diff / length
+
+    cosAngle = np.dot(dir1, dir2)
+
+    diff = next - prev
+    length = np.linalg.norm(diff)
+    dir3 = diff / length
+
+    angle = math.acos(cosAngle)
+
+    if cross2(dir1, dir3) > 0.0:
+        return angle
+    else:
+        return math.pi * 2 - angle
+
+
+def woundCCW(points):
+    angle = 0
+    for i in range(-1, len(points) - 1):
+        prev = points[i - 1]
+        curr = points[i]
+        next = points[i + 1]
+
+        angle += calcEdgeAngle(prev, curr, next)
+    # If the points are wound CCW then this should given an answer following the standard formula for angle inside a polygon.
+    # If wound CW, we will get a much bigger number (4*pi bigger).  We add a small margin of error (0.1) to the calculation.
+    if angle < math.pi * (len(points) - 2) + 0.1:
+        return True
+    else:
+        return False
+
+
+def cross2(v1, v2):
+    return v1[0] * v2[1] - v1[1] * v2[0]

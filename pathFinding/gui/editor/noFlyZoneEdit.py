@@ -16,7 +16,7 @@ class NoFlyZoneEdit(NoFlyZoneInput, Drawable):
         :param points:
         :param velocity:
         """
-        NoFlyZoneInput.__init__(self, np.array(points, np.double), np.array(velocity, np.double))
+        NoFlyZoneInput.__init__(self, points, velocity)
 
         self._midPoint = self.points.sum(axis=0) / len(self.points)
         self._lines = []

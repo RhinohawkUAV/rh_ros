@@ -1,4 +1,7 @@
+import numpy as np
 from typing import Sequence
+
+from engine.geometry import calcs
 
 
 class NoFlyZoneInput:
@@ -12,9 +15,13 @@ class NoFlyZoneInput:
     def __init__(self, points, velocity, ID=0):
         # type: ([Sequence],Sequence) -> None
 
+        self.points = np.array(points, np.double)
+
         # A list of 2-d _points, defining the no fly zone _boundary, in counter-clockwise order.
-        # TODO: Must be in clockwise order.  Must automate that.
-        self.points = points
+        # Enforce CW winding (normals face outward)
+        if calcs.woundCCW(self.points):
+            self.points = array = np.flip(self.points, axis=0)
+            print "flipped"
 
         # A vector describing the velocity of the no fly zone.
         self.velocity = velocity

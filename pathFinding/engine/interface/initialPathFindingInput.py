@@ -18,9 +18,12 @@ class InitialPathFindingInput:
 
         # Defines the boundary polygon (geo-fence) for the path-finding problem.  According to the rules this can be
         # max 18 sided, this will accept any number of sides.
-        # TODO: Automatically convert point order
-        # Must be in CCW order
+        # Enforce CW winding (normals face inward)
+
         self.boundaryPoints = np.array(boundaryPoints, np.double)
+        if not calcs.woundCCW(self.boundaryPoints):
+            self.boundaryPoints = list(reversed(boundaryPoints))
+            print "flipped"
 
         # A sequence of NoFlyZoneInput objects.  Not clear if rules allow dynamic NFZs can be announced initially,
         # but this allows for that case.

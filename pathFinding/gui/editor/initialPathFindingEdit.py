@@ -3,9 +3,10 @@ from gui import Drawable, draw
 from gui.editor import noFlyZoneEdit
 
 
-class InitialPathFindingEdit(InitialPathFindingInput, Drawable):
+class InitialPathFindingEdit(Drawable):
     def __init__(self):
-        InitialPathFindingInput.__init__(self, [], [])
+        self.boundaryPoints = []
+        self.noFlyZones = []
 
     def setToInput(self, input):
         self.boundaryPoints = input.boundaryPoints
