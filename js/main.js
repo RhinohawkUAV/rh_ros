@@ -1,7 +1,10 @@
 
 var ros;
 var clockInit = false;
-var centerMap = true;
+var centerMap = false;
+var menuOpen = false;
+var showArucos = false;
+var showVideo = true;
 
 var uavPath=[];
 var coords;
@@ -12,12 +15,16 @@ var currentImg;
 var counter = 0;
 var targetLoc;
 
-var iconwaypointYellow;
-var joePosition;
+var waypointYellowIcon;
+var joePositionIcon;
+var startPositionIcon;
 var arucoIcon;
+var knowPositionIcon;
 
 var groundSpeedGauge;
 var airSpeedGauge;
+
+var imageTopic
 
 
 // Connect to ROSBridge -----------------------------------------------------------------------
@@ -36,19 +43,19 @@ function connectToROS(address){
 
 //  Define Icons ---------------------------------------------
  function setUpIcons(){ 
-  iconwaypointYellow = L.icon({
+  waypointYellowIcon = L.icon({
       iconUrl: 'img/waypoint-yellow.png',
       iconSize: [24,24],
       popupAnchor: [0,-12],
     });
 
-  joePosition = L.icon({
+  joePositionIcon = L.icon({
       iconUrl: 'img/joesPosition.png',
       iconSize: [17,25],
       popupAnchor: [0,-12],
     });
 
-  startPosition = L.icon({
+  startPositionIcon = L.icon({
       iconUrl: 'img/whiteFlag.png',
       iconSize: [17,25],
       popupAnchor: [0,-12],
@@ -58,6 +65,13 @@ function connectToROS(address){
     iconUrl: 'img/arucoIcon.png',
     iconSize: [22,22],
     popupAnchor: [0,-12],
+  });
+
+  knowPositionIcon = L.icon({
+    iconUrl: 'img/icon-marker.png',
+    iconSize: [20,30],
+    popupAnchor: [0,-15],
+    className:'knownLocation'
   });
 }
 
@@ -125,7 +139,7 @@ function connectToTopics() {
         messageType: 'geometry_msgs/TwistStamped'
       });
 
-    var imageTopic = new ROSLIB.Topic({
+    imageTopic = new ROSLIB.Topic({
         ros : ros,
         name : '/gopro/aruco_marker/compressed',
         messageType : 'sensor_msgs/CompressedImage'
@@ -166,7 +180,6 @@ function connectToTopics() {
 
     imageTopic.subscribe(function(message) {
       currentImg = "data:image/png;base64," + message.data;
-
       document.getElementById( 'aruco-image' ).setAttribute( 'src', currentImg );
     });
 
@@ -208,16 +221,12 @@ function connectToTopics() {
         home = coords;
         console.log("Got home coordinates: "+ home[0] + "," + home[1]);
         //L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
-        L.marker(home,{icon: startPosition}).addTo(map);
+        L.marker(home,{icon: startPositionIcon}).addTo(map);
 
-
-        
         function mark(coords, label) {
-          var marker = new L.marker(coords, { opacity: 0.75 });
-          if (label != null) {
-            //marker.bindTooltip(label, {permanent: true, className: "label", offset: [0, 0] });
-          }    
+          var marker = new L.marker(coords, {icon:knowPositionIcon, opacity: 1, title:label });
           marker.addTo(map);
+          L.circle(coords, 10, {stroke: false, color:'#fff', fill: true, fillOpacity:.3, className: 'knownLocation'}).addTo(map);
         }
 
         // for bags 6,7,8 we know the marker locations
@@ -253,25 +262,25 @@ function connectToTopics() {
     
     markerLocation.subscribe(function(message) {
       pointInImage = [message.point.x, message.point.y];
-
-     
     });
   
 
  // Target Location ---------------------------------------------
   
     targetLocationTopic.subscribe(function(message) {
-      if (message.point != null) {
-          dx = message.point.x;
-          dy = message.point.y;
-          //console.log("Got local target position: "+dx+","+dy)
-          // Formula from https://stackoverflow.com/questions/2839533/adding-distance-to-a-gps-coordinate
-          lat = home[0] + (180/Math.PI) * (dy/6378137);
-          lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
-          //console.log("    Global target position: "+lat+","+lon)
-          var newAruco = L.marker([lat, lon],{icon: arucoIcon}).addTo(map);
-          newAruco.bindPopup("<div class='aruco-popup-img-holder'><img src='"+currentImg+"' style='top:"+-(pointInImage[1]-50)+"px; left:"+-(pointInImage[0]-50)+"px;' class='aruco-popup-img'></div>", {className:"aruco-popup"});
-          targetLoc = [lat, lon];
+      if (showArucos) {
+        if (message.point != null) {
+            dx = message.point.x;
+            dy = message.point.y;
+            //console.log("Got local target position: "+dx+","+dy)
+            // Formula from https://stackoverflow.com/questions/2839533/adding-distance-to-a-gps-coordinate
+            lat = home[0] + (180/Math.PI) * (dy/6378137);
+            lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
+            //console.log("    Global target position: "+lat+","+lon)
+            var newAruco = L.marker([lat, lon],{icon: arucoIcon}).addTo(map);
+            newAruco.bindPopup("<div class='aruco-popup-img-holder'><img src='"+currentImg+"' style='top:"+-(pointInImage[1]-50)+"px; left:"+-(pointInImage[0]-50)+"px;' class='aruco-popup-img'></div>", {className:"aruco-popup"});
+            targetLoc = [lat, lon];
+        }
       }
     });
 
@@ -303,7 +312,7 @@ function getGroundVelocity(data){
 
 function updateMapPath(){
   var newLine = [uavPath[uavPath.length-2],uavPath[uavPath.length-1]]
-  var polyline = L.polyline(newLine, {color: '#4ABDE2'}).addTo(map);
+  var polyline = L.polyline(newLine, {color: '#4ABDE2', className: 'actualPath'}).addTo(map);
   
   if(centerMap){
     map.flyTo(uavPath[uavPath.length-1]);
@@ -314,7 +323,7 @@ function updateMapPath(){
 
 function addJoe(loc){
   console.log("add joe called");
-  var newWaypoint = L.marker([loc[0], loc[1]],{icon: joePosition}).addTo(map);
+  var newWaypoint = L.marker([loc[0], loc[1]],{icon: joePositionIcon}).addTo(map);
   newWaypoint.bindPopup("<p>Joe's reported location:</p><p>"+loc[0]+"<br />"+loc[1], {className:"waypointTip"});
   
   var possibleMarkerLocation = L.circle(loc, {radius: 200, color:"#ffffff", weight:3, fillColor: "#ffffff", fillOpacity: .4}).addTo(map);
@@ -333,7 +342,7 @@ function addJoe(loc){
 function addWaypoint(loc){
   
   console.log("waypoint added");
-  var newWaypoint = L.marker([loc[0], loc[1]],  {icon: iconwaypointYellow}).addTo(map);
+  var newWaypoint = L.marker([loc[0], loc[1]],  {icon: waypointYellowIcon}).addTo(map);
   newWaypoint.bindPopup("<p>Altitude: 32m</p><p>Flight Speed: 35 m/s</p>", {className:"waypointTip"});
 }
 
@@ -366,18 +375,6 @@ function getDirection(rotation){
   return direction;
 }
 
-// Toggle Centering ---------------------------------------------
-
-function toggleMapCenter(toToggle){
-  if(centerMap){
-    centerMap = false;
-    document.getElementById(toToggle).setAttribute('class', 'toggleOff');
-  }else{
-    centerMap = true;
-     document.getElementById(toToggle).setAttribute('class', 'toggleOn');
-  }
-}
-
 
 
 
@@ -405,23 +402,77 @@ Object.defineProperty(
 );
 
 
-// Get portion of image from images coming in via ROS
-// Source: https://yellowpencil.com/blog/cropping-images-with-javascript/
-function getImagePortion(imgObj, newWidth, newHeight, startX, startY, ratio){
- /* the parameters: - the image element - the new width - the new height - the x point we start taking pixels - the y point we start taking pixels - the ratio */
- //set up canvas for thumbnail
- var tnCanvas = document.createElement('canvas');
- var tnCanvasContext = tnCanvas.getContext('2d');
- tnCanvas.width = newWidth; tnCanvas.height = newHeight;
- 
- /* use the sourceCanvas to duplicate the entire image. This step was crucial for iOS4 and under devices. Follow the link at the end of this post to see what happens when you don’t do this */
- var bufferCanvas = document.createElement('canvas');
- var bufferContext = bufferCanvas.getContext('2d');
- bufferCanvas.width = imgObj.width;
- bufferCanvas.height = imgObj.height;
- bufferContext.drawImage(imgObj, 0, 0);
- 
- /* now we use the drawImage method to take the pixels from our bufferCanvas and draw them into our thumbnail canvas */
- tnCanvasContext.drawImage(bufferCanvas, startX,startY,newWidth * ratio, newHeight * ratio,0,0,newWidth,newHeight);
- return tnCanvas.toDataURL();
+// Interface Interactions -----------------------------------------------------------------------
+
+// Toggle Menu ---------------------------------------------
+function toggleMenu() {
+  if (!menuOpen){
+    document.getElementById('mainHolder').setAttribute('class', 'container-fluid fill menuOpen');
+    menuOpen = true;
+  }else {
+    document.getElementById('mainHolder').setAttribute('class', 'container-fluid fill menuClosed');
+    menuOpen = false;
+  }
+} 
+   
+function theToggle(setTo,toToggle){
+  if(setTo == true){
+    document.getElementById(toToggle).setAttribute('class', 'toggleOn');
+  }else{
+     document.getElementById(toToggle).setAttribute('class', 'toggleOff');
+  }
+} 
+
+
+// Toggle Centering ---------------------------------------------
+
+function toggleMapCenter(toToggle){
+  if(centerMap){
+    centerMap = false;
+    theToggle(false,toToggle);
+  }else{
+    centerMap = true;
+    theToggle(true,toToggle);
+  }
 }
+
+function toggleMapLayer(theLayer, toToggle){
+  
+  var elements = document.getElementsByClassName(theLayer);
+
+  if(document.getElementById(toToggle).classList.contains('toggleOn')){
+    theToggle(false, toToggle);
+    for (var i = 0; i < elements.length; i++) { elements[i].style.display = "none"};
+  }else{
+    theToggle(true,toToggle);
+    for (var i = 0; i < elements.length; i++) { elements[i].style.display = "block"};
+  }
+
+}
+
+function toggleArucoMarker(toToggle){
+  if(showArucos){
+    showArucos = false;
+    theToggle(false,toToggle);
+  }else{
+    showArucos = true;
+    theToggle(true,toToggle);
+  }
+}
+
+function toggleVideo(toToggle){
+  if(showVideo){
+    imageTopic.unsubscribe();
+    theToggle(false,toToggle);
+    showVideo = false;
+  }else{
+    imageTopic.subscribe(function(message) {
+      currentImg = "data:image/png;base64," + message.data;
+      document.getElementById( 'aruco-image' ).setAttribute( 'src', currentImg );
+    });
+    theToggle(true,toToggle);
+    showVideo = true;
+  }
+}
+
+

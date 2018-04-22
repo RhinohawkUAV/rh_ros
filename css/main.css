@@ -2,7 +2,7 @@ html{
 	height:100%;
 	width:100%;
 	padding:0px;
-	
+	overflow: hidden;
 }
 
 body{
@@ -10,10 +10,13 @@ body{
 }
 
 .fill{
-	height:100%;
-	width:100%;
-	padding:0px;
-	margin:0px;
+	height: 100%;
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    top: 0px;
+    z-index: -1;
 }
 
 /*******************  Telemetry *******************/
@@ -22,10 +25,18 @@ body{
 	position:relative;
 }
 
+.telemetryHolder:last-child {
+	padding-right:0px;
+}
+
 
 .telemetryRow{
 	background:rgba(10,10,10,.6);
 	color:#fff;
+	position: absolute;
+	bottom:0px;
+    width: 100%;
+    margin: 0px;
 }
 
 .tel-header, .tel-sub-header {
@@ -83,16 +94,19 @@ body{
 /*******************  Image Stream *******************/
 
 .image-stream {
-	bottom:195px;
+	/*bottom:195px;*/
+	margin-top:15px;
+	margin-right:15px;
 }
 
 .image-stream div{
-	text-align: right;
-	padding-right: 45px;
+	/*text-align: right;
+	padding-right: 45px;*/
 }
 
 .image-stream img{
-	width:300px;
+	width:250px;
+	border:1px solid #999;
 }
 
 /*******************  Scatter plot *******************/
@@ -153,15 +167,14 @@ body{
 
 /*******************  Map Controls *******************/
 
-.leaflet-bottom{
-	bottom: 0px;
-}
 
-.centerToggle{
-	float:right;
-	margin-right: 60px;
-    color:#fff;
-    z-index: 1000;
+#menu-layers{
+    width:35px;
+    height:27px;
+    background: transparent url(../img/layers.png) center center no-repeat;
+    text-indent: 9999px;
+    float: right;
+    margin:10px;
 }
 
 .toggleOn, .toggleOff {
@@ -171,13 +184,15 @@ body{
     border-radius: 15px;
     border: 1px solid #fff;
     margin:4px 0 0 20px;
+    float:right;
+    margin-right:20px;
 }
 
 .toggleOn{
 	background: #4ABDE2;
 }
 
-.toggleOn .togleMarker, .toggleOff .togleMarker {
+.toggleOn .toggleMarker, .toggleOff .toggleMarker {
 	height: 26px;
 	width: 26px;
 	border-radius: 13px;
@@ -188,9 +203,15 @@ body{
 	transition: all 0.3s ease;
 }
 
-.toggleOn .togleMarker {
+.toggleOn .toggleMarker {
 	left:20px;
 }
+
+.leaflet-bottom .leaflet-control.leaflet-control-zoom {
+	margin-bottom:165px;
+}
+
+
 
 /*******************  Gauges *******************/
 
@@ -220,4 +241,60 @@ body{
 	color:#222;
 	top: 2px;
     right: 2px;
+}
+
+
+
+/*******************  Menu *******************/
+
+.menu-layers {
+	width:300px;
+	position: absolute;
+    top: 0px;
+    right: 0px;
+	background:#383838;
+	box-shadow:  inset 3px 0 6px #222;
+	z-index: -2
+}
+
+#mainHolder {
+	position:relative;
+}
+
+#mainHolder.menuOpen {
+	left:-300px;
+}
+#mainHolder.menuClosed {
+	left:0px;
+}
+
+.menu-layers ul {
+	padding-left: 20px;
+	margin-top:35px;
+}
+
+.menu-layers li {
+	list-style-type: none;
+	color:#fff;
+	font-weight: 300;
+	width:100%;
+	float:left;
+	margin-bottom:6px;
+	cursor: pointer;
+}
+
+.menu-layers li.menu-section {
+	margin-top:24px;
+	font-weight: 800;
+	cursor: default;
+}
+
+
+.menu-layers li:hover span{
+	color:#4ABDE2;
+}
+
+.menu-layers span{
+	float:left;
+	padding-top: 6px;
 }

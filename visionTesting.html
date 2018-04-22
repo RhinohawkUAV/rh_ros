@@ -30,23 +30,19 @@
 </head>
 
 <body class="fill">
-  <div class="container-fluid fill">
-    <div class="row fill">
-      <div class="col fill" id="mapHolder"></div>
-     
-    </div>
-    <div class="row fixed-top">
+  <div class="container-fluid fill menuClosed" id="mainHolder">
+    <div class="row">
       <div class="col">
         <img src="img/RhinoHawk_Logo_white.png" style="width:180px; margin:12px;"/>
       </div>
       <div class="col">
-        <div class="centerToggle">
-          <h3 class="tel-header">Auto center</h3>
-          <div class="toggleOn" id="toggleHolder" onclick="toggleMapCenter('toggleHolder');">
-            <div class="togleMarker"></div>
-          </div>
+        <div class="layers">
+          <a href="#" onClick="toggleMenu();"><span id="menu-layers">Layers</span></a>
         </div>
       </div>
+    </div>
+    <div class="row fill">
+      <div class="col fill" id="mapHolder"></div>
     </div>
     <div class="row fixed-bottom telemetryRow">
       <div class="col telemetryHolder" style="margin-left:12px;">
@@ -62,7 +58,6 @@
           <p class="tel-detail" id="compass-direction">N</p>
         </div>
       </div>
-      
       <div class="col telemetryHolder">
         <h3 class="tel-header">Ground Speed</h3>
         <canvas id="groundGauge"></canvas>
@@ -81,16 +76,34 @@
         <h3 class="tel-header">time</h3>
         <p class="tel-detail" id="tel-time">00:00:00</p>
       </div>
+       <div class="col telemetryHolder image-stream">
+          <img id="aruco-image" />
+       </div>
     </div>
-     <div class="row fixed-bottom image-stream" >
-      <div class="col">
-        <img id="aruco-image" />
-      </div>
-    </div>
-    <div class="row fixed-bottom" style="bottom: 150px" >
-      <div class="col" id="images-seen">
+   </div>
+  <div class="fill menu-layers">
+      <ul>
+        <li class="menu-section">Options</li>
+        <li onClick="toggleMapCenter('toggle1')"><span>Auto Center Map</span><div id="toggle1" class="toggleOff"><div class="toggleMarker"></div></div></li>
         
-      </div>
+        <li class="menu-section">Layers</li>
+        <li onClick="toggleMapLayer('actualPath', 'toggle2')"><span>Actual Path</span><div id="toggle2" class="toggleOn"><div class="toggleMarker"></div></div></li>
+        
+        <li onClick="toggleMapLayer('plannedPath','toggle3')"><span>Planned Path</span><div id="toggle3" class="toggleOff"><div class="toggleMarker"></div></div></li>
+        
+        <li onClick="toggleMapLayer('nfzs','toggle4')"><span>No Fly Zones</span><div id="toggle4" class="toggleOff"><div class="toggleMarker"></div></div></li>
+        
+        <li onClick="toggleMapLayer('waypoints','toggle5')"><span>Competition Waypoints</span><div id="toggle5" class="toggleOff"><div class="toggleMarker"></div></div></li>
+        
+        <li onClick="toggleMapLayer('landingZone','toggle6')"><span>Landing Zone</span><div id="toggle6" class="toggleOff"><div class="toggleMarker"></div></div></li>
+        
+        <li onClick="toggleArucoMarker('toggle7')"><span>Aruco Markers</span><div id="toggle7" class="toggleOff"><div class="toggleMarker"></div></div></li>
+
+        <li onClick="toggleMapLayer('knownLocation','toggle8')"><span>Known Marker locations</span><div id="toggle8" class="toggleOn"><div class="toggleMarker"></div></div></li>
+
+        <li onClick="toggleVideo('toggle9')"><span>Video Stream</span><div id="toggle9" class="toggleOn"><div class="toggleMarker"></div></div></li>
+
+      </ul>
   </div>
  
   <script type="text/javascript" src="js/guagemin.js"></script>
@@ -108,7 +121,7 @@
       id: 'mapbox.satellite',
       accessToken: myAccessToken,
     }).addTo(map);
-    map.zoomControl.setPosition('topright');
+    map.zoomControl.setPosition('bottomright');
 
     connectToROS('ws://'+localROSIP+':9090');
 
