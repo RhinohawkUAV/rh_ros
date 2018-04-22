@@ -19,8 +19,7 @@ class LineSegmentObstacleData(DefaultObstacleData):
         startSpeed = np.linalg.norm(startVelocity)
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
         if solution is not None and turnIsLegal(startVelocity, solution.velocity):
-            # TODO: convert remaining math to nparray
-            endPoint = np.array(solution.destination, np.double)
+            endPoint = solution.endPoint
             return LinePathSegment(startPoint, startSpeed, solution.time, endPoint, solution.velocity)
         return None
 

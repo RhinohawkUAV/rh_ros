@@ -69,10 +69,10 @@ class StraightPathSolution:
     Holds _solution to the hitTargetAtSpeed problem.
     """
 
-    def __init__(self, time, velocity, destination):
+    def __init__(self, time, velocity, endPoint):
         self.time = time
         self.velocity = velocity
-        self.destination = destination
+        self.endPoint = endPoint
 
 
 def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetVelocity):
@@ -93,10 +93,9 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     """
 
     # Vector heading from start towards point
-    towardsX = targetStartPoint[0] - projectileStart[0]
-    towardsY = targetStartPoint[1] - projectileStart[1]
-    towardsMagSquared = towardsX * towardsX + towardsY * towardsY
-    velDotTowards = towardsX * targetVelocity[0] + towardsY * targetVelocity[1]
+    towards = targetStartPoint - projectileStart
+    towardsMagSquared = np.dot(towards, towards)
+    velDotTowards = np.dot(towards, targetVelocity)
 
     # We need a mixture of velocity and the towardsVector.  Its magnitude needs to be projectileSpeed.
     # heading = velocity + towardsFactor * towardsVector.
@@ -104,8 +103,7 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
 
     a = -towardsMagSquared
     b = - 2 * velDotTowards
-    c = projectileSpeed * projectileSpeed - (
-            targetVelocity[0] * targetVelocity[0] + targetVelocity[1] * targetVelocity[1])
+    c = projectileSpeed * projectileSpeed - np.dot(targetVelocity, targetVelocity)
 
     # We always want the 1st _solution
     towardsFactor = quadratic.solveQuad(a, b, c)
@@ -119,10 +117,10 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     # We can easily calculate time (t) from towardsFactor
     time = 1.0 / towardsFactor[0]
 
-    velocity = (towardsX * towardsFactor[0] + targetVelocity[0], towardsY * towardsFactor[0] + targetVelocity[1])
-    destination = (targetStartPoint[0] + time * targetVelocity[0], targetStartPoint[1] + time * targetVelocity[1])
+    velocity = towards * towardsFactor[0] + targetVelocity
+    endPoint = targetStartPoint + time * targetVelocity
 
-    return StraightPathSolution(time, velocity, destination)
+    return StraightPathSolution(time, velocity, endPoint)
 
 
 def calcBounds(points):
