@@ -103,8 +103,15 @@ class ArcFinder:
         toCenter = toCenterDir * self.arcRadius * rotateSign
         self.arcCenter = self.startPoint + toCenter
 
-        cosRotate = np.dot(self.startDirection, finalVelocity) / self.speed
-        self.arcLength = math.acos(cosRotate) * rotateSign
+        sinRotate = self.startDirection[0] * finalVelocity[1] - self.startDirection[1] * finalVelocity[0]
+        sinRotate /= self.speed
+
+        self.arcLength = math.asin(sinRotate) * rotateSign
+
+        # Negative arc length is actually the case of going the "long" way around the circle
+        if self.arcLength < 0.0:
+            self.arcLength = math.pi * 2 + self.arcLength
+
         self.arcStart = math.atan2(-toCenter[1], -toCenter[0])
         self.arcEndPoint = self.arcCenter + calcs.rotate2d(-toCenter, self.arcLength)
         self.arcTime = rotateSign * self.arcLength * self.arcRadius / self.speed
