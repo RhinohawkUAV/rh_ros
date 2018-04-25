@@ -10,23 +10,24 @@ from pathSegment import PathSegment
 
 
 class ArcPathSegment(DefaultPathSegment):
-    def __init__(self, startPoint, speed, time, endPoint, endVelocity, center, radius, startAngle, angleLength,
-                 arcingTime):
+    def __init__(self, time, endPoint, endVelocity, speed, lineStartPoint, arcStart, arcLength, arcCenter, arcRadius,
+                 arcTime):
         PathSegment.__init__(self, time, endPoint, endVelocity)
-        self.startPoint = startPoint
         self.speed = speed
-        self.lineSegment = LineSegment(startPoint, endPoint)
-        self.center = center
-        self.radius = radius
-        self.startAngle = startAngle
-        self.angleLength = angleLength
-        self.arcingTime = arcingTime
-        self.lineTime = self.time - self.arcingTime
-        print self.lineTime
+
+        self.lineStartPoint = lineStartPoint
+        self.lineSegment = LineSegment(lineStartPoint, endPoint)
+
+        self.arcStart = arcStart
+        self.arcLength = arcLength
+        self.arcCenter = arcCenter
+        self.arcRadius = arcRadius
+        self.arcTime = arcTime
+        self.lineTime = self.time - self.arcTime
 
     def draw(self, canvas, **kwargs):
-        draw.drawLine(canvas, self.startPoint, self.endPoint, arrow=tk.LAST)
-        draw.drawArc(canvas, self.center, self.radius, math.degrees(self.startAngle), math.degrees(self.angleLength))
+        draw.drawLine(canvas, self.lineStartPoint, self.endPoint, arrow=tk.LAST)
+        draw.drawArc(canvas, self.arcCenter, self.arcRadius, math.degrees(self.arcStart), math.degrees(self.arcLength))
 
     def calcPointDebug(self, point):
         timeParametric = self.lineSegment.closestPointParametric(point)
@@ -36,13 +37,13 @@ class ArcPathSegment(DefaultPathSegment):
             timeParametric = 0.0
         closestPoint = self.lineSegment.getParametricPoint(timeParametric)
         distance = np.linalg.norm(point - closestPoint)
-        return (closestPoint, distance, timeParametric * self.lineTime + self.arcingTime)
+        return (closestPoint, distance, timeParametric * self.lineTime + self.arcTime)
 
     def intersectsLine(self, obstacleLine, obstacleLineVelocity):
         """
         Does a path from startPoint to endPoint, at the given speed intersect the given lineSegment.
         """
-        direction = self.endPoint - self.startPoint
+        direction = self.endPoint - self.lineStartPoint
         distance = np.linalg.norm(direction)
         if distance == 0.0:
             return False
@@ -57,6 +58,6 @@ class ArcPathSegment(DefaultPathSegment):
         t = distance / self.speed
 
         # The new end point takes the same time to reach, but at a new offset heading
-        endPoint = self.startPoint + velocity * t
+        endPoint = self.lineStartPoint + velocity * t
 
-        return obstacleLine.checkLineIntersection(self.startPoint, endPoint)
+        return obstacleLine.checkLineIntersection(self.lineStartPoint, endPoint)
