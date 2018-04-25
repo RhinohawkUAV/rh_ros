@@ -1,8 +1,10 @@
 import math
 
 import numpy as np
+from typing import Sequence, List
 
-from engine.geometry import LineSegment, calcs
+from engine.geometry import LineSegment, calcs, PathSegment
+from engine.geometry.pathSegment.defaultPathSegment import DefaultPathSegment
 from obstacleData import ObstacleData
 
 
@@ -95,7 +97,9 @@ class DefaultObstacleData(ObstacleData):
             return None
 
     def findPathSegments(self, startPoint, startVelocity):
-        pathSegments = []
+        # type: (Sequence,Sequence)->[PathSegment]
+
+        pathSegments = []  # type: List[DefaultPathSegment]
         for i in range(len(self.targetPoints)):
             velocityOfTarget = self.targetVelocities[i]
             targetPoint = self.targetPointsAtTime[i]
@@ -113,19 +117,14 @@ class DefaultObstacleData(ObstacleData):
                         pathSegments.append(pathSegment)
 
         filteredPathSegments = []
+
         for pathSegment in pathSegments:
             if self.filterPathSegment(pathSegment, self.obstacleLinesAtTime, self.obstacleVelocities):
                 filteredPathSegments.append(pathSegment)
         return filteredPathSegments
 
-    def findPathToGoal(self, startPoint, startVelocity, goalPoint):
-        pathSegment = self.createPathSegment(startPoint, startVelocity, goalPoint, np.array((0, 0), np.double))
-        if pathSegment is not None and self.filterPathSegment(pathSegment, self.obstacleLinesAtTime,
-                                                              self.obstacleVelocities):
-            return pathSegment
-        return None
-
     def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+        # type: () -> DefaultPathSegment
         """
         Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
         at a given velocity.
@@ -137,5 +136,10 @@ class DefaultObstacleData(ObstacleData):
         """
         pass
 
-    def filterPathSegment(self, pathSegment, obstacleLinesAtTime, obstacleVelocities):
-        pass
+    def filterPathSegment(self, linePathSegment, obstacleLines, obstacleVelocities):
+        for i in range(len(obstacleLines)):
+            obstacleLine = obstacleLines[i]
+            obstacleLineVelocity = obstacleVelocities[i]
+            if linePathSegment.intersectsLine(obstacleLine, obstacleLineVelocity):
+                return False
+        return True

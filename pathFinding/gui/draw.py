@@ -20,3 +20,8 @@ def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
     canvas.create_text(position[0], position[1],
                        text=text,
                        fill=color, **kwargs)
+
+
+def drawArc(canvas, center, radius, startAngle, endAngle):
+    canvas.create_arc(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, start=startAngle,
+                      extent=endAngle)

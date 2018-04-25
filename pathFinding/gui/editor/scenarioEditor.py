@@ -1,7 +1,7 @@
 import tkFileDialog
 
 from boundaryBuilder import BoundaryBuilder
-from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
+from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.interface import utils
 from nfzBuilder import NFZBuilder
 from nfzPointMover import NFZPointMover
@@ -28,7 +28,7 @@ class ScenarioEditor(Visualizer, Drawable):
         self._nfzPointMover = NFZPointMover(self._obstacleCourseEdit)
         self._boundaryBuilder = BoundaryBuilder(self._obstacleCourseEdit)
         self._pathEditor = pathEditor(self._pathEdit)
-        self._pathSegmentTester = PathSegmentTester(self._obstacleCourseEdit, LineSegmentObstacleData())
+        self._pathSegmentTester = PathSegmentTester(self._obstacleCourseEdit, ArcObstacleData())
 
         self._modeMap = {"i": self._nfzBuilder,
                          "m": self._nfzMover,

@@ -23,6 +23,7 @@ class InitialPathFindingInput:
         self.boundaryPoints = np.array(boundaryPoints, np.double)
         if not calcs.woundCCW(self.boundaryPoints):
             self.boundaryPoints = list(reversed(boundaryPoints))
+            # TODO: Test that this really flips properly
             print "flipped"
 
         # A sequence of NoFlyZoneInput objects.  Not clear if rules allow dynamic NFZs can be announced initially,

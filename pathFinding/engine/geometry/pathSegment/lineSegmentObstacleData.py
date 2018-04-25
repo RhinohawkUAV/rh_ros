@@ -23,14 +23,6 @@ class LineSegmentObstacleData(DefaultObstacleData):
             return LinePathSegment(startPoint, startSpeed, solution.time, endPoint, solution.velocity)
         return None
 
-    def filterPathSegment(self, linePathSegment, obstacleLines, obstacleVelocities):
-        for i in range(len(obstacleLines)):
-            obstacleLine = obstacleLines[i]
-            obstacleLineVelocity = obstacleVelocities[i]
-            if linePathSegment.doesLineIntersect(obstacleLine, obstacleLineVelocity):
-                return False
-        return True
-
 
 def turnIsLegal(velocity1, velocity2):
     """

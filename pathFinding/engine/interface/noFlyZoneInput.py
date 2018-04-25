@@ -21,7 +21,6 @@ class NoFlyZoneInput:
         # Enforce CW winding (normals face outward)
         if calcs.woundCCW(self.points):
             self.points = array = np.flip(self.points, axis=0)
-            print "flipped"
 
         # A vector describing the velocity of the no fly zone.
         self.velocity = velocity

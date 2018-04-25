@@ -185,3 +185,24 @@ def woundCCW(points):
 
 def cross2(v1, v2):
     return v1[0] * v2[1] - v1[1] * v2[0]
+
+
+def CCWNorm(vec):
+    """
+    Rotate vec 90 degrees counter-clockwise.
+    :param vec:
+    :return:
+    """
+    return np.array([-vec[1], vec[0]], np.double)
+
+
+def rotate2d(point, angle):
+    """Rotate CCW by angle"""
+    cosAngle = math.cos(angle)
+    sinAngle = math.sin(angle)
+    return rotate2dtrig(point, cosAngle, sinAngle)
+
+
+def rotate2dtrig(point, cosAngle, sinAngle):
+    """Rotate CCW by angle"""
+    return np.array([point[0] * cosAngle - point[1] * sinAngle, point[1] * cosAngle + point[0] * sinAngle], np.double)

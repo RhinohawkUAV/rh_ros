@@ -1,4 +1,5 @@
 import Tkinter as tk
+import math
 
 import numpy as np
 
@@ -8,15 +9,24 @@ from gui import draw
 from pathSegment import PathSegment
 
 
-class LinePathSegment(DefaultPathSegment):
-    def __init__(self, startPoint, speed, time, endPoint, endVelocity):
+class ArcPathSegment(DefaultPathSegment):
+    def __init__(self, startPoint, speed, time, endPoint, endVelocity, center, radius, startAngle, angleLength,
+                 arcingTime):
         PathSegment.__init__(self, time, endPoint, endVelocity)
         self.startPoint = startPoint
         self.speed = speed
         self.lineSegment = LineSegment(startPoint, endPoint)
+        self.center = center
+        self.radius = radius
+        self.startAngle = startAngle
+        self.angleLength = angleLength
+        self.arcingTime = arcingTime
+        self.lineTime = self.time - self.arcingTime
+        print self.lineTime
 
     def draw(self, canvas, **kwargs):
         draw.drawLine(canvas, self.startPoint, self.endPoint, arrow=tk.LAST)
+        draw.drawArc(canvas, self.center, self.radius, math.degrees(self.startAngle), math.degrees(self.angleLength))
 
     def calcPointDebug(self, point):
         timeParametric = self.lineSegment.closestPointParametric(point)
@@ -26,7 +36,7 @@ class LinePathSegment(DefaultPathSegment):
             timeParametric = 0.0
         closestPoint = self.lineSegment.getParametricPoint(timeParametric)
         distance = np.linalg.norm(point - closestPoint)
-        return (closestPoint, distance, timeParametric * self.time)
+        return (closestPoint, distance, timeParametric * self.lineTime + self.arcingTime)
 
     def intersectsLine(self, obstacleLine, obstacleLineVelocity):
         """
