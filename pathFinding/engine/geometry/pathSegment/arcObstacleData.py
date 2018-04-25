@@ -8,6 +8,56 @@ from engine.geometry import calcs
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 
 
+def relativeAngleCCW(startVec, endVec):
+    """
+    How far you would have to turn, CCW, to go from startVec to endVec.  This will be in the range (-2*pi, 2*pi).
+    :param startVec:
+    :param endVec:
+    :return:
+    """
+
+    return math.atan2(endVec[1], endVec[0]) - math.atan2(startVec[1], startVec[0])
+
+    # sinRotate = startVec[0] * endVec[1] - startVec[1] * endVec[0]
+    # if np.dot(startVec, endVec) < 0.0:
+    #     return math.pi - math.asin(sinRotate)
+    # else:
+    #     return math.asin(sinRotate)
+
+
+def modAngle(angle, lowAngle):
+    """
+    Return angle in the range: [lowAngle, 2*pi+lowAngle)
+    :param angle:
+    :param lowAngle:
+    :return:
+    """
+    if angle < lowAngle:
+        return angle + 2.0 * math.pi
+    elif angle >= lowAngle + 2.0 * math.pi:
+        return angle - 2.0 * math.pi
+    else:
+        return angle
+
+
+def modAngleSigned(angle):
+    """
+    Return angle in the range: [-pi,pi)
+    :param angle:
+    :return:
+    """
+    return modAngle(angle, -math.pi)
+
+
+def modAngleUnsigned(angle):
+    """
+    Return angle in the range: [0,2*pi)
+    :param angle:
+    :return:
+    """
+    return modAngle(angle, 0)
+
+
 class ArcObstacleData(DefaultObstacleData):
     """
     Basic implementation of ObstacleData which produces simple line segments.  This assumes that the vehicle travels
@@ -47,71 +97,94 @@ class ArcObstacleData(DefaultObstacleData):
         #
         # solution = calcs.hitTargetAtSpeed(postArcStartPoint, startSpeed, postArcTargetPoint, velocityOfTarget)
 
-        arcFinder = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget)
-        arcFinder.solve()
-
-        if not arcFinder.hasSolution:
+        arcFinder = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0)
+        try:
+            arcFinder.solve()
+            return ArcPathSegment(arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
+                                  arcFinder.speed, arcFinder.arcEndPoint, arcFinder.arcStartAngle, arcFinder.arcLength,
+                                  arcFinder.arcCenter, arcFinder.arcRadius,
+                                  arcFinder.arcTime)
+        except:
             return None
 
-        return ArcPathSegment(arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
-                              arcFinder.speed, arcFinder.arcEndPoint, arcFinder.arcStart, arcFinder.arcLength,
-                              arcFinder.arcCenter, arcFinder.arcRadius,
-                              arcFinder.arcTime)
+
+class NoSolutionException(object):
+    pass
 
 
 class ArcFinder:
-    def __init__(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+
+    def __init__(self, startPoint, startVelocity, targetPoint, velocityOfTarget, rotationDirection=1.0,
+                 acceleration=1.0):
         self.startPoint = startPoint
         self.startVelocity = startVelocity
         self.speed = np.linalg.norm(startVelocity)
         self.startDirection = startVelocity / self.speed
         self.targetPoint = targetPoint
         self.velocityOfTarget = velocityOfTarget
+
+        # Radius of the arc
+        self.arcRadius = self.speed * self.speed / acceleration
+        fromCenterDir = -rotationDirection * calcs.CCWNorm(self.startDirection)
+        self.fromCenter = fromCenterDir * self.arcRadius
+        self.arcCenter = self.startPoint - self.fromCenter
+        self.arcStartAngle = math.atan2(self.fromCenter[1], self.fromCenter[0])
+
+        self.arcExitDirection = self.startDirection
         self.totalTime = 0.0
 
         self.arcEndPoint = None
         self.endPoint = None
         self.finalVelocity = None
-        self.arcStart = 0.0
         self.arcLength = 0.0
-        self.arcCenter = 0.0
-        self.arcRadius = 0.0
         self.arcTime = 0.0
-        self.hasSolution = False
 
     def solve(self):
+
         solution = calcs.hitTargetAtSpeed(self.startPoint, self.speed, self.targetPoint, self.velocityOfTarget)
         if solution is None:
-            self.hasSolution = False
-            return
+            raise NoSolutionException
 
-        self.findArc(solution.velocity, 1.0)
-        newTarget = self.targetPoint + self.velocityOfTarget * self.arcTime
-        solution = calcs.hitTargetAtSpeed(self.arcEndPoint, self.speed, newTarget, self.velocityOfTarget)
-        if solution is None:
-            self.hasSolution = False
-            return
+        self.initialGuess(solution.velocity / self.speed)
+        print "Initial Guess: " + str(math.degrees(self.arcLength))
+
+        for i in range(4):
+            newTarget = self.targetPoint + self.velocityOfTarget * self.arcTime
+            solution = calcs.hitTargetAtSpeed(self.arcEndPoint, self.speed, newTarget, self.velocityOfTarget)
+            if solution is None:
+                raise NoSolutionException
+            self.iterateFindArc(solution.velocity / self.speed)
+            print "Guess " + str(i) + ": " + str(math.degrees(self.arcLength))
 
         self.totalTime = solution.time + self.arcTime
         self.endPoint = solution.endPoint
         self.finalVelocity = solution.velocity
         self.hasSolution = True
 
-    def findArc(self, finalVelocity, rotateSign):
-        self.arcRadius = self.speed * self.speed
-        toCenterDir = calcs.CCWNorm(self.startDirection)
-        toCenter = toCenterDir * self.arcRadius * rotateSign
-        self.arcCenter = self.startPoint + toCenter
+    def iterateFindArc(self, desiredFinalDirection):
 
-        sinRotate = self.startDirection[0] * finalVelocity[1] - self.startDirection[1] * finalVelocity[0]
-        sinRotate /= self.speed
+        angleDiff = modAngleSigned(relativeAngleCCW(self.arcExitDirection, desiredFinalDirection))
+        print str(math.degrees(math.atan2(desiredFinalDirection[1], desiredFinalDirection[0]))) + " - " + \
+              str(math.degrees(math.atan2(self.arcExitDirection[1], self.arcExitDirection[0]))) + " = " + str(
+            math.degrees(angleDiff))
 
-        self.arcLength = math.asin(sinRotate) * rotateSign
+        maxStep = math.pi / 2.0
+        if angleDiff > maxStep:
+            angleDiff = maxStep
+        elif angleDiff < -maxStep:
+            angleDiff = -maxStep
 
-        # Negative arc length is actually the case of going the "long" way around the circle
-        if self.arcLength < 0.0:
-            self.arcLength = math.pi * 2 + self.arcLength
+        self.arcLength += angleDiff
+        if self.arcLength < 0.0 or self.arcLength > 2.0 * math.pi:
+            raise NoSolutionException
 
-        self.arcStart = math.atan2(-toCenter[1], -toCenter[0])
-        self.arcEndPoint = self.arcCenter + calcs.rotate2d(-toCenter, self.arcLength)
-        self.arcTime = rotateSign * self.arcLength * self.arcRadius / self.speed
+        self.arcEndPoint = self.arcCenter + calcs.rotate2d(self.fromCenter, self.arcLength)
+        self.arcTime = self.arcLength * self.arcRadius / self.speed
+        self.arcExitDirection = calcs.rotate2d(self.startDirection, self.arcLength)
+
+    def initialGuess(self, desiredFinalDirection):
+        self.arcLength = modAngleUnsigned(relativeAngleCCW(self.arcExitDirection, desiredFinalDirection))
+
+        self.arcEndPoint = self.arcCenter + calcs.rotate2d(self.fromCenter, self.arcLength)
+        self.arcTime = self.arcLength * self.arcRadius / self.speed
+        self.arcExitDirection = calcs.rotate2d(self.startDirection, self.arcLength)

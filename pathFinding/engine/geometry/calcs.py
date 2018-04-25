@@ -203,6 +203,6 @@ def rotate2d(point, angle):
     return rotate2dtrig(point, cosAngle, sinAngle)
 
 
-def rotate2dtrig(point, cosAngle, sinAngle):
+def rotate2dtrig(vec, cosAngle, sinAngle):
     """Rotate CCW by angle"""
-    return np.array([point[0] * cosAngle - point[1] * sinAngle, point[1] * cosAngle + point[0] * sinAngle], np.double)
+    return np.array([vec[0] * cosAngle - vec[1] * sinAngle, vec[1] * cosAngle + vec[0] * sinAngle], np.double)
