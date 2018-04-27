@@ -9,6 +9,7 @@ from noFlyZoneInput import NoFlyZoneInput
 
 OBSTACLE_INPUT_KEY = "obstacleInput"
 PATH_INPUT_KEY = "pathInput"
+TEST_INPUT_KEY = "testInput"
 
 
 class Encoder(json.JSONEncoder):
@@ -21,11 +22,13 @@ class Encoder(json.JSONEncoder):
             return obj.__dict__
 
 
-def saveScenario(fileName, obstacleCourseEdit, pathEdit):
+def saveScenario(fileName, obstacleCourseEdit, pathEdit, extraDict=None):
     file = open(fileName, 'w')
     output = {}
     output[OBSTACLE_INPUT_KEY] = obstacleCourseEdit
     output[PATH_INPUT_KEY] = pathEdit
+    if extraDict is not None:
+        output.update(extraDict)
     json.dump(output, file, cls=Encoder, indent=4)
     file.close()
 
@@ -39,12 +42,12 @@ def loadScenario(fileName):
     obstacleInput = None
 
     if scenarioDict.has_key(OBSTACLE_INPUT_KEY) and scenarioDict[OBSTACLE_INPUT_KEY] is not None:
-        obstacleInput = initialPathFindingInput.fromJSONDict(scenarioDict[OBSTACLE_INPUT_KEY])
+        scenarioDict[OBSTACLE_INPUT_KEY] = initialPathFindingInput.fromJSONDict(scenarioDict[OBSTACLE_INPUT_KEY])
 
     if scenarioDict.has_key(PATH_INPUT_KEY) and scenarioDict[PATH_INPUT_KEY] is not None:
-        pathInput = pointToPointInput.fromJSONDict(scenarioDict[PATH_INPUT_KEY])
+        scenarioDict[PATH_INPUT_KEY] = pointToPointInput.fromJSONDict(scenarioDict[PATH_INPUT_KEY])
 
-    return (obstacleInput, pathInput)
+    return scenarioDict
 
 
 def genRandomNoFlyZoneInputs(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):
