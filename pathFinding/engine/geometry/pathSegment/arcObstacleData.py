@@ -7,6 +7,15 @@ from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 
+MAX_ITERATIONS = 4
+
+# There will be difference between an arc's exit velocity and the correct velocity vector.
+# This represents the allowed angular error (in radians) and corresponds to missing a target
+# 1km away by 1m
+MAX_ANGLE_ERROR = 0.001
+
+MIN_ANGLE_ERROR_COS = math.cos(MAX_ANGLE_ERROR)
+
 
 def relativeAngleCCW(startVec, endVec):
     """
@@ -68,35 +77,6 @@ class ArcObstacleData(DefaultObstacleData):
         DefaultObstacleData.__init__(self, targetOffsetLength)
 
     def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        # startSpeed = np.linalg.norm(startVelocity)
-        # radius = startSpeed * startSpeed
-        # diff = targetPoint - startPoint
-        # toCenterDir = calcs.CCWNorm(startVelocity / startSpeed)
-        # toCenter = toCenterDir * radius
-        #
-        # rotateSign = 1
-        # if np.dot(diff, toCenterDir) < 0:
-        #     toCenter *= -1
-        #     rotateSign = -1
-        #
-        # center = startPoint + toCenter
-        #
-        # # TODO: Move solution to the beginning to get the correct initial direction vector
-        # solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
-        # if solution is None:
-        #     return None
-        #
-        # cosRotate = np.dot(startVelocity, solution.velocity) / (startSpeed * np.linalg.norm(solution.velocity))
-        #
-        # # Both used for display, not clear if either of these actually has to be calculated
-        # arcLength = math.acos(cosRotate) * rotateSign
-        # startAngle = math.atan2(-toCenter[1], -toCenter[0])
-        # postArcStartPoint = center + calcs.rotate2d(-toCenter, arcLength)
-        # arcingTime = rotateSign * arcLength * radius / startSpeed
-        # postArcTargetPoint = targetPoint + velocityOfTarget * arcingTime
-        #
-        # solution = calcs.hitTargetAtSpeed(postArcStartPoint, startSpeed, postArcTargetPoint, velocityOfTarget)
-
         arcFinder = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0)
         try:
             arcFinder.solve()
@@ -145,35 +125,27 @@ class ArcFinder:
         if solution is None:
             raise NoSolutionException
 
-        self.initialGuess(solution.velocity / self.speed)
-        print "Initial Guess: " + str(math.degrees(self.arcLength))
-
-        for i in range(4):
+        solutionDirection = solution.velocity / self.speed
+        self.initialGuess(solutionDirection)
+        iteration = 0
+        while iteration < MAX_ITERATIONS:
             newTarget = self.targetPoint + self.velocityOfTarget * self.arcTime
             solution = calcs.hitTargetAtSpeed(self.arcEndPoint, self.speed, newTarget, self.velocityOfTarget)
             if solution is None:
                 raise NoSolutionException
-            self.iterateFindArc(solution.velocity / self.speed)
-            print "Guess " + str(i) + ": " + str(math.degrees(self.arcLength))
-
-        self.totalTime = solution.time + self.arcTime
-        self.endPoint = solution.endPoint
-        self.finalVelocity = solution.velocity
-        self.hasSolution = True
+            solutionDirection = solution.velocity / self.speed
+            cosError = np.dot(self.arcExitDirection, solutionDirection)
+            if cosError >= MIN_ANGLE_ERROR_COS:
+                self.totalTime = solution.time + self.arcTime
+                self.endPoint = solution.endPoint
+                self.finalVelocity = solution.velocity
+                return
+            self.iterateFindArc(solutionDirection)
+            iteration += 1
+        raise NoSolutionException
 
     def iterateFindArc(self, desiredFinalDirection):
-
         angleDiff = modAngleSigned(relativeAngleCCW(self.arcExitDirection, desiredFinalDirection))
-        print str(math.degrees(math.atan2(desiredFinalDirection[1], desiredFinalDirection[0]))) + " - " + \
-              str(math.degrees(math.atan2(self.arcExitDirection[1], self.arcExitDirection[0]))) + " = " + str(
-            math.degrees(angleDiff))
-
-        maxStep = math.pi / 2.0
-        if angleDiff > maxStep:
-            angleDiff = maxStep
-        elif angleDiff < -maxStep:
-            angleDiff = -maxStep
-
         self.arcLength += angleDiff
         if self.arcLength < 0.0 or self.arcLength > 2.0 * math.pi:
             raise NoSolutionException
