@@ -3,8 +3,9 @@ import math
 import numpy as np
 from typing import Sequence, List
 
-from engine.geometry import LineSegment, calcs, PathSegment
+from engine.geometry import calcs, PathSegment
 from engine.geometry.pathSegment.defaultPathSegment import DefaultPathSegment
+from engine.geometry.pathSegment.obstacleLineSegment import ObstacleLineSegment
 from obstacleData import ObstacleData
 
 
@@ -25,7 +26,6 @@ class DefaultObstacleData(ObstacleData):
         self.targetCosLimits = []
 
         self.obstacleLines = []
-        self.obstacleVelocities = []
 
         # A version of the target points at the current query time.  These are actually used to compute potential path
         # segments
@@ -43,14 +43,13 @@ class DefaultObstacleData(ObstacleData):
         del self.targetCosLimits[:]
         del self.targetVelocities[:]
         del self.obstacleLines[:]
-        del self.obstacleVelocities[:]
 
         for noFlyZoneInput in initialPathFindingInput.noFlyZones:
             points = noFlyZoneInput.points
             nfzLines = []
             for i in range(0, len(points)):
-                nfzLines.append(LineSegment(points[i - 1], points[i]))
-                self.obstacleVelocities.append(np.array(noFlyZoneInput.velocity, np.double))
+                nfzLines.append(
+                    ObstacleLineSegment(points[i - 1], points[i], np.array(noFlyZoneInput.velocity, np.double)))
 
             for i in range(-1, len(points) - 1):
                 pointNormal = (nfzLines[i].n + nfzLines[i + 1].n) / 2.0
@@ -71,8 +70,8 @@ class DefaultObstacleData(ObstacleData):
 
         for i in range(len(initialPathFindingInput.boundaryPoints)):
             self.obstacleLines.append(
-                LineSegment(initialPathFindingInput.boundaryPoints[i - 1], initialPathFindingInput.boundaryPoints[i]))
-            self.obstacleVelocities.append(np.array((0, 0), np.double))
+                ObstacleLineSegment(initialPathFindingInput.boundaryPoints[i - 1],
+                                    initialPathFindingInput.boundaryPoints[i], np.array((0, 0), np.double)))
 
         # Create copy of same length corresponding to time = 0.0
         self.targetPointsAtTime = self.targetPoints[:]
@@ -83,15 +82,15 @@ class DefaultObstacleData(ObstacleData):
             self.targetPointsAtTime[i] = self.targetPoints[i] + self.targetVelocities[i] * time
 
         for i in range(len(self.obstacleLines)):
-            offset = self.obstacleVelocities[i] * time
-            self.obstacleLinesAtTime[i] = LineSegment(self.obstacleLines[i].p1 + offset,
-                                                      self.obstacleLines[i].p2 + offset)
+            offset = self.obstacleLines[i].velocity * time
+            self.obstacleLinesAtTime[i] = ObstacleLineSegment(self.obstacleLines[i].p1 + offset,
+                                                              self.obstacleLines[i].p2 + offset,
+                                                              self.obstacleLines[i].velocity)
 
     def findPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
         pathSegment = self.createPathSegment(startPoint, startVelocity, targetPoint, velocityOfTarget)
 
-        if pathSegment is not None and self.filterPathSegment(pathSegment, self.obstacleLinesAtTime,
-                                                              self.obstacleVelocities):
+        if pathSegment is not None and self.filterPathSegment(pathSegment, self.obstacleLinesAtTime):
             return pathSegment
         else:
             return None
@@ -119,7 +118,7 @@ class DefaultObstacleData(ObstacleData):
         filteredPathSegments = []
 
         for pathSegment in pathSegments:
-            if self.filterPathSegment(pathSegment, self.obstacleLinesAtTime, self.obstacleVelocities):
+            if self.filterPathSegment(pathSegment, self.obstacleLinesAtTime):
                 filteredPathSegments.append(pathSegment)
         return filteredPathSegments
 
@@ -136,10 +135,9 @@ class DefaultObstacleData(ObstacleData):
         """
         pass
 
-    def filterPathSegment(self, linePathSegment, obstacleLines, obstacleVelocities):
+    def filterPathSegment(self, pathSegment, obstacleLines):
         for i in range(len(obstacleLines)):
             obstacleLine = obstacleLines[i]
-            obstacleLineVelocity = obstacleVelocities[i]
-            if linePathSegment.intersectsLine(obstacleLine, obstacleLineVelocity):
+            if pathSegment.intersectsLine(obstacleLine):
                 return False
         return True

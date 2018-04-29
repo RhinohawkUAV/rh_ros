@@ -45,10 +45,38 @@ class Arc:
             angleDiff = calcs.modAngleUnsigned(pointAngle - self.start)
             timeInterp = angleDiff / self.length
 
-        closestPoint = self.center + self.radius * np.array([math.cos(pointAngle), math.sin(pointAngle)])
+        closestPoint = self.pointAtAngle(pointAngle)
         distance = np.linalg.norm(point - closestPoint)
 
         return (closestPoint, distance, timeInterp)
+
+    def pointAtAngle(self, pointAngle):
+        return self.center + self.radius * np.array([math.cos(pointAngle), math.sin(pointAngle)])
+
+    def interpolate(self, maxError):
+        """
+        Return a series of points along the arc for linear interpolation.  The maximum error (distance from a line
+        segment to a true point on the arc) defines how closely to perform the interpolation.
+        :param maxError: cannot exceed radius (the result will be single line interpolation whose error is radius).
+        :return:
+        """
+
+        # If the arc has no length just return 2 points at the start of the arc
+        if self.length == 0.0:
+            startPoint = self.pointAtAngle(self.start)
+            return [startPoint, startPoint]
+
+        if maxError > self.radius:
+            maxError = self.radius
+        maxAngle = math.acos(1.0 - maxError / self.radius)
+        numLines = int(math.ceil(self.length / maxAngle))
+        step = self.length / numLines
+        points = []
+
+        for i in range(0, numLines + 1):
+            point = self.pointAtAngle(self.start + i * step)
+            points.append(point)
+        return points
 
 
 def createArc(startPoint, startVelocity, acceleration, rotationDirection):

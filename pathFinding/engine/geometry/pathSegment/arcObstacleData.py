@@ -32,11 +32,11 @@ class ArcObstacleData(DefaultObstacleData):
             arcFinder.solve()
             return ArcPathSegment(arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
                                   arcFinder.speed, arcFinder.arc, arcFinder.arcTime)
-        except:
+        except NoSolutionException:
             return None
 
 
-class NoSolutionException(object):
+class NoSolutionException(BaseException):
     pass
 
 

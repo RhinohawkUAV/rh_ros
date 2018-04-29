@@ -28,25 +28,5 @@ class LinePathSegment(DefaultPathSegment):
         distance = np.linalg.norm(point - closestPoint)
         return (closestPoint, distance, timeParametric * self.time)
 
-    def intersectsLine(self, obstacleLine, obstacleLineVelocity):
-        """
-        Does a path from startPoint to endPoint, at the given speed intersect the given lineSegment.
-        """
-        direction = self.endPoint - self.startPoint
-        distance = np.linalg.norm(direction)
-        if distance == 0.0:
-            return False
-
-        # velocity vector - has magnitude in speed heading in velocity from start to end
-        velocity = (self.speed / distance) * direction
-
-        # Offset velocity by the velocity of the no-fly-zone (pretend it is not moving)
-        velocity -= obstacleLineVelocity
-
-        # Time to get from start to end
-        t = distance / self.speed
-
-        # The new end point takes the same time to reach, but at a new offset heading
-        endPoint = self.startPoint + velocity * t
-
-        return obstacleLine.checkLineIntersection(self.startPoint, endPoint)
+    def intersectsLine(self, obstacleLine):
+        return obstacleLine.checkPathIntersectsLine(self.startPoint, self.endPoint, self.speed)

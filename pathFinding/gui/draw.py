@@ -1,4 +1,5 @@
 import math
+from Tkconstants import ARC
 
 DEFAULT_POINT_SIZE = 0.5
 DEFAULT_COLOR = "black"
@@ -24,10 +25,10 @@ def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
                        fill=color, **kwargs)
 
 
-def drawArc(canvas, center, radius, startAngle, endAngle):
+def drawArc(canvas, center, radius, startAngle, endAngle, **kwargs):
     canvas.create_arc(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, start=startAngle,
-                      extent=endAngle)
+                      extent=endAngle, **kwargs)
 
 
-def drawArcObj(canvas, arc):
-    drawArc(canvas, arc.center, arc.radius, math.degrees(arc.start), math.degrees(arc.length))
+def drawArcObj(canvas, arc, **kwargs):
+    drawArc(canvas, arc.center, arc.radius, math.degrees(arc.start), math.degrees(arc.length), style=ARC, **kwargs)
