@@ -105,19 +105,28 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     b = - 2 * velDotTowards
     c = projectileSpeed * projectileSpeed - np.dot(targetVelocity, targetVelocity)
 
-    # We always want the 1st _solution
-    towardsFactor = quadratic.solveQuad(a, b, c)
+    solutions = quadratic.solveQuad(a, b, c)
 
-    # Error!
-    # Note: 0 solutions, when projectileSpeed is too low compared to point's velocity
-    # A _solution of infinity when projectileSpeed matches velocity exactly
-    if len(towardsFactor) == 0 or towardsFactor[0] == 0.0:
+    # If there are 2 solutions we want the larger positive solution.
+    # There may be zero solutions of a solution of infinity if a projectile's speed matches the target's exactly.
+    # If num solutions or negative time, when speed is too slow to catch projectile
+    if len(solutions) == 0:
+        return None
+    elif len(solutions) == 1:
+        towardsFactor = solutions[0]
+    else:
+        if solutions[0] > solutions[1]:
+            towardsFactor = solutions[0]
+        else:
+            towardsFactor = solutions[1]
+            print "1!"
+    if towardsFactor < 0.0:
         return None
 
     # We can easily calculate time (t) from towardsFactor
-    time = 1.0 / towardsFactor[0]
+    time = 1.0 / towardsFactor
 
-    velocity = towards * towardsFactor[0] + targetVelocity
+    velocity = towards * towardsFactor + targetVelocity
     endPoint = targetStartPoint + time * targetVelocity
 
     return StraightPathSolution(time, velocity, endPoint)

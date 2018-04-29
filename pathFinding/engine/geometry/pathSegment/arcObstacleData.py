@@ -7,6 +7,15 @@ from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs, arc
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 
+MAX_ITERATIONS = 4
+
+# There will be difference between an arc's exit velocity and the correct velocity vector.
+# This represents the allowed angular error (in radians) and corresponds to missing a target
+# 1km away by 1m
+MAX_ANGLE_ERROR = 0.001
+
+MIN_ANGLE_ERROR_COS = math.cos(MAX_ANGLE_ERROR)
+
 
 def relativeAngleCCW(startVec, endVec):
     """
@@ -104,36 +113,29 @@ class ArcFinder:
         if solution is None:
             raise NoSolutionException
 
-        self.initialGuess(solution.velocity / self.speed)
-        print "Initial Guess: " + str(math.degrees(self.arc.length))
-
-        for i in range(4):
+        solutionDirection = solution.velocity / self.speed
+        self.initialGuess(solutionDirection)
+        iteration = 0
+        while iteration < MAX_ITERATIONS:
             newTarget = self.targetPoint + self.velocityOfTarget * self.arcTime
             solution = calcs.hitTargetAtSpeed(self.arc.endPoint, self.speed, newTarget, self.velocityOfTarget)
             if solution is None:
                 raise NoSolutionException
-            self.iterateFindArc(solution.velocity / self.speed)
-            print "Guess " + str(i) + ": " + str(math.degrees(self.arc.length))
-
-        self.totalTime = solution.time + self.arcTime
-        self.endPoint = solution.endPoint
-        self.finalVelocity = solution.velocity
+            solutionDirection = solution.velocity / self.speed
+            cosError = np.dot(self.arc.endTangent, solutionDirection)
+            if cosError >= MIN_ANGLE_ERROR_COS:
+                self.totalTime = solution.time + self.arcTime
+                self.endPoint = solution.endPoint
+                self.finalVelocity = solution.velocity
+                return
+            self.iterateFindArc(solutionDirection)
+            iteration += 1
+        raise NoSolutionException
 
     def iterateFindArc(self, desiredFinalDirection):
 
         angleDiff = modAngleSigned(relativeAngleCCW(self.arc.endTangent, desiredFinalDirection))
-        print str(math.degrees(math.atan2(desiredFinalDirection[1], desiredFinalDirection[0]))) + " - " + \
-              str(math.degrees(math.atan2(self.arc.endTangent[1], self.arc.endTangent[0]))) + " = " + str(
-            math.degrees(angleDiff))
-
-        maxStep = math.pi / 2.0
-        if angleDiff > maxStep:
-            angleDiff = maxStep
-        elif angleDiff < -maxStep:
-            angleDiff = -maxStep
-
         newArcLength = self.arc.length + angleDiff
-
         if newArcLength < 0.0 or newArcLength > 2.0 * math.pi:
             raise NoSolutionException
         self.arc.setLength(newArcLength)
