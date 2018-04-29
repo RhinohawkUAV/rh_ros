@@ -1,3 +1,5 @@
+import math
+
 DEFAULT_POINT_SIZE = 0.5
 DEFAULT_COLOR = "black"
 DEFAULT_WIDTH = 1.0
@@ -25,3 +27,7 @@ def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
 def drawArc(canvas, center, radius, startAngle, endAngle):
     canvas.create_arc(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, start=startAngle,
                       extent=endAngle)
+
+
+def drawArcObj(canvas, arc):
+    drawArc(canvas, arc.center, arc.radius, math.degrees(arc.start), math.degrees(arc.length))

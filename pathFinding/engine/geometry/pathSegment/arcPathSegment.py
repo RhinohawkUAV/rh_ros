@@ -1,5 +1,4 @@
 import Tkinter as tk
-import math
 
 import numpy as np
 
@@ -10,24 +9,20 @@ from pathSegment import PathSegment
 
 
 class ArcPathSegment(DefaultPathSegment):
-    def __init__(self, time, endPoint, endVelocity, speed, lineStartPoint, arcStart, arcLength, arcCenter, arcRadius,
-                 arcTime):
+    def __init__(self, time, endPoint, endVelocity, speed, arc, arcTime):
         PathSegment.__init__(self, time, endPoint, endVelocity)
         self.speed = speed
 
-        self.lineStartPoint = lineStartPoint
-        self.lineSegment = LineSegment(lineStartPoint, endPoint)
-
-        self.arcStart = arcStart
-        self.arcLength = arcLength
-        self.arcCenter = arcCenter
-        self.arcRadius = arcRadius
+        self.lineStartPoint = arc.endPoint
+        self.lineSegment = LineSegment(arc.endPoint, endPoint)
+        self.arc = arc
         self.arcTime = arcTime
         self.lineTime = self.time - self.arcTime
 
     def draw(self, canvas, **kwargs):
         draw.drawLine(canvas, self.lineStartPoint, self.endPoint, arrow=tk.LAST)
-        draw.drawArc(canvas, self.arcCenter, self.arcRadius, math.degrees(self.arcStart), math.degrees(self.arcLength))
+        # draw.drawArc(canvas, self.arcCenter, self.arcRadius, math.degrees(self.arcStart), math.degrees(self.arcLength))
+        draw.drawArcObj(canvas, self.arc)
 
     def calcPointDebug(self, point):
         timeParametric = self.lineSegment.closestPointParametric(point)
