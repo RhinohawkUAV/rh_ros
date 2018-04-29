@@ -215,3 +215,80 @@ def rotate2d(point, angle):
 def rotate2dtrig(vec, cosAngle, sinAngle):
     """Rotate CCW by angle"""
     return np.array([vec[0] * cosAngle - vec[1] * sinAngle, vec[1] * cosAngle + vec[0] * sinAngle], np.double)
+
+
+def relativeAngleCCW(startVec, endVec):
+    """
+    How far you would have to turn, CCW, to go from startVec to endVec.  This will be in the range (-2*pi, 2*pi).
+    :param startVec:
+    :param endVec:
+    :return:
+    """
+
+    sinRotate = startVec[0] * endVec[1] - startVec[1] * endVec[0]
+    if np.dot(startVec, endVec) < 0.0:
+        return math.pi - math.asin(sinRotate)
+    else:
+        return math.asin(sinRotate)
+
+
+def modAngle(angle, lowAngle):
+    """
+    Return angle in the range: [lowAngle, 2*pi+lowAngle)
+    :param angle:
+    :param lowAngle:
+    :return:
+    """
+    if angle < lowAngle:
+        return angle + 2.0 * math.pi
+    elif angle >= lowAngle + 2.0 * math.pi:
+        return angle - 2.0 * math.pi
+    else:
+        return angle
+
+
+def modAngleSigned(angle):
+    """
+    Return angle in the range: [-pi,pi)
+    :param angle:
+    :return:
+    """
+    return modAngle(angle, -math.pi)
+
+
+def modAngleUnsigned(angle):
+    """
+    Return angle in the range: [0,2*pi)
+    :param angle:
+    :return:
+    """
+    return modAngle(angle, 0)
+
+
+def isAngleInArcCCW(angle, start, length):
+    """
+    Is angle within the given CCW arc (start,length)
+    :param angle:
+    :param start:
+    :param length:
+    :return:
+    """
+    return modAngleUnsigned(angle - start) <= length
+
+
+def clampAngleCCW(angle, start, length):
+    """
+    Given a CCW arc (start, length), clamp angle to be within the arc.
+    :param angle:
+    :param start:
+    :param length:
+    :return:
+    """
+    if isAngleInArcCCW(angle, start, length):
+        return angle
+
+    diff = modAngleSigned(angle - start + length / 2.0)
+    if diff > 0.0:
+        return start + length
+    else:
+        return start

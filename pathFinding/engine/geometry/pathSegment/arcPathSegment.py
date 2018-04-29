@@ -25,14 +25,33 @@ class ArcPathSegment(DefaultPathSegment):
         draw.drawArcObj(canvas, self.arc)
 
     def calcPointDebug(self, point):
-        timeParametric = self.lineSegment.closestPointParametric(point)
-        if timeParametric > 1.0:
-            timeParametric = 1.0
-        elif timeParametric < 0.0:
-            timeParametric = 0.0
-        closestPoint = self.lineSegment.getParametricPoint(timeParametric)
+        linePointDebug = self.linePointDebug(point)
+        arcPointDebug = self.arcPointDebug(point)
+        if linePointDebug[1] < arcPointDebug[1]:
+            pointDebug = linePointDebug
+            startTime = self.arcTime
+            segmentTime = self.lineTime
+        else:
+            pointDebug = arcPointDebug
+            startTime = 0.0
+            segmentTime = self.arcTime
+
+        timeInterp = pointDebug[2]
+        if timeInterp < 0.0:
+            timeInterp = 0.0
+        elif timeInterp > 1.0:
+            timeInterp = 1.0
+        time = startTime + timeInterp * segmentTime
+        return (pointDebug[0], pointDebug[1], time)
+
+    def arcPointDebug(self, point):
+        return self.arc.getPointDebug(point)
+
+    def linePointDebug(self, point):
+        timeInterp = self.lineSegment.closestPointParametric(point)
+        closestPoint = self.lineSegment.getParametricPoint(timeInterp)
         distance = np.linalg.norm(point - closestPoint)
-        return (closestPoint, distance, timeParametric * self.lineTime + self.arcTime)
+        return (closestPoint, distance, timeInterp)
 
     def intersectsLine(self, obstacleLine, obstacleLineVelocity):
         """

@@ -17,56 +17,6 @@ MAX_ANGLE_ERROR = 0.001
 MIN_ANGLE_ERROR_COS = math.cos(MAX_ANGLE_ERROR)
 
 
-def relativeAngleCCW(startVec, endVec):
-    """
-    How far you would have to turn, CCW, to go from startVec to endVec.  This will be in the range (-2*pi, 2*pi).
-    :param startVec:
-    :param endVec:
-    :return:
-    """
-
-    return math.atan2(endVec[1], endVec[0]) - math.atan2(startVec[1], startVec[0])
-
-    # sinRotate = startVec[0] * endVec[1] - startVec[1] * endVec[0]
-    # if np.dot(startVec, endVec) < 0.0:
-    #     return math.pi - math.asin(sinRotate)
-    # else:
-    #     return math.asin(sinRotate)
-
-
-def modAngle(angle, lowAngle):
-    """
-    Return angle in the range: [lowAngle, 2*pi+lowAngle)
-    :param angle:
-    :param lowAngle:
-    :return:
-    """
-    if angle < lowAngle:
-        return angle + 2.0 * math.pi
-    elif angle >= lowAngle + 2.0 * math.pi:
-        return angle - 2.0 * math.pi
-    else:
-        return angle
-
-
-def modAngleSigned(angle):
-    """
-    Return angle in the range: [-pi,pi)
-    :param angle:
-    :return:
-    """
-    return modAngle(angle, -math.pi)
-
-
-def modAngleUnsigned(angle):
-    """
-    Return angle in the range: [0,2*pi)
-    :param angle:
-    :return:
-    """
-    return modAngle(angle, 0)
-
-
 class ArcObstacleData(DefaultObstacleData):
     """
     Basic implementation of ObstacleData which produces simple line segments.  This assumes that the vehicle travels
@@ -108,7 +58,6 @@ class ArcFinder:
         self.finalVelocity = None
 
     def solve(self):
-
         solution = calcs.hitTargetAtSpeed(self.startPoint, self.speed, self.targetPoint, self.velocityOfTarget)
         if solution is None:
             raise NoSolutionException
@@ -133,8 +82,7 @@ class ArcFinder:
         raise NoSolutionException
 
     def iterateFindArc(self, desiredFinalDirection):
-
-        angleDiff = modAngleSigned(relativeAngleCCW(self.arc.endTangent, desiredFinalDirection))
+        angleDiff = calcs.modAngleSigned(calcs.relativeAngleCCW(self.arc.endTangent, desiredFinalDirection))
         newArcLength = self.arc.length + angleDiff
         if newArcLength < 0.0 or newArcLength > 2.0 * math.pi:
             raise NoSolutionException
@@ -142,5 +90,5 @@ class ArcFinder:
         self.arcTime = self.arc.length * self.arc.radius / self.speed
 
     def initialGuess(self, desiredFinalDirection):
-        self.arc.setLength(modAngleUnsigned(relativeAngleCCW(self.arc.endTangent, desiredFinalDirection)))
+        self.arc.setLength(calcs.modAngleUnsigned(calcs.relativeAngleCCW(self.arc.endTangent, desiredFinalDirection)))
         self.arcTime = self.arc.length * self.arc.radius / self.speed
