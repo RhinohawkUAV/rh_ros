@@ -19,7 +19,7 @@ obstacleInput = engine.InitialPathFindingInput(boundaryPoints, noFlyZoneInputs)
 pathInput = PointToPointInput(start, (0, 0), [end])
 
 # Example of loading scenario
-# scenario = engine.utils.loadScenario("../scenarios/test1.json")
+# scenario = engine.utils.loadScenario("../scenarios/arc1.json")
 # obstacleInput = scenario[engine.utils.OBSTACLE_INPUT_KEY]
 # pathInput = scenario[engine.utils.PATH_INPUT_KEY]
 

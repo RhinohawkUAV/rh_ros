@@ -98,7 +98,8 @@ class DefaultObstacleData(ObstacleData):
     def findPathSegments(self, startPoint, startVelocity):
         # type: (Sequence,Sequence)->[PathSegment]
 
-        pathSegments = []  # type: List[DefaultPathSegment]
+        rawPathSegments = []  # type: List[DefaultPathSegment]
+        filteredPathSegments = []  # type: List[DefaultPathSegment]
         for i in range(len(self.targetPoints)):
             velocityOfTarget = self.targetVelocities[i]
             targetPoint = self.targetPointsAtTime[i]
@@ -113,14 +114,18 @@ class DefaultObstacleData(ObstacleData):
                     relativeVelocity = pathSegment.endVelocity - velocityOfTarget
                     relativeVelocity /= np.linalg.norm((relativeVelocity))
                     if np.dot(relativeVelocity, pointNormal) >= cosLimit:
-                        pathSegments.append(pathSegment)
+                        rawPathSegments.append(pathSegment)
+                    else:
+                        filteredPathSegments.append(pathSegment)
 
-        filteredPathSegments = []
+        pathSegments = []
 
-        for pathSegment in pathSegments:
+        for pathSegment in rawPathSegments:
             if self.filterPathSegment(pathSegment, self.obstacleLinesAtTime):
+                pathSegments.append(pathSegment)
+            else:
                 filteredPathSegments.append(pathSegment)
-        return filteredPathSegments
+        return (pathSegments, filteredPathSegments)
 
     def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
         # type: () -> DefaultPathSegment

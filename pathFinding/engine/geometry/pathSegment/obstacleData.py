@@ -35,12 +35,13 @@ class ObstacleData:
         """
 
     def findPathSegments(self, startPoint, startVelocity):
-        # type: (Sequence,Sequence) -> [PathSegment]
+        # type: (Sequence,Sequence) -> ([PathSegment],[PathSegment])
         """
         Find legal path segments from a given starting point and velocity to vertices of no fly zones.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
         :param startPoint:
         :param startVelocity:
-        :return: a list of PathSegments describing routes from the start point to noFlyZone vertices.
+        :return: a list of PathSegments describing routes from the start point to noFlyZone vertices.  This 1st list of
+        valid path segments.  The 2nd list shows path segments that were filtered, for debugging purposes.
         """
         pass

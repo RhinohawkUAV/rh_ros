@@ -70,9 +70,10 @@ class DynamicPathFinderDrawable(Drawable):
         if not self.fp.isDone():
             self.fp._currentVertex.drawPath(canvas, color="orange", width=4.0)
             for pathSegment in self.fp._pathSegments:
-                velocity = pathSegment.endVelocity
-                destination = pathSegment.endPoint
-                gui.draw.drawLine(canvas, self.fp._currentVertex.position, destination, color=lineOfSightColor)
+                pathSegment.draw(canvas, color=lineOfSightColor)
+
+            for pathSegment in self.fp._filteredPathSegments:
+                pathSegment.draw(canvas, color=lineOfSightColor, filtered=True)
 
         if not self.fp._solution is None:
             self.fp._solution.drawPath(canvas, color="purple", width=4.0)

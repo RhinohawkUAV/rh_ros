@@ -1,3 +1,4 @@
+from engine.geometry import calcs
 from gui import Drawable
 from pointListEditor import PointListEditor
 from subGUI import SubGUI
@@ -21,3 +22,7 @@ class pathEditor(Drawable, SubGUI):
         if key == "v":
             if len(self._pathEdit.points) > 0:
                 self._pathEdit.startVelocity = point - self._pathEdit.points[0]
+        if key == "Delete":
+            if len(self._pathEdit.points) > 0:
+                (distance, index) = calcs.findClosestPoint(point, self._pathEdit.points)
+                self._pathEdit.points.pop(index)

@@ -5,6 +5,7 @@ import numpy as np
 from defaultPathSegment import DefaultPathSegment
 from engine.geometry import LineSegment
 from gui import draw
+from gui.draw import DEFAULT_COLOR, DEFAULT_DASH
 from pathSegment import PathSegment
 
 
@@ -15,8 +16,12 @@ class LinePathSegment(DefaultPathSegment):
         self.speed = speed
         self.lineSegment = LineSegment(startPoint, endPoint)
 
-    def draw(self, canvas, **kwargs):
-        draw.drawLine(canvas, self.startPoint, self.endPoint, arrow=tk.LAST)
+    def draw(self, canvas, color=DEFAULT_COLOR, filtered=False, **kwargs):
+        if filtered:
+            dash = DEFAULT_DASH
+        else:
+            dash = None
+        draw.drawLine(canvas, self.startPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash)
 
     def calcPointDebug(self, point):
         timeParametric = self.lineSegment.closestPointParametric(point)

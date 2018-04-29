@@ -13,6 +13,9 @@ class PathSegmentTester(Drawable, SubGUI):
         self._pointOfInterest = None
         self._obstacleDebug = None
         self._obstacleData = obstacleData
+        self._showPathsToPoints = False
+        self._pathSegments = []
+        self._filteredPathSegments = []
 
     def onLeftRelease(self, point, control=False):
         if control:
@@ -26,6 +29,9 @@ class PathSegmentTester(Drawable, SubGUI):
                 self._testEdit.velocityOfTarget = point - self._testEdit.targetPoint
             else:
                 self._testEdit.startVelocity = point - self._testEdit.startPoint
+
+        if key == "z":
+            self._showPathsToPoints = not self._showPathsToPoints
 
     def onMotion(self, point, control=False):
         self._pointOfInterest = point
@@ -54,6 +60,19 @@ class PathSegmentTester(Drawable, SubGUI):
                     time = pointTime
                     draw.drawPoint(canvas, closestPoint, radius=radius, color="orange")
                     self._obstacleDebug.draw(canvas, time=time, boundaryColor="red", nfzColor="blue")
+
+        if self._showPathsToPoints:
+            (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(
+                self._testEdit.startPoint,
+                self._testEdit.startVelocity)
+        else:
+            self._pathSegments = []
+            self._filteredPathSegments = []
+
+        for pathSegment in self._pathSegments:
+            pathSegment.draw(canvas)
+        for pathSegment in self._filteredPathSegments:
+            pathSegment.draw(canvas, filtered=True)
 
         targetPoint = self._testEdit.targetPoint + self._testEdit.velocityOfTarget * time
         draw.drawPoint(canvas, targetPoint, radius=radius, color=color)
