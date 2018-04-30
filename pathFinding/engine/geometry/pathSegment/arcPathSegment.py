@@ -5,7 +5,7 @@ import numpy as np
 from defaultPathSegment import DefaultPathSegment
 from engine.geometry import LineSegment
 from gui import draw
-from gui.draw import DEFAULT_COLOR, DEFAULT_DASH
+from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
 from pathSegment import PathSegment
 
 MAX_ARC_INTERPOLATION_ERROR = 4.0
@@ -24,13 +24,13 @@ class ArcPathSegment(DefaultPathSegment):
         self.linearPathPoints = arc.interpolate(MAX_ARC_INTERPOLATION_ERROR)
         self.linearPathPoints.append(endPoint)
 
-    def draw(self, canvas, filtered=False, color=DEFAULT_COLOR, **kwargs):
+    def draw(self, canvas, filtered=False, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
         if filtered:
             dash = DEFAULT_DASH
         else:
             dash = None
-        draw.drawLine(canvas, self.lineStartPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash)
-        draw.drawArcObj(canvas, self.arc, color=color, dash=dash)
+        draw.drawLine(canvas, self.lineStartPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
+        draw.drawArcObj(canvas, self.arc, color=color, dash=dash, width=width)
         for i in range(0, len(self.linearPathPoints) - 2):
             draw.drawLine(canvas, self.linearPathPoints[i], self.linearPathPoints[i + 1], color="orange", dash=dash)
 

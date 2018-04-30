@@ -3,6 +3,7 @@ import time
 import numpy as np
 
 from constants import NO_FLY_ZONE_POINT_OFFSET
+from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.vertex import UniqueVertexQueue
 from geometry import calcs
@@ -13,6 +14,7 @@ from vertex import Vertex
 class DynamicPathFinder:
     def __init__(self, initialPathFindingInput, maximumSpeed):
 
+        self._obstacleData = ArcObstacleData(NO_FLY_ZONE_POINT_OFFSET)
         self._obstacleData = LineSegmentObstacleData(NO_FLY_ZONE_POINT_OFFSET)
         self._obstacleData.setInitialState(initialPathFindingInput)
 

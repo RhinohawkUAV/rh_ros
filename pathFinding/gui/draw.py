@@ -26,9 +26,9 @@ def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
                        fill=color, **kwargs)
 
 
-def drawArc(canvas, center, radius, startAngle, endAngle, **kwargs):
+def drawArc(canvas, center, radius, startAngle, endAngle, color=DEFAULT_COLOR, **kwargs):
     canvas.create_arc(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, start=startAngle,
-                      extent=endAngle, **kwargs)
+                      extent=endAngle, outline=color, **kwargs)
 
 
 def drawArcObj(canvas, arc, **kwargs):

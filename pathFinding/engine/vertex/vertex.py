@@ -27,8 +27,8 @@ class Vertex(Drawable):
         self.pathSegment = pathSegment
 
     def drawPath(self, canvas, **kwargs):
-        if not self.previousVertex is None:
-            gui.draw.drawLine(canvas, self.previousVertex.position, self.position, **kwargs)
+        if self.previousVertex is not None:
+            self.pathSegment.draw(canvas, **kwargs)
             self.previousVertex.drawPath(canvas, **kwargs)
 
     def draw(self, canvas, **kwargs):
