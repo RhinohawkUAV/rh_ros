@@ -21,8 +21,18 @@ class ArcPathSegment(DefaultPathSegment):
         self.arc = arc
         self.arcTime = arcTime
         self.lineTime = self.time - self.arcTime
+
         self.linearPathPoints = arc.interpolate(MAX_ARC_INTERPOLATION_ERROR)
+        numArcSegments = len(self.linearPathPoints) - 1
+
         self.linearPathPoints.append(endPoint)
+
+        # Remember the start times for each path segment to individually query for collisions
+        self.linearPathStartTimes = []
+        for i in range(numArcSegments):
+            startTime = i * self.arcTime / numArcSegments
+            self.linearPathStartTimes.append(startTime)
+        self.linearPathStartTimes.append(self.arcTime)
 
     def draw(self, canvas, filtered=False, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
         if filtered:
@@ -60,9 +70,10 @@ class ArcPathSegment(DefaultPathSegment):
         distance = np.linalg.norm(point - closestPoint)
         return (closestPoint, distance, timeInterp)
 
-    def intersectsLine(self, obstacleLine):
+    def intersectsObstacleLine(self, startTime, obstacleLine):
         for i in range(0, len(self.linearPathPoints) - 1):
-            if obstacleLine.checkPathIntersectsLine(startPoint=self.linearPathPoints[i],
+            if obstacleLine.checkPathIntersectsLine(startTime + self.linearPathStartTimes[i],
+                                                    startPoint=self.linearPathPoints[i],
                                                     endPoint=self.linearPathPoints[i + 1],
                                                     speed=self.speed):
                 return True

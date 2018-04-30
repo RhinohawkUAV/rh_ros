@@ -12,7 +12,7 @@ class ObstacleLineSegment(LineSegment):
         LineSegment.__init__(self, p1, p2)
         self.velocity = velocity
 
-    def checkPathIntersectsLine(self, startPoint, endPoint, speed):
+    def checkPathIntersectsLine(self, startTime, startPoint, endPoint, speed):
         """
         Does a path from startPoint to endPoint, at the given speed intersect?
         """
@@ -33,4 +33,7 @@ class ObstacleLineSegment(LineSegment):
         # The new end point takes the same time to reach, but at a new offset heading
         endPoint = startPoint + velocity * t
 
-        return self.checkLineIntersection(startPoint, endPoint)
+        # Given the start time, this line will have moved.  Alternately, we offset the start and end points in the
+        # opposite direction
+        offset = -self.velocity * startTime
+        return self.checkLineIntersection(startPoint + offset, endPoint + offset)

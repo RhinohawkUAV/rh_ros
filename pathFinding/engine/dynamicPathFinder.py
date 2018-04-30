@@ -60,12 +60,12 @@ class DynamicPathFinder:
             self._computeTime += time.time()
             return False
 
-        self._obstacleData.setQueryTime(self._currentVertex.timeToVertex)
         self.checkPathToGoal()
         self._findPathsTime -= time.time()
         (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(
-            self._currentVertex.position,
-            self._currentVertex.velocity)
+            startTime=self._currentVertex.timeToVertex,
+            startPoint=self._currentVertex.position,
+            startVelocity=self._currentVertex.velocity)
         self._findPathsTime += time.time()
         for pathSegment in self._pathSegments:
             timeToVertex = self._currentVertex.timeToVertex + pathSegment.time
@@ -91,10 +91,11 @@ class DynamicPathFinder:
         :return:
         """
         self._findPathsTime -= time.time()
-        pathSegment = self._obstacleData.findPathSegment(self._currentVertex.position,
-                                                         self._currentVertex.velocity,
-                                                         self._goal,
-                                                         np.array((0, 0), np.double))
+        pathSegment = self._obstacleData.findPathSegment(startTime=self._currentVertex.timeToVertex,
+                                                         startPoint=self._currentVertex.position,
+                                                         startVelocity=self._currentVertex.velocity,
+                                                         targetPoint=self._goal,
+                                                         velocityOfTarget=np.array((0, 0), np.double))
         if pathSegment is not None:
             timeToGoal = self._currentVertex.timeToVertex + pathSegment.time
             self._findPathsTime += time.time()

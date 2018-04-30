@@ -27,13 +27,6 @@ class DefaultObstacleData(ObstacleData):
 
         self.obstacleLines = []
 
-        # A version of the target points at the current query time.  These are actually used to compute potential path
-        # segments
-        self.targetPointsAtTime = []
-
-        # A version of the obstacle lines blocking potential paths to the targets at the current query time
-        self.obstacleLinesAtTime = []
-
         # When finding paths to no fly zone vertices, this applies an "outward" offset to each vertex of this length
         self.targetOffsetLength = targetOffsetLength
 
@@ -77,32 +70,24 @@ class DefaultObstacleData(ObstacleData):
         self.targetPointsAtTime = self.targetPoints[:]
         self.obstacleLinesAtTime = self.obstacleLines[:]
 
-    def setQueryTime(self, time):
-        for i in range(len(self.targetPoints)):
-            self.targetPointsAtTime[i] = self.targetPoints[i] + self.targetVelocities[i] * time
-
-        for i in range(len(self.obstacleLines)):
-            offset = self.obstacleLines[i].velocity * time
-            self.obstacleLinesAtTime[i] = ObstacleLineSegment(self.obstacleLines[i].p1 + offset,
-                                                              self.obstacleLines[i].p2 + offset,
-                                                              self.obstacleLines[i].velocity)
-
-    def findPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+    def findPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
+        # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment or None
         pathSegment = self.createPathSegment(startPoint, startVelocity, targetPoint, velocityOfTarget)
 
-        if pathSegment is not None and self.filterPathSegment(pathSegment, self.obstacleLinesAtTime):
+        # TODO: Make startTime part of pathSegment?
+        if pathSegment is not None and self.filterPathSegment(startTime, pathSegment, self.obstacleLines):
             return pathSegment
         else:
             return None
 
-    def findPathSegments(self, startPoint, startVelocity):
-        # type: (Sequence,Sequence)->[PathSegment]
+    def findPathSegments(self, startTime, startPoint, startVelocity):
+        # type: (float,Sequence,Sequence) -> ([PathSegment],[PathSegment])
 
         rawPathSegments = []  # type: List[DefaultPathSegment]
         filteredPathSegments = []  # type: List[DefaultPathSegment]
         for i in range(len(self.targetPoints)):
             velocityOfTarget = self.targetVelocities[i]
-            targetPoint = self.targetPointsAtTime[i]
+            targetPoint = self.targetPoints[i] + self.targetVelocities[i] * startTime
 
             # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
             if not calcs.arePointsClose(startPoint, targetPoint):
@@ -121,7 +106,7 @@ class DefaultObstacleData(ObstacleData):
         pathSegments = []
 
         for pathSegment in rawPathSegments:
-            if self.filterPathSegment(pathSegment, self.obstacleLinesAtTime):
+            if self.filterPathSegment(startTime, pathSegment, self.obstacleLinesAtTime):
                 pathSegments.append(pathSegment)
             else:
                 filteredPathSegments.append(pathSegment)
@@ -140,9 +125,9 @@ class DefaultObstacleData(ObstacleData):
         """
         pass
 
-    def filterPathSegment(self, pathSegment, obstacleLines):
+    def filterPathSegment(self, startTime, pathSegment, obstacleLines):
         for i in range(len(obstacleLines)):
             obstacleLine = obstacleLines[i]
-            if pathSegment.intersectsLine(obstacleLine):
+            if pathSegment.intersectsObstacleLine(startTime, obstacleLine):
                 return False
         return True

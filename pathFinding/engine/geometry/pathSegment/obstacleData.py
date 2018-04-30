@@ -12,21 +12,13 @@ class ObstacleData:
         """
         pass
 
-    def setQueryTime(self, time):
-        """
-        Does whatever internal work is necessary to update obstacle data to allow queries to be performed at
-        the given time.
-        :param time:
-        :return:
-        """
-        pass
-
-    def findPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        # type: (Sequence,Sequence,Sequence,Sequence) -> PathSegment
+    def findPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
+        # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment
         """
         Find legal path segments from a given starting point and velocity to the moving target, ending at finalSpeed.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
 
+        :param startTime: the time at which the path starts
         :param startPoint: where the path starts
         :param startVelocity: the initial velocity, of the vehicle at the start of the path
         :param targetPoint: the destination point
@@ -34,11 +26,12 @@ class ObstacleData:
         :return:
         """
 
-    def findPathSegments(self, startPoint, startVelocity):
-        # type: (Sequence,Sequence) -> ([PathSegment],[PathSegment])
+    def findPathSegments(self, startTime, startPoint, startVelocity):
+        # type: (float,Sequence,Sequence) -> ([PathSegment],[PathSegment])
         """
         Find legal path segments from a given starting point and velocity to vertices of no fly zones.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
+        :param startTime: the time at which the path starts
         :param startPoint:
         :param startVelocity:
         :return: a list of PathSegments describing routes from the start point to noFlyZone vertices.  This 1st list of

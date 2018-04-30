@@ -33,5 +33,5 @@ class LinePathSegment(DefaultPathSegment):
         distance = np.linalg.norm(point - closestPoint)
         return (closestPoint, distance, timeParametric * self.time)
 
-    def intersectsLine(self, obstacleLine):
-        return obstacleLine.checkPathIntersectsLine(self.startPoint, self.endPoint, self.speed)
+    def intersectsObstacleLine(self, startTime, obstacleLine):
+        return obstacleLine.checkPathIntersectsLine(startTime, self.startPoint, self.endPoint, self.speed)
