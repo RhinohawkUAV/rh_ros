@@ -4,9 +4,11 @@ import numpy as np
 
 from constants import NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
-from engine.geometry import calcs, arc
+from engine.geometry import calcs
+from engine.geometry.arc import Arc
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 
+# TODO: Move to constants
 MAX_ITERATIONS = 4
 
 # There will be difference between an arc's exit velocity and the correct velocity vector.
@@ -36,6 +38,7 @@ class ArcObstacleData(DefaultObstacleData):
             return None
 
 
+# TODO: Move to calcs module
 class NoSolutionException(BaseException):
     pass
 
@@ -51,7 +54,7 @@ class ArcFinder:
         self.targetPoint = targetPoint
         self.velocityOfTarget = velocityOfTarget
 
-        self.arc = arc.createArc(self.startPoint, self.startVelocity, acceleration, rotationDirection)
+        self.arc = Arc(self.startPoint, self.startVelocity, acceleration, rotationDirection)
         self.totalTime = 0.0
         self.arcTime = 0.0
         self.endPoint = None

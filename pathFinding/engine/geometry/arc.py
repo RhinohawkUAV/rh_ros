@@ -6,19 +6,37 @@ from engine.geometry import calcs
 
 
 class Arc:
-    def __init__(self, center, radius, start, length=None, direction=1):
-        self.center = center
-        self.radius = radius
-        self.start = start
+    """
+    Represents an arc for the purposes of path finding.  An arc is created based on a starting position, velocity and
+    acceleration.  An arc can be CCW (direction = 1) or CW (direction = -1).  The initial length of the arc is 0.0 and
+    can be changed by calling the setLength() method.
+
+    Once setup a number of useful queries can be made:
+    1. endPoint and endTangent (position and direction of travel at the end of the arc of given length)
+    2. point debug which gets the closest point on the arc, to a given point, along with distance and time interpolation for display.
+    3. an interpolation into line segments for collision detection
+    """
+
+    def __init__(self, startPoint, startVelocity, acceleration, direction):
         self.direction = direction
-        if length is not None:
-            self.setLength(length)
-        else:
-            self.length = None
-            self.endPoint = None
-            self.endTangent = None
+        speed = np.linalg.norm(startVelocity)
+        startDirection = startVelocity / speed
+        self.radius = speed * speed / acceleration
+        fromCenterDir = -self.direction * calcs.CCWNorm(startDirection)
+        fromCenterToStart = fromCenterDir * self.radius
+
+        self.center = startPoint - fromCenterToStart
+        self.start = math.atan2(fromCenterToStart[1], fromCenterToStart[0])
+        self.length = 0.0
+        self.endPoint = startPoint
+        self.endTangent = startDirection
 
     def setLength(self, length):
+        """
+        Set the arc's length and calculate a new end point/tangent as well
+        :param length:
+        :return:
+        """
         self.length = length
         endAngle = self.start + self.length * self.direction
         arcEnd = np.array([math.cos(endAngle), math.sin(endAngle)])
@@ -26,6 +44,15 @@ class Arc:
         self.endPoint = self.center + self.radius * arcEnd
 
     def getPointDebug(self, point):
+        """
+        Helper for standard point debug info.  For a given nearby point, this calculates:
+        1. The closest point
+        2. The distance to closest point
+        3. The time interpolation along the arc (assumes constant speed currently).  This is a number [0,1]
+
+        :param point: a nearby point to analyze
+        :return: (closestPoint, distance, time interpolation)
+        """
         dir = point - self.center
         dirLength = np.linalg.norm(dir)
         if dirLength == 0.0:
@@ -51,12 +78,17 @@ class Arc:
         return (closestPoint, distance, timeInterp)
 
     def pointAtAngle(self, pointAngle):
+        """
+        Determine the point at the given angle.
+        :param pointAngle:
+        :return:
+        """
         return self.center + self.radius * np.array([math.cos(pointAngle), math.sin(pointAngle)])
 
     def interpolate(self, maxError):
         """
         Return a series of points along the arc for linear interpolation.  The maximum error (distance from a line
-        segment to a true point on the arc) defines how closely to perform the interpolation.
+        segment to a true point on the arc) defines the number of points in the interpolation.
         :param maxError: cannot exceed radius (the result will be single line interpolation whose error is radius).
         :return:
         """
@@ -77,14 +109,3 @@ class Arc:
             point = self.pointAtAngle(self.start + i * step)
             points.append(point)
         return points
-
-
-def createArc(startPoint, startVelocity, acceleration, rotationDirection):
-    speed = np.linalg.norm(startVelocity)
-    direction = startVelocity / speed
-    arcRadius = speed * speed / acceleration
-    fromCenterDir = -rotationDirection * calcs.CCWNorm(direction)
-    fromCenterToStart = fromCenterDir * arcRadius
-    arcCenter = startPoint - fromCenterToStart
-    arcStartAngle = math.atan2(fromCenterToStart[1], fromCenterToStart[0])
-    return Arc(arcCenter, arcRadius, arcStartAngle, 0.0)
