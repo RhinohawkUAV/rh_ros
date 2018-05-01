@@ -1,0 +1,25 @@
+{
+    "obstacleInput": {
+        "noFlyZones": [], 
+        "boundaryPoints": []
+    }, 
+    "testInput": {
+        "startVelocity": [
+            -1.7412935323383039, 
+            1.990049751243781
+        ], 
+        "targetPoint": [
+            73.75621890547264, 
+            85.19900497512438
+        ], 
+        "startPoint": [
+            55.97014925373134, 
+            88.18407960199005
+        ], 
+        "velocityOfTarget": [
+            -2.611940298507463, 
+            0.0
+        ]
+    }, 
+    "pathInput": null
+}
