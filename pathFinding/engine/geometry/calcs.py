@@ -314,3 +314,7 @@ def unitVectorOfAngle(angle, direction=1.0):
     """
     angle = angle * direction
     return np.array([math.cos(angle), math.sin(angle)], np.double)
+
+
+def unit(vector):
+    return vector / np.linalg.norm(vector)
