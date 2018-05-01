@@ -217,19 +217,20 @@ def rotate2dtrig(vec, cosAngle, sinAngle):
     return np.array([vec[0] * cosAngle - vec[1] * sinAngle, vec[1] * cosAngle + vec[0] * sinAngle], np.double)
 
 
-def relativeAngleCCW(startVec, endVec):
+def relativeAngle(startVec, endVec, direction=1.0):
     """
-    How far you would have to turn, CCW, to go from startVec to endVec.  This will be in the range (-2*pi, 2*pi).
+    How far you would have to turn, to go from startVec to endVec.  This will be in the range (-2*pi, 2*pi).
     :param startVec:
     :param endVec:
+    :param direction: CCW = 1, CW = -1
     :return:
     """
-
-    sinRotate = startVec[0] * endVec[1] - startVec[1] * endVec[0]
-    if np.dot(startVec, endVec) < 0.0:
-        return math.pi - math.asin(sinRotate)
-    else:
-        return math.asin(sinRotate)
+    return direction * (angleOfVector(endVec) - angleOfVector(startVec))
+    # sinRotate = startVec[0] * endVec[1] - startVec[1] * endVec[0]
+    # if np.dot(startVec, endVec) < 0.0:
+    #     return math.pi - math.asin(sinRotate)
+    # else:
+    #     return math.asin(sinRotate)
 
 
 def modAngle(angle, lowAngle):
@@ -292,3 +293,24 @@ def clampAngleCCW(angle, start, length):
         return start + length
     else:
         return start
+
+
+def angleOfVector(vector, direction=1.0):
+    """
+    Angle of a given vector [0,2*pi).  Defaults to CCW.
+    :param vector:
+    :param direction: CCW = 1, CW = -1
+    :return: corresponding unit vector
+    """
+    return modAngleUnsigned(direction * math.atan2(vector[1], vector[0]))
+
+
+def unitVectorOfAngle(angle, direction=1.0):
+    """
+    Unit vector corresponding to a given angle.  Defaults to CCW.
+    :param angle:
+    :param direction: CCW = 1, CW = -1
+    :return: corresponding unit vector
+    """
+    angle = angle * direction
+    return np.array([math.cos(angle), math.sin(angle)], np.double)

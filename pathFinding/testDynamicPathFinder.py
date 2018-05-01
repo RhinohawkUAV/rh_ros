@@ -13,7 +13,7 @@ boundaryPoints = [(0, 0), (0, 100), (100, 100), (100, 0)]
 noFlyZoneInputs = engine.utils.genRandomNoFlyZoneInputs(50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=2.0)
 obstacleInput = engine.InitialPathFindingInput(boundaryPoints, noFlyZoneInputs)
 
-pathInput = PointToPointInput(start, (-2, -2), [end])
+pathInput = PointToPointInput(start, (-2, -1), [end])
 
 # Example of loading scenario
 # scenario = engine.utils.loadScenario("../scenarios/arc1.json")

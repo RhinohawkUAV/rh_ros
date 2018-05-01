@@ -26,7 +26,8 @@ class Arc:
         fromCenterToStart = fromCenterDir * self.radius
 
         self.center = startPoint - fromCenterToStart
-        self.start = math.atan2(fromCenterToStart[1], fromCenterToStart[0])
+        self.start = calcs.angleOfVector(fromCenterToStart, self.direction)
+
         self.length = 0.0
         self.endPoint = startPoint
         self.endTangent = startDirection
@@ -38,8 +39,9 @@ class Arc:
         :return:
         """
         self.length = length
-        endAngle = self.start + self.length * self.direction
-        arcEnd = np.array([math.cos(endAngle), math.sin(endAngle)])
+        endAngle = self.start + self.length
+        arcEnd = calcs.unitVectorOfAngle(endAngle, self.direction)
+
         self.endTangent = self.direction * calcs.CCWNorm(arcEnd)
         self.endPoint = self.center + self.radius * arcEnd
 
@@ -53,15 +55,15 @@ class Arc:
         :param point: a nearby point to analyze
         :return: (closestPoint, distance, time interpolation)
         """
-        dir = point - self.center
-        dirLength = np.linalg.norm(dir)
+        fromCenterDir = point - self.center
+        dirLength = np.linalg.norm(fromCenterDir)
         if dirLength == 0.0:
             # At center of circle we have to pick an arbitrary direction which is closest
-            dir = np.array([1.0, 0.0], np.double)
+            fromCenterDir = np.array([1.0, 0.0], np.double)
         else:
-            dir /= dirLength
+            fromCenterDir /= dirLength
 
-        pointAngle = math.atan2(dir[1], dir[0])
+        pointAngle = calcs.angleOfVector(fromCenterDir, self.direction)
 
         # Clamp the angle to be between start and end of the arc
         pointAngle = calcs.clampAngleCCW(pointAngle, self.start, self.length)
@@ -83,7 +85,7 @@ class Arc:
         :param pointAngle:
         :return:
         """
-        return self.center + self.radius * np.array([math.cos(pointAngle), math.sin(pointAngle)])
+        return self.center + self.radius * calcs.unitVectorOfAngle(pointAngle, self.direction)
 
     def interpolate(self, maxError):
         """

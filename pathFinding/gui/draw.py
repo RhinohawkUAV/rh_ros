@@ -32,4 +32,6 @@ def drawArc(canvas, center, radius, startAngle, endAngle, color=DEFAULT_COLOR, *
 
 
 def drawArcObj(canvas, arc, **kwargs):
-    drawArc(canvas, arc.center, arc.radius, math.degrees(arc.start), math.degrees(arc.length), style=ARC, **kwargs)
+    drawArc(canvas, arc.center, arc.radius, math.degrees(arc.start) * arc.direction,
+            math.degrees(arc.length) * arc.direction,
+            style=ARC, **kwargs)
