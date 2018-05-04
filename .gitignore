@@ -6,3 +6,5 @@
 /rhinoPathFinding.egg-info/
 rhinoPathFinding*.egg
 /pathFinding/C/build
+.project
+.pydevproject
