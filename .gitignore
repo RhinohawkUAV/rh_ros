@@ -5,3 +5,4 @@
 /pathFinding.engine/scenarios/
 /rhinoPathFinding.egg-info/
 rhinoPathFinding*.egg
+/pathFinding/C/build
