@@ -3,3 +3,5 @@
 /pathfinding.iml
 /pathFinding.engine/rhinoPathFinding.egg-info/
 /pathFinding.engine/scenarios/
+/rhinoPathFinding.egg-info/
+rhinoPathFinding*.egg
