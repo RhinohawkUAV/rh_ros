@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#
-# Mission controller for Rhinohawk
-#
+"""
+ROS node implementing a higher level navigation controller via Mavros
+"""
 
 import threading
 import traceback
@@ -17,8 +17,8 @@ from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
     WaypointPush, WaypointClear
 
 from obc_solo.srv import TakeOff, TakeOffResponse
-from obc_solo.srv import Land, LandResponse 
-from obc_solo.srv import FlyTo, FlyToResponse 
+from obc_solo.srv import Land, LandResponse
+from obc_solo.srv import FlyTo, FlyToResponse
 from latch import LatchMap
 
 MAV_GLOBAL_FRAME = 3
@@ -78,7 +78,7 @@ def find_gps_topic(op_name, any_gps=False):
 
 
 def set_custom_mode(custom_mode):
-    
+
     base_mode = 0
 
     done_evt = threading.Event()
@@ -114,19 +114,19 @@ def do_takeoff_cur_gps(min_pitch, yaw, altitude):
 
     #fix = rospy.wait_for_message(gps_topic, NavSatFix, timeout=10)
     fix = values.get_value(gps_topic)
-    if not fix: 
+    if not fix:
         rospy.logerr("No GPS fix is latched")
         return
-        
-    rospy.loginfo("Taking-off from current coord: Lat: %f Long %f", 
+
+    rospy.loginfo("Taking-off from current coord: Lat: %f Long %f", \
             fix.latitude, fix.longitude)
-    rospy.loginfo("With desired Altitude: %f, Yaw: %f, Pitch angle: %f", 
+    rospy.loginfo("With desired Altitude: %f, Yaw: %f, Pitch angle: %f", \
             altitude, yaw, min_pitch)
     try:
-        ret = takeoff(min_pitch=min_pitch,
-                         yaw=yaw,
-                         latitude=fix.latitude,
-                         longitude=fix.longitude,
+        ret = takeoff(min_pitch=min_pitch, \
+                         yaw=yaw, \
+                         latitude=fix.latitude, \
+                         longitude=fix.longitude, \
                          altitude=altitude)
     except rospy.ServiceException:
         rospy.logerr('Error taking off:\n' + ''.join(traceback.format_stack()))
@@ -147,16 +147,16 @@ def do_land_cur_gps(yaw, altitude):
         rospy.logerr("No GPS fix is latched")
         return
 
-    rospy.loginfo("Landing on current coord: Lat: %f Long: %f", 
+    rospy.loginfo("Landing on current coord: Lat: %f Long: %f", \
             fix.latitude, fix.longitude)
-    rospy.loginfo("With desired Altitude: %f, Yaw: %f", 
+    rospy.loginfo("With desired Altitude: %f, Yaw: %f", \
             altitude, yaw)
 
     try:
-        ret = land(min_pitch=0.0,
-                      yaw=yaw,
-                      latitude=fix.latitude,
-                      longitude=fix.longitude,
+        ret = land(min_pitch=0.0, \
+                      yaw=yaw, \
+                      latitude=fix.latitude, \
+                      longitude=fix.longitude, \
                       altitude=altitude)
     except rospy.ServiceException:
         rospy.logerr('Error landing:\n' + ''.join(traceback.format_stack()))
@@ -170,8 +170,8 @@ def do_land_cur_gps(yaw, altitude):
 
 
 def handle_takeoff(req):
-    
-    if not(req.altitude):
+
+    if not req.altitude:
         raise Exception("Parameter 'altitude' is required")
 
     rospy.loginfo("Take off and loiter at %f meters" % req.altitude)
@@ -195,7 +195,7 @@ def handle_land(req):
     # `rosrun mavros mavcmd land 0 0 0 0.0`
 
     rospy.loginfo("Landing...")
- 
+
     if not do_land_cur_gps(0, 0):
         return LandResponse(False)
 
@@ -250,7 +250,7 @@ def mission_planner(lat0, lon0, lat, lon, cruise_alt):
     w0 = wp_takeoff(lat0, lon0, cruise_alt)
     w0.is_current = True
     w1 = waypoint(lat, lon, cruise_alt, 0)
-    w2 = wp_land(lat, lon, 0) 
+    w2 = wp_land(lat, lon, 0)
     return [w0, w1, w2]
 
 
