@@ -67,22 +67,22 @@ class StaticSearchGraph(Drawable):
         del self._unvisitedVertices[minVertex.data]
         return minVertex
 
-    def traverseLeastPath(self, end, func):
-        vertex = end
+    def traverseLeastPath(self, endPoint, func):
+        vertex = endPoint
         while not vertex is None:
             func(vertex)
             vertex = vertex.previous
 
     def setEmphasizedPathEnd(self, endPoint):
-        """Sets the end point of the shortest path to emphasize"""
+        """Sets the endPoint point of the shortest path to emphasize"""
         self._emphasizedPathEnd = self.getVisitedVertex(endPoint)
 
-    def drawLeastPath(self, end, canvas):
+    def drawLeastPath(self, endPoint, canvas):
         def drawLine(vertex):
             if not vertex.previous is None:
                 gui.draw.drawLine(canvas, vertex.data, vertex.previous.data, width=4, color="orange")
 
-        self.traverseLeastPath(end, drawLine)
+        self.traverseLeastPath(endPoint, drawLine)
 
     def draw(self, canvas, **kwargs):
         for vertex in self._unvisitedVertices.values():

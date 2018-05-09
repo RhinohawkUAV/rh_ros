@@ -1,38 +1,28 @@
 import time
 
-import numpy as np
-
 from constants import NO_FLY_ZONE_POINT_OFFSET
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.vertex import UniqueVertexQueue
 from geometry import calcs
-from gui.editor.pathSegmentTester.obstacleDebug import ObstacleCourseDebug
+import numpy as np
 from vertex import Vertex
 
 
 class DynamicPathFinder:
-    def __init__(self, initialPathFindingInput, maximumSpeed):
 
-        self._obstacleData = ArcObstacleData(NO_FLY_ZONE_POINT_OFFSET)
+    def __init__(self, scenario, vehicle):
+
+        self._obstacleData = ArcObstacleData(vehicle.acceleration)
         # self._obstacleData = LineSegmentObstacleData(NO_FLY_ZONE_POINT_OFFSET)
-        self._obstacleData.setInitialState(initialPathFindingInput)
+        self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
-        bounds = initialPathFindingInput.calcBounds()
-        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2], bounds[3], maximumSpeed)
+        bounds = scenario.calcBounds()
+        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2], bounds[3], vehicle.maxSpeed)
 
-        self._obstacleCourseDebug = ObstacleCourseDebug(initialPathFindingInput.boundaryPoints,
-                                                        initialPathFindingInput.noFlyZones)
-
-    def findPath(self, pointToPointInput):
-        self.initFindPath(pointToPointInput)
-        while not self.isDone():
-            self.step()
-
-    def initFindPath(self, pointToPointInput):
-        self._start = np.array(pointToPointInput.startPosition, np.double)
-        self._goal = np.array(pointToPointInput.targetPoints[0], np.double)
-        velocity = np.array(pointToPointInput._startVelocity, np.double)
+        self._start = np.array(scenario.startPoint, np.double)
+        self._goal = np.array(scenario.wayPoints[0], np.double)
+        velocity = np.array(scenario.startVelocity, np.double)
         self._currentVertex = Vertex(position=self._start,
                                      velocity=velocity,
                                      timeToVertex=0.0,
@@ -48,6 +38,10 @@ class DynamicPathFinder:
         self._computeTime = 0.0
         self._findPathsTime = 0.0
         self._queueComputeTime = 0.0
+
+    def findPath(self):
+        while not self.isDone():
+            self.step()
 
     def isDone(self):
         return self._vertexQueue.isEmpty()

@@ -1,6 +1,6 @@
-from gui import Drawable, draw
-from gui.editor.nfzEdit import editableNoFlyZone
- 
+import editableNoFlyZone
+from gui import Drawable
+
 
 class EditableNoFlyZoneList(Drawable):
 
@@ -53,9 +53,9 @@ class EditableNoFlyZoneList(Drawable):
         return noFlyZonesInside
 
     def asInput(self):
-        noFlyZoneInputs = []
+        noFlyZones = []
         uniqueID = 0
         for editableNoFlyZone in self.noFlyZones:
-            noFlyZoneInputs.append(editableNoFlyZone.asInput(uniqueID))
+            noFlyZones.append(editableNoFlyZone.asInput(uniqueID))
             uniqueID += 1
-        return noFlyZoneInputs
+        return noFlyZones

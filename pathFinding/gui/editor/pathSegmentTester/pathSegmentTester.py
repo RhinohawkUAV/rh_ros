@@ -1,5 +1,6 @@
 import Tkinter as tk
-from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
+from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
+from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY, VEHICLE_KEY
 from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE
 from gui.editor.subGUI import SubGUI
@@ -8,8 +9,8 @@ from obstacleDebug import ObstacleCourseDebug
 
 class PathSegmentTester(Drawable, SubGUI):
 
-    def __init__(self, obstacleData):
-        self._obstacleData = obstacleData
+    def __init__(self):
+        self._obstacleData = None
         self._pointOfInterest = None
         self._obstacleDebug = None
         self._showPathsToPoints = False
@@ -35,11 +36,13 @@ class PathSegmentTester(Drawable, SubGUI):
     def onMotion(self, point, control=False):
         self._pointOfInterest = point
 
-    def onSwitch(self, debugInput):
-        SubGUI.onSwitch(self, debugInput)
-        self._obstacleDebug = ObstacleCourseDebug(self._inputDict[SCENARIO_KEY].boundaryPoints,
-                                                  self._inputDict[SCENARIO_KEY].noFlyZones)
+    def onSwitch(self, inputDict):
+        SubGUI.onSwitch(self, inputDict)
+        self._obstacleData = ArcObstacleData(self._inputDict[VEHICLE_KEY].acceleration)
         self._obstacleData.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
+                                                  self._inputDict[SCENARIO_KEY].noFlyZones)
+        
+        self._obstacleDebug = ObstacleCourseDebug(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
 
     def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):

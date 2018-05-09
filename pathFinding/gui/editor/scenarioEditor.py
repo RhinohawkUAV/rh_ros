@@ -32,7 +32,7 @@ class ScenarioEditor(Visualizer, Drawable):
         self._nfzEditor = NFZEditor()
         self._boundaryBuilder = BoundaryBuilder()
         self._wayPointEditor = WayPointEditor()
-        self._pathSegmentTester = PathSegmentTester(ArcObstacleData())
+        self._pathSegmentTester = PathSegmentTester()
 
         self._modeMap = {"i": self._nfzBuilder,
                          "e": self._nfzEditor,

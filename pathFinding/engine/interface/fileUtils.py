@@ -59,7 +59,7 @@ def loadInput(fileName):
     
     inputDict[SCENARIO_KEY] = scenarioInput
 
-    vehicleInput = VehicleInput(fileDict[VEHICLE_KEY]["acceleration"])
+    vehicleInput = VehicleInput(fileDict[VEHICLE_KEY]["maxSpeed"], fileDict[VEHICLE_KEY]["acceleration"])
     inputDict[VEHICLE_KEY] = vehicleInput
 
     if fileDict.has_key(TEST_INPUT_KEY):

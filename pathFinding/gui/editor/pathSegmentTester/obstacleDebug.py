@@ -28,10 +28,10 @@ class ObstacleCourseDebug:
     Class for visual tracking/displaying information about the boundary and no fly zones over time.
     """
 
-    def __init__(self, boundaryPoints, noFlyZoneInputs):
+    def __init__(self, boundaryPoints, noFlyZones):
         self.boundaryPoints = boundaryPoints
         self.noFlyZonesDebug = []
-        for noFlyZoneInput in noFlyZoneInputs:
+        for noFlyZoneInput in noFlyZones:
             self.noFlyZonesDebug.append(NoFlyZoneDebug(noFlyZoneInput))
 
     def draw(self, canvas, time=0.0, boundaryColor=DEFAULT_COLOR, nfzColor=DEFAULT_COLOR, **kwargs):

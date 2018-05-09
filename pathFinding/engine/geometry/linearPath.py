@@ -3,12 +3,12 @@ from engine.geometry import LineSegment
 
 class LinearPath:
     """
-    Represents a path from start to end at a given speed.
+    Represents a path from startPoint to endPoint at a given speed.
     """
 
-    def __init__(self, start, end, speed):
-        self._startPoint = start
-        self._endPoint = end
+    def __init__(self, startPoint, endPoint, speed):
+        self._startPoint = startPoint
+        self._endPoint = endPoint
         self._speed = speed
         self._lineSegment = LineSegment(self._startPoint, self._endPoint)
 

@@ -1,12 +1,11 @@
 import math
 
-import numpy as np
-
-from constants import NO_FLY_ZONE_POINT_OFFSET, TURN_ACCELERATION
+from constants import NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs
 from engine.geometry.arc import Arc
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
+import numpy as np
 
 # TODO: Move to constants
 MAX_ITERATIONS = 4
@@ -25,18 +24,19 @@ class ArcObstacleData(DefaultObstacleData):
     at a constant speed and that it is only limited by a maximum turning angle, which ignores speed.
     """
 
-    def __init__(self, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
+    def __init__(self, acceleration, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
         DefaultObstacleData.__init__(self, targetOffsetLength)
+        self.acceleration = acceleration
 
     def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        arcFinderCCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, TURN_ACCELERATION)
+        arcFinderCCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
         try:
             arcFinderCCW.solve()
             timeCCW = arcFinderCCW.totalTime
         except NoSolutionException:
             timeCCW = float("inf")
 
-        arcFinderCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, -1.0, TURN_ACCELERATION)
+        arcFinderCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, -1.0, self.acceleration)
         try:
             arcFinderCW.solve()
             timeCW = arcFinderCW.totalTime

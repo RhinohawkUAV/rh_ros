@@ -1,54 +1,9 @@
-import json
 import math
 import random
 
-import numpy as np
-
 from engine.geometry import LineSegment
-from engine.interface import initialPathFindingInput, pointToPointInput
 from noFlyZoneInput import NoFlyZoneInput
-
-OBSTACLE_INPUT_KEY = "obstacleInput"
-PATH_INPUT_KEY = "pathInput"
-TEST_INPUT_KEY = "testInput"
-
-
-class Encoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif callable(getattr(obj, "toJSONDict", None)):
-            return obj.toJSONDict()
-        else:
-            return obj.__dict__
-
-
-def saveScenario(fileName, obstacleCourseEdit, pathEdit, extraDict=None):
-    file = open(fileName, 'w')
-    output = {}
-    output[OBSTACLE_INPUT_KEY] = obstacleCourseEdit
-    output[PATH_INPUT_KEY] = pathEdit
-    if extraDict is not None:
-        output.update(extraDict)
-    json.dump(output, file, cls=Encoder, indent=4)
-    file.close()
-
-
-def loadScenario(fileName):
-    file = open(fileName, 'r')
-    scenarioDict = json.load(file)
-    file.close()
-
-    pathInput = None
-    obstacleInput = None
-
-    if scenarioDict.has_key(OBSTACLE_INPUT_KEY) and scenarioDict[OBSTACLE_INPUT_KEY] is not None:
-        scenarioDict[OBSTACLE_INPUT_KEY] = initialPathFindingInput.fromJSONDict(scenarioDict[OBSTACLE_INPUT_KEY])
-
-    if scenarioDict.has_key(PATH_INPUT_KEY) and scenarioDict[PATH_INPUT_KEY] is not None:
-        scenarioDict[PATH_INPUT_KEY] = pointToPointInput.fromJSONDict(scenarioDict[PATH_INPUT_KEY])
-
-    return scenarioDict
+import numpy as np
 
 
 def genRandomNoFlyZoneInputs(numNoFlyZones, x, y, width, height, minFraction, maxFraction, minSpeed=0.0, maxSpeed=0.0):

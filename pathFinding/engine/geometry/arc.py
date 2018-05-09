@@ -1,8 +1,7 @@
 import math
 
-import numpy as np
-
 from engine.geometry import calcs
+import numpy as np
 
 
 class Arc:

@@ -83,7 +83,7 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     What is the velocity vector the projectile should follow to hit the moving target?
     Where will the projectile collide with the target?
 
-    Note: We start knowing the speed of the projectile, but not the velocity.
+    Note: We startPoint knowing the speed of the projectile, but not the velocity.
 
     :param projectileStart: where craft starts
     :param projectileSpeed: magnitude of craft's velocity
@@ -92,7 +92,7 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     :return: StraightPathSolution or None, if speed is insufficient given position
     """
 
-    # Vector heading from start towards point
+    # Vector heading from startPoint towards point
     towards = targetStartPoint - projectileStart
     towardsMagSquared = np.dot(towards, towards)
     velDotTowards = np.dot(towards, targetVelocity)
@@ -266,33 +266,33 @@ def modAngleUnsigned(angle):
     return modAngle(angle, 0)
 
 
-def isAngleInArcCCW(angle, start, length):
+def isAngleInArcCCW(angle, startPoint, length):
     """
-    Is angle within the given CCW arc (start,length)
+    Is angle within the given CCW arc (startPoint,length)
     :param angle:
-    :param start:
+    :param startPoint:
     :param length:
     :return:
     """
-    return modAngleUnsigned(angle - start) <= length
+    return modAngleUnsigned(angle - startPoint) <= length
 
 
-def clampAngleCCW(angle, start, length):
+def clampAngleCCW(angle, startPoint, length):
     """
-    Given a CCW arc (start, length), clamp angle to be within the arc.
+    Given a CCW arc (startPoint, length), clamp angle to be within the arc.
     :param angle:
-    :param start:
+    :param startPoint:
     :param length:
     :return:
     """
-    if isAngleInArcCCW(angle, start, length):
+    if isAngleInArcCCW(angle, startPoint, length):
         return angle
 
-    diff = modAngleSigned(angle - start + length / 2.0)
+    diff = modAngleSigned(angle - startPoint + length / 2.0)
     if diff > 0.0:
-        return start + length
+        return startPoint + length
     else:
-        return start
+        return startPoint
 
 
 def angleOfVector(vector, direction=1.0):

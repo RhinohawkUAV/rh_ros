@@ -36,38 +36,38 @@ class NoFlyZoneLegacy(Drawable):
             offsetPoint = self._points[i] + pointNormal * NO_FLY_ZONE_POINT_OFFSET
             self._offsetPoints.append(offsetPoint)
 
-    def checkBlocksPath(self, start, end, speed):
+    def checkBlocksPath(self, startPoint, endPoint, speed):
         """
-        Does this moving no-fly-zone, block a path from start to end and the given speed?
+        Does this moving no-fly-zone, block a path from startPoint to endPoint and the given speed?
 
         To solve this we convert the problem to the case the no-fly-zone is not moving, by
         offsetting the velocity of the moving object.
 
-        :param start:
-        :param end:
-        :param speed: MUST BE POSITIVE unless start==end (hovering in place)
+        :param startPoint:
+        :param endPoint:
+        :param speed: MUST BE POSITIVE unless startPoint==endPoint (hovering in place)
         :return:
         """
 
-        direction = end - start
+        direction = endPoint - startPoint
         distance = np.linalg.norm(direction)
         if distance == 0.0:
             return False
 
-        # velocity vector - has magnitude in speed heading in velocity from start to end
+        # velocity vector - has magnitude in speed heading in velocity from startPoint to endPoint
         velocity = (speed / distance) * direction
 
         # Offset velocity by the velocity of the no-fly-zone (pretend it is not moving)
         velocity -= self._velocity
 
-        # Time to get from start to end
+        # Time to get from startPoint to endPoint
         t = distance / speed
 
-        # The new end point takes the same time to reach, but at a new offset heading
-        end = start + velocity * t
+        # The new endPoint point takes the same time to reach, but at a new offset heading
+        endPoint = startPoint + velocity * t
 
         for line in self._lines:
-            if line.checkLineIntersection(start, end):
+            if line.checkLineIntersection(startPoint, endPoint):
                 return True
         return False
 
@@ -84,7 +84,7 @@ class NoFlyZoneLegacy(Drawable):
         """
         result = []
         for point in self._offsetPoints:
-            # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
+            # startPosition will typically be a NFZ vertex.  We want to eliminate search from a startPoint position to itself.
             if not engine.geometry.calcs.arePointsClose(startPosition, point):
                 solution = engine.geometry.calcs.hitTargetAtSpeed(startPosition, speed, point, self._velocity)
                 if not solution is None:

@@ -1,6 +1,7 @@
 import copy
 
 from dynamicPathFinderDrawable import DynamicPathFinderDrawable
+from gui.editor.pathSegmentTester.obstacleDebug import ObstacleCourseDebug
 from gui.visualizer import Visualizer
 
 # TODO: Not currently used
@@ -13,10 +14,11 @@ class DynamicPathFindingVisualizer(Visualizer):
     Visualizes the dynamic path finding process.
     """
 
-    def __init__(self, dynamicPathFinder, *args, **kwargs):
+    def __init__(self, dynamicPathFinder, scenario, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
         self._resetDynamicPathFinder = dynamicPathFinder
         self._dynamicPathFinder = copy.deepcopy(self._resetDynamicPathFinder)
+        self._obstacleCourseDebug = ObstacleCourseDebug(scenario.boundaryPoints, scenario.noFlyZones)
         self.pointOfInterest = None
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Button-1>', self.onLeftClick)
@@ -40,5 +42,5 @@ class DynamicPathFindingVisualizer(Visualizer):
         self.updateDisplay()
 
     def updateDisplay(self):
-        drawable = DynamicPathFinderDrawable(self._dynamicPathFinder)
+        drawable = DynamicPathFinderDrawable(self._dynamicPathFinder, self._obstacleCourseDebug)
         self.drawToCanvas(drawable, pointOfInterest=self.pointOfInterest, snapDistance=5.0)

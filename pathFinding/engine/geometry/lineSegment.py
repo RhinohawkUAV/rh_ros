@@ -55,7 +55,7 @@ class LineSegment(Drawable):
         return math.fabs(np.dot(self.n, p1diff))
 
     def projectPoint(self, point):
-        # Distance to one-sided line segment, from start, in the direction of the normal.
+        # Distance to one-sided line segment, from startPoint, in the direction of the normal.
         p1diff = point - self.p1
         normalDistance = np.dot(self.n, p1diff)
         return point - (self.n * normalDistance)
@@ -77,55 +77,55 @@ class LineSegment(Drawable):
         parametric = self.closestPointParametric(point)
         return self.getParametricPoint(parametric)
 
-    def checkLineIntersection(self, start, end):
+    def checkLineIntersection(self, startPoint, endPoint):
         """
         TODO: Consider how we want to handle edge cases and tolerance
 
         Determine if the directed line segment, from p1 to p2, intersects this one-sided line segment.
 
-        Only considered an intersection if velocity from start to end is opposed the normal vector of the line.
-        If the velocity from start to end is parallel, then it does not count.
+        Only considered an intersection if velocity from startPoint to endPoint is opposed the normal vector of the line.
+        If the velocity from startPoint to endPoint is parallel, then it does not count.
         Intersection with an endpoint of this one-sided line segment does count.
 
         These decisions more or less give us the desired outcomes when considering tracings around the outside of a polygon.
         The only bad case is when parallel segments of different polygons align exactly.
         We may want to add a tolerance to be sure that we can't ever pick a line exactly through 2 endpoints of a line segments in a polygon
 
-        :param start: (x,y) 1st point of the line
-        :param end: (x,y) 2nd point of the line
+        :param startPoint: (x,y) 1st point of the line
+        :param endPoint: (x,y) 2nd point of the line
         :return: is there an intersection
         """
 
-        # Distance to one-sided line segment, from start, in the direction of the normal.
-        p1diff = start - self.p1
+        # Distance to one-sided line segment, from startPoint, in the direction of the normal.
+        p1diff = startPoint - self.p1
         normalDistanceP1 = np.dot(self.n, p1diff)
 
-        # If this is negative then start is "behind" the one-sided line-segment and no intersection is possible.
+        # If this is negative then startPoint is "behind" the one-sided line-segment and no intersection is possible.
         if normalDistanceP1 < 0.0:
             return False
 
-        # Distance to one-sided line segment, from end, in the direction of the normal.
-        p2diff = end - self.p1
+        # Distance to one-sided line segment, from endPoint, in the direction of the normal.
+        p2diff = endPoint - self.p1
         normalDistanceP2 = np.dot(self.n, p2diff)
 
-        # If this is positive then end is "in front of" the one-sided line-segment and no intersection is possible.
+        # If this is positive then endPoint is "in front of" the one-sided line-segment and no intersection is possible.
         if normalDistanceP2 > 0.0:
             return False
 
         # The diff vector of the line segment
-        lineDir = end - start
+        lineDir = endPoint - startPoint
 
         # Equivalent of: normalDirection = dot(n,lineDir).  We don't normalize as the magnitude of this cancels out with itself later.
         normalDirection = normalDistanceP2 - normalDistanceP1
 
-        # As you move from start towards end you approach intersection with the infinite line defined by the one-sided
-        # line segment. The crossing point will be at start + lineDir * t, for some t.
+        # As you move from startPoint towards endPoint you approach intersection with the infinite line defined by the one-sided
+        # line segment. The crossing point will be at startPoint + lineDir * t, for some t.
         # t is just the ratio below:
         t = -normalDistanceP1 / normalDirection
 
         # While moving towards the line perpendicularly, we also moved along the line tangentially.
-        # We don't care how far we moved in absolute space, only in "tangent-unit-space".  In this space start is 0, end is 1.
-        # The provided invTan vector _points in the velocity from start to end with the inverse magnitude of the length between them.
+        # We don't care how far we moved in absolute space, only in "tangent-unit-space".  In this space startPoint is 0, endPoint is 1.
+        # The provided invTan vector _points in the velocity from startPoint to endPoint with the inverse magnitude of the length between them.
         parametric = np.dot(p1diff + lineDir * t, self.invTan)
 
         return parametric >= 0 and parametric <= 1

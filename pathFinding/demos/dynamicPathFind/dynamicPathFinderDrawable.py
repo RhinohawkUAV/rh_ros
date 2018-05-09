@@ -1,13 +1,15 @@
 from Tkinter import Canvas
 
-import gui
 from engine.geometry import calcSegmentsPointDebug
 from gui import Drawable
+import gui
 
 
 class DynamicPathFinderDrawable(Drawable):
-    def __init__(self, fp):
+
+    def __init__(self, fp, obstacleCourseDebug):
         self.fp = fp
+        self._obstacleCourseDebug = obstacleCourseDebug
 
     def getPathSegments(self, pathEndVertices):
         pathSegments = []
@@ -58,7 +60,7 @@ class DynamicPathFinderDrawable(Drawable):
                 searchPaths.append(self.fp._solution)
             (closestPoint, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance, searchPaths)
 
-        self.fp._obstacleCourseDebug.draw(canvas, time=drawTime, boundaryColor="red", nfzColor="black")
+        self._obstacleCourseDebug.draw(canvas, time=drawTime, boundaryColor="red", nfzColor="black")
 
         gui.draw.drawPoint(canvas, self.fp._start, color="black")
         gui.draw.drawPoint(canvas, self.fp._goal, color="black")
@@ -73,9 +75,9 @@ class DynamicPathFinderDrawable(Drawable):
             self.fp._currentVertex.drawPath(canvas, color="orange", width=4.0)
             for pathSegment in self.fp._pathSegments:
                 pathSegment.draw(canvas, color=lineOfSightColor)
-
-            # for pathSegment in self.fp._filteredPathSegments:
-            #     pathSegment.draw(canvas, color=lineOfSightColor, filtered=True)
+ 
+#             for pathSegment in self.fp._filteredPathSegments:
+#                 pathSegment.draw(canvas, color=lineOfSightColor, filtered=True)
 
         if not self.fp._solution is None:
             self.fp._solution.drawPath(canvas, color="purple", width=4.0)
