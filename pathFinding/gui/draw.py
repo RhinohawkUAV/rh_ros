@@ -77,7 +77,3 @@ def drawScenario(canvas, scenarioInput, **kwargs):
         drawPoly(canvas, scenarioInput.boundaryPoints, color="red")
     drawWayPoints(canvas, scenarioInput.startPoint, scenarioInput.startVelocity, scenarioInput.wayPoints)
 
-
-def drawInput(canvas, debugInput, **kwargs):
-    drawScenario(canvas, debugInput.scenario, **kwargs)
-

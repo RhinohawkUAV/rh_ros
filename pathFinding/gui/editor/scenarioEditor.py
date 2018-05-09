@@ -1,8 +1,11 @@
 import tkFileDialog
 
 from boundaryBuilder import BoundaryBuilder
+from engine import interface
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
-from engine.interface import utils, debugInput
+from engine.interface.scenarioInput import ScenarioInput
+from engine.interface.testInput import TestInput
+from engine.interface.vehicleInput import VehicleInput
 from gui import draw
 from gui.editor.pathSegmentTester.pathSegmentTester import PathSegmentTester
 from gui.editor.wayPointEditor import WayPointEditor
@@ -20,7 +23,11 @@ class ScenarioEditor(Visualizer, Drawable):
 
     def __init__(self, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
-        self._debugInput = debugInput.defaultValue()
+        self._inputDict = {
+                            interface.SCENARIO_KEY:ScenarioInput(),
+                            interface.VEHICLE_KEY:VehicleInput(),
+                            interface.TEST_INPUT_KEY:TestInput()
+                           }
         self._nfzBuilder = NFZBuilder()
         self._nfzEditor = NFZEditor()
         self._boundaryBuilder = BoundaryBuilder()
@@ -34,7 +41,7 @@ class ScenarioEditor(Visualizer, Drawable):
                          "t": self._pathSegmentTester
                          }
         self._mode = self._nfzBuilder
-        self._mode.onSwitch(self._debugInput)
+        self._mode.onSwitch(self._inputDict)
             
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Key>', self.onKeyPressed)
@@ -54,22 +61,18 @@ class ScenarioEditor(Visualizer, Drawable):
         if key in self._modeMap:
             self._mode.onExit()
             self._mode = self._modeMap[key]
-            self._mode.onSwitch(self._debugInput)
+            self._mode.onSwitch(self._inputDict)
             self._mode.onMotion(point)
         elif key == "s":
-            fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="scenarios")
+            fileName = tkFileDialog.asksaveasfilename(defaultextension=".json", initialdir="scenarios")
             if not fileName == '':
-                utils.saveScenario(fileName, self._obstacleCourseEdit, self._pathEdit, {"testInput": self._testEdit})
+                interface.saveInput(fileName, self._inputDict)
         elif key == "l":
-            fileName = tkFileDialog.askopenfilename(defaultextension="json", initialdir="scenarios")
+            fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir="scenarios")
             if not fileName == '':
-                scenario = utils.loadScenario(fileName)
-                if scenario[utils.OBSTACLE_INPUT_KEY] is not None:
-                    self._obstacleCourseEdit.setToInput(scenario[utils.OBSTACLE_INPUT_KEY])
-                if scenario[utils.PATH_INPUT_KEY] is not None:
-                    self._pathEdit.setToInput(scenario[utils.PATH_INPUT_KEY])
-                if scenario.has_key("testInput") and scenario["testInput"] is not None:
-                    self._testEdit.set(testEdit.fromJSONDict(scenario["testInput"]))
+                self._inputDict = interface.loadInput(fileName)
+            self._mode.onSwitch(self._inputDict)
+            self._mode.onMotion(point)
         else:
             self._mode.onKey(point, key, ctrl=ctrl)
         self.updateDisplay()
@@ -102,5 +105,5 @@ class ScenarioEditor(Visualizer, Drawable):
         self.drawToCanvas(self)
 
     def draw(self, canvas, **kwargs):
-        draw.drawInput(canvas, self._debugInput)
+        draw.drawScenario(canvas, self._inputDict[interface.SCENARIO_KEY])
         self._mode.draw(canvas, **kwargs)

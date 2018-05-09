@@ -1,4 +1,5 @@
 from editableNoFlyZoneList import EditableNoFlyZoneList
+from engine.interface.fileUtils import SCENARIO_KEY
 from gui.core import Drawable
 from gui.editor.subGUI import SubGUI
 from nfzPointMover import NFZPointMover
@@ -15,13 +16,13 @@ class NFZEditor(Drawable, SubGUI):
         self._mover = NoFlyMover()
         self._velocityChanger = NFZVelocityChanger()
 
-    def onSwitch(self, debugInput):
-        SubGUI.onSwitch(self, debugInput)
-        self._nfzEdit = EditableNoFlyZoneList(debugInput.scenario.noFlyZones)
-        debugInput.scenario.noFlyZones = []
+    def onSwitch(self, inputDict):
+        SubGUI.onSwitch(self, inputDict)
+        self._nfzEdit = EditableNoFlyZoneList(inputDict[SCENARIO_KEY].noFlyZones)
+        inputDict[SCENARIO_KEY].noFlyZones = []
     
     def onExit(self):
-        self._debugInput.scenario.noFlyZones = self._nfzEdit.asInput()
+        self._inputDict[SCENARIO_KEY].noFlyZones = self._nfzEdit.asInput()
         
     def onLeftPress(self, point, control=False):
         if control:

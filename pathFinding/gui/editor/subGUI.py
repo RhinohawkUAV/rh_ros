@@ -2,7 +2,7 @@ class SubGUI:
     """Depending on mode of GeometryCreator, a subGUI will be signalled to take action in response to input events."""
 
     def __init__(self):
-        self._debugInput = None
+        self._inputDict = None
 
     def onLeftPress(self, point, control=False):
         pass
@@ -16,8 +16,8 @@ class SubGUI:
     def onKey(self, point, key, ctrl=False):
         pass
 
-    def onSwitch(self, debugInput):
-        self._debugInput = debugInput
+    def onSwitch(self, inputDict):
+        self._inputDict = inputDict
     
     def onExit(self):
         pass

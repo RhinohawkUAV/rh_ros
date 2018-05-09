@@ -1,5 +1,6 @@
 import Tkinter as tk
 from engine.geometry import calcs
+from engine.interface.fileUtils import SCENARIO_KEY
 from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE
 import numpy as np
@@ -16,17 +17,17 @@ class WayPointEditor(SubGUI, Drawable):
         self._offset = None
         self._dragIndex = None
 
-    def onSwitch(self, debugInput):
-        SubGUI.onSwitch(self, debugInput)
-        self._points = [debugInput.scenario.startPoint]
-        self._startVelocity = debugInput.scenario.startVelocity
-        self._points.extend(debugInput.scenario.wayPoints)
+    def onSwitch(self, inputDict):
+        SubGUI.onSwitch(self, inputDict)
+        self._points = [inputDict[SCENARIO_KEY].startPoint]
+        self._startVelocity = inputDict[SCENARIO_KEY].startVelocity
+        self._points.extend(inputDict[SCENARIO_KEY].wayPoints)
     
     def sync(self):
-        self._debugInput.scenario.startPoint = self._points[0]
-        self._debugInput.scenario.startVelocity = self._startVelocity
+        self._inputDict[SCENARIO_KEY].startPoint = self._points[0]
+        self._inputDict[SCENARIO_KEY].startVelocity = self._startVelocity
         if len(self._points) > 1:
-            self._debugInput.scenario.wayPoints = self._points[1:]
+            self._inputDict[SCENARIO_KEY].wayPoints = self._points[1:]
     
     def onLeftPress(self, point, control=False):
         if control:
