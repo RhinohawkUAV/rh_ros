@@ -51,7 +51,6 @@ catkin_python_setup()
 add_message_files(
    FILES
     Debug.msg
-    Input.msg
     NoFlyZone.msg
     PathSegment.msg
     Scenario.msg
