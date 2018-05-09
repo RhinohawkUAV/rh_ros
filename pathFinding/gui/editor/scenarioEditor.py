@@ -1,19 +1,15 @@
 import tkFileDialog
 
-import numpy as np
-
 from boundaryBuilder import BoundaryBuilder
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
-from engine.interface import utils
+from engine.interface import utils, debugInput
+from gui import draw
 from gui.editor import testEdit
-from gui.editor.testEdit import TestEdit
-from nfzBuilder import NFZBuilder
-from nfzPointMover import NFZPointMover
-from noFlyMover import NoFlyMover
-from pathEdit import PathEdit
-from pathEditor import pathEditor
+from nfzEdit import NFZBuilder
+from nfzEdit import NFZEditor
 from pathSegmentTester import PathSegmentTester
-from .obstacleCourseEdit import ObstacleCourseEdit
+from gui.editor.wayPointEditor import WayPointEditor
+
 from ..core import Drawable
 from ..visualizer import Visualizer
 
@@ -25,27 +21,22 @@ class ScenarioEditor(Visualizer, Drawable):
 
     def __init__(self, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
-        self._obstacleCourseEdit = ObstacleCourseEdit()
-        self._pathEdit = PathEdit()
-        self._testEdit = TestEdit(np.array((5, 5), np.double), np.array((1, 1), np.double),
-                                  np.array((95, 95), np.double),
-                                  np.array((0, 0), np.double))
-        self._nfzBuilder = NFZBuilder(self._obstacleCourseEdit)
-        self._nfzMover = NoFlyMover(self._obstacleCourseEdit)
-        self._nfzPointMover = NFZPointMover(self._obstacleCourseEdit)
-        self._boundaryBuilder = BoundaryBuilder(self._obstacleCourseEdit)
-        self._pathEditor = pathEditor(self._pathEdit)
-        self._pathSegmentTester = PathSegmentTester(self._testEdit, self._obstacleCourseEdit, ArcObstacleData())
+        self._debugInput = debugInput.defaultValue()
+        self._nfzBuilder = NFZBuilder()
+        self._nfzEditor = NFZEditor()
+        self._boundaryBuilder = BoundaryBuilder()
+        self._wayPointEditor = WayPointEditor()
+        self._pathSegmentTester = PathSegmentTester(ArcObstacleData())
 
         self._modeMap = {"i": self._nfzBuilder,
-                         "m": self._nfzMover,
-                         "p": self._nfzPointMover,
+                         "e": self._nfzEditor,
                          "b": self._boundaryBuilder,
-                         "w": self._pathEditor,
+                         "w": self._wayPointEditor,
                          "t": self._pathSegmentTester
                          }
         self._mode = self._nfzBuilder
-
+        self._mode.onSwitch(self._debugInput)
+            
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Key>', self.onKeyPressed)
         self.bindWithTransform('<Control-Key>', self.onCTRLKeyPressed)
@@ -62,8 +53,9 @@ class ScenarioEditor(Visualizer, Drawable):
     def onKeyPressed(self, point, event, ctrl=False):
         key = event.keysym
         if key in self._modeMap:
+            self._mode.onExit()
             self._mode = self._modeMap[key]
-            self._mode.onSwitch()
+            self._mode.onSwitch(self._debugInput)
             self._mode.onMotion(point)
         elif key == "s":
             fileName = tkFileDialog.asksaveasfilename(defaultextension="json", initialdir="scenarios")
@@ -111,6 +103,5 @@ class ScenarioEditor(Visualizer, Drawable):
         self.drawToCanvas(self)
 
     def draw(self, canvas, **kwargs):
-        self._obstacleCourseEdit.draw(canvas, **kwargs)
-        self._pathEdit.draw(canvas, color="blue")
+        draw.drawInput(canvas, self._debugInput)
         self._mode.draw(canvas, **kwargs)

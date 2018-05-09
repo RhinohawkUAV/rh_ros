@@ -32,7 +32,7 @@ class DynamicPathFinder:
     def initFindPath(self, pointToPointInput):
         self._start = np.array(pointToPointInput.startPosition, np.double)
         self._goal = np.array(pointToPointInput.targetPoints[0], np.double)
-        velocity = np.array(pointToPointInput.startVelocity, np.double)
+        velocity = np.array(pointToPointInput._startVelocity, np.double)
         self._currentVertex = Vertex(position=self._start,
                                      velocity=velocity,
                                      timeToVertex=0.0,

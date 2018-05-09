@@ -1,5 +1,5 @@
 class Input:
-    def __init__(self,scenarioInput, vehicleInput):
-        self.scenarioInput = scenarioInput
-        self.vehicleInput = vehicleInput
+    def __init__(self,scenario, vehicle):
+        self.scenario = scenario
+        self.vehicle = vehicle
     

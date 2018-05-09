@@ -1,15 +1,15 @@
-import Tkinter as tk
 from Tkinter import Canvas
 
-import numpy as np
-
-import gui.draw
+import Tkinter as tk
 from engine import NoFlyZoneInput
 from engine.geometry import LineSegment, calcs
 from gui import Drawable
+import gui.draw
+import numpy as np
 
 
-class NoFlyZoneEdit(Drawable):
+class EditableNoFlyZone(Drawable):
+
     def __init__(self, points, velocity):
         """
         A polygon NFZ with a given velocity.
@@ -57,20 +57,20 @@ class NoFlyZoneEdit(Drawable):
         points = []
         for point in self.points:
             points.append(point + translation)
-        return NoFlyZoneEdit(points, self.velocity)
+        return EditableNoFlyZone(points, self.velocity)
 
     def getPointTranslatedCopy(self, pointIndex, newPoint):
         """Create a copy of this NFZ, with the given point replaced with the given point"""
         points = np.copy(self.points)
         points[pointIndex] = newPoint
-        return NoFlyZoneEdit(points, self.velocity)
+        return EditableNoFlyZone(points, self.velocity)
 
-    def toInput(self, ID):
+    def asInput(self, ID):
         return NoFlyZoneInput(self.points, self.velocity, ID)
 
 
 def fromInput(noFlyZoneInput):
-    return NoFlyZoneEdit(noFlyZoneInput.points, noFlyZoneInput.velocity)
+    return EditableNoFlyZone(noFlyZoneInput.points, noFlyZoneInput.velocity)
 
 
 def listFromInput(noFlyZoneInputList):

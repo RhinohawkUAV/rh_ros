@@ -8,6 +8,7 @@ from engine.interface.noFlyZoneInput import NoFlyZoneInput
 from engine.interface.debugInput import DebugInput
 from engine.interface.scenarioInput import ScenarioInput
 from engine.interface.testInput import TestInput
+from engine.interface import testInput
 
 
 
@@ -81,11 +82,11 @@ def loadInput(fileName):
 def loadInputDebug(fileName):
     inputDict = loadInputAsDict(fileName)
     if inputDict.has_key("testInput"):
-        testInput = inputDict["testInput"]
+        test = inputDict["testInput"]
     else:
-        testInput = TestInput((5.0,5.0),(1.0,1.0),(95.0,95.0),(0.0,0.0))
-        return DebugInput(inputDict["scenario"],
-                          inputDict["vehicle"],
-                          testInput)
+        test = testInput.defaultValue()
+    return DebugInput(inputDict["scenario"],
+                      inputDict["vehicle"],
+                      test)
 
     

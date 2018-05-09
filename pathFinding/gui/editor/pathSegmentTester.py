@@ -7,28 +7,27 @@ from subGUI import SubGUI
 
 
 class PathSegmentTester(Drawable, SubGUI):
-    def __init__(self, testEdit, obstacleCourseEdit, obstacleData):
-        self._obstacleCourseEdit = obstacleCourseEdit
-        self._testEdit = testEdit
+
+    def __init__(self, obstacleData):
+        self._obstacleData = obstacleData
         self._pointOfInterest = None
         self._obstacleDebug = None
-        self._obstacleData = obstacleData
         self._showPathsToPoints = False
         self._pathSegments = []
         self._filteredPathSegments = []
 
     def onLeftRelease(self, point, control=False):
         if control:
-            self._testEdit.targetPoint = point
+            self._debugInput.testInput.targetPoint = point
         else:
-            self._testEdit.startPoint = point
+            self._debugInput.testInput.startPoint = point
 
     def onKey(self, point, key, ctrl=False):
         if key == "v":
             if ctrl:
-                self._testEdit.velocityOfTarget = point - self._testEdit.targetPoint
+                self._debugInput.testInput.velocityOfTarget = point - self._testEdit.targetPoint
             else:
-                self._testEdit.startVelocity = point - self._testEdit.startPoint
+                self._debugInput.testInput.startVelocity = point - self._testEdit.startPoint
 
         if key == "z":
             self._showPathsToPoints = not self._showPathsToPoints
@@ -37,19 +36,19 @@ class PathSegmentTester(Drawable, SubGUI):
         self._pointOfInterest = point
 
     def onSwitch(self):
-        self._obstacleDebug = ObstacleCourseDebug(self._obstacleCourseEdit.boundaryPoints,
-                                                  self._obstacleCourseEdit.noFlyZones)
+        self._obstacleDebug = ObstacleCourseDebug(self._debugInput.scenario.boundaryPoints,
+                                                  self._debugInput.scenario.noFlyZones)
         self._obstacleData.setInitialState(self._obstacleCourseEdit)
 
     def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
         draw.drawPoint(canvas, self._testEdit.startPoint, radius=radius, color=color)
         draw.drawLine(canvas, self._testEdit.startPoint,
-                      self._testEdit.startPoint + self._testEdit.startVelocity,
+                      self._testEdit.startPoint + self._testEdit._startVelocity,
                       arrow=tk.LAST)
 
         goalSegment = self._obstacleData.findPathSegment(startTime=0.0,
                                                          startPoint=self._testEdit.startPoint,
-                                                         startVelocity=self._testEdit.startVelocity,
+                                                         startVelocity=self._testEdit._startVelocity,
                                                          targetPoint=self._testEdit.targetPoint,
                                                          velocityOfTarget=self._testEdit.velocityOfTarget)
 
@@ -68,7 +67,7 @@ class PathSegmentTester(Drawable, SubGUI):
         if self._showPathsToPoints:
             (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(startTime=0.0,
                                                                                                    startPoint=self._testEdit.startPoint,
-                                                                                                   startVelocity=self._testEdit.startVelocity)
+                                                                                                   startVelocity=self._testEdit._startVelocity)
         else:
             self._pathSegments = []
             self._filteredPathSegments = []

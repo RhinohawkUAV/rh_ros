@@ -65,14 +65,14 @@ class ArcFinder:
     def __init__(self, startPoint, startVelocity, targetPoint, velocityOfTarget, direction,
                  acceleration):
         self.startPoint = startPoint
-        self.startVelocity = startVelocity
+        self._startVelocity = startVelocity
         self.speed = np.linalg.norm(startVelocity)
         self.startDirection = startVelocity / self.speed
         self.targetPoint = targetPoint
         self.velocityOfTarget = velocityOfTarget
         self.direction = direction
 
-        self.arc = Arc(self.startPoint, self.startVelocity, acceleration, direction)
+        self.arc = Arc(self.startPoint, self._startVelocity, acceleration, direction)
         self.totalTime = 0.0
         self.arcTime = 0.0
         self.endPoint = None

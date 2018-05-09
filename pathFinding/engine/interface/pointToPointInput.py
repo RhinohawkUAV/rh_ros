@@ -15,7 +15,7 @@ class PointToPointInput:
         self.startPosition = startPosition
 
         # The current velocity of Rhinohawk
-        self.startVelocity = startVelocity
+        self._startVelocity = startVelocity
 
         # TODO: This is not supported yet and may not be necessary, we'll decide how fancy we want to get
         # Plan a route from start position, through these targets, in order
@@ -23,4 +23,4 @@ class PointToPointInput:
 
 
 def fromJSONDict(objDict):
-    return PointToPointInput(objDict["startPosition"], objDict["startVelocity"], objDict["targetPoints"])
+    return PointToPointInput(objDict["startPosition"], objDict["_startVelocity"], objDict["targetPoints"])
