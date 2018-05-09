@@ -4,7 +4,8 @@ from pathSegment import PathSegment
 
 
 class ObstacleData:
-    def setInitialState(self, initialPathFindingInput):
+
+    def setInitialState(self, boundaryPoints, noFlyZones):
         """
         Set the initial state of the obstacle data at time=0.0.
         :param initialPathFindingInput:

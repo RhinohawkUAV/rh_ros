@@ -4,11 +4,10 @@ from boundaryBuilder import BoundaryBuilder
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.interface import utils, debugInput
 from gui import draw
-from gui.editor import testEdit
+from gui.editor.pathSegmentTester.pathSegmentTester import PathSegmentTester
+from gui.editor.wayPointEditor import WayPointEditor
 from nfzEdit import NFZBuilder
 from nfzEdit import NFZEditor
-from pathSegmentTester import PathSegmentTester
-from gui.editor.wayPointEditor import WayPointEditor
 
 from ..core import Drawable
 from ..visualizer import Visualizer

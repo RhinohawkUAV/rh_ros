@@ -6,7 +6,7 @@ from constants import NO_FLY_ZONE_POINT_OFFSET
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.vertex import UniqueVertexQueue
 from geometry import calcs
-from gui.obstacleDebug.obstacleDebug import ObstacleCourseDebug
+from gui.editor.pathSegmentTester.obstacleDebug import ObstacleCourseDebug
 from vertex import Vertex
 
 

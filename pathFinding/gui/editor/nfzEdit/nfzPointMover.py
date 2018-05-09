@@ -18,6 +18,7 @@ class NFZPointMover(Drawable):
         self._alteredNoFlyZone = self._noFlyZone.getPointTranslatedCopy(self._pointIndex, point)
         nfzEdit.addNoFlyZone(self._alteredNoFlyZone)
         self._noFlyZone = None
+        self._alteredNoFlyZone = None
 
     def onMotion(self, point, nfzEdit):
         if self._noFlyZone is None:

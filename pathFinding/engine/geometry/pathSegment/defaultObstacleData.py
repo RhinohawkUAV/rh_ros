@@ -1,11 +1,11 @@
 import math
 
-import numpy as np
 from typing import Sequence, List
 
 from engine.geometry import calcs, PathSegment
 from engine.geometry.pathSegment.defaultPathSegment import DefaultPathSegment
 from engine.geometry.pathSegment.obstacleLineSegment import ObstacleLineSegment
+import numpy as np
 from obstacleData import ObstacleData
 
 
@@ -30,14 +30,14 @@ class DefaultObstacleData(ObstacleData):
         # When finding paths to no fly zone vertices, this applies an "outward" offset to each vertex of this length
         self.targetOffsetLength = targetOffsetLength
 
-    def setInitialState(self, initialPathFindingInput):
+    def setInitialState(self, boundaryPoints, noFlyZones):
         del self.targetPoints[:]
         del self.targetPointNormals[:]
         del self.targetCosLimits[:]
         del self.targetVelocities[:]
         del self.obstacleLines[:]
 
-        for noFlyZoneInput in initialPathFindingInput.noFlyZones:
+        for noFlyZoneInput in noFlyZones:
             points = noFlyZoneInput.points
             nfzLines = []
             for i in range(0, len(points)):
@@ -61,10 +61,10 @@ class DefaultObstacleData(ObstacleData):
 
             self.obstacleLines.extend(nfzLines)
 
-        for i in range(len(initialPathFindingInput.boundaryPoints)):
+        for i in range(len(boundaryPoints)):
             self.obstacleLines.append(
-                ObstacleLineSegment(initialPathFindingInput.boundaryPoints[i - 1],
-                                    initialPathFindingInput.boundaryPoints[i], np.array((0, 0), np.double)))
+                ObstacleLineSegment(boundaryPoints[i - 1],
+                                    boundaryPoints[i], np.array((0, 0), np.double)))
 
         # Create copy of same length corresponding to time = 0.0
         self.targetPointsAtTime = self.targetPoints[:]
