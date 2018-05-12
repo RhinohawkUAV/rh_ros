@@ -1,3 +1,3 @@
-Vec2[] start
-Vec2[] end
+Vec2[] startPoint
+Vec2[] endPoint
 float64 width

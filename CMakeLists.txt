@@ -51,11 +51,12 @@ catkin_python_setup()
 add_message_files(
    FILES
     Debug.msg
-    NoFlyZone.msg
     PathSegment.msg
-    Scenario.msg
-    Vec2.msg
     Vehicle.msg
+    Scenario.msg
+    Road.msg
+    NoFlyZone.msg
+    Vec2.msg
  )
 
 ## Generate services in the 'srv' folder
