@@ -2,6 +2,7 @@ import time
 
 from constants import NO_FLY_ZONE_POINT_OFFSET
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
+from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.vertex import UniqueVertexQueue
 from geometry import calcs
 import numpy as np
@@ -13,7 +14,7 @@ class DynamicPathFinder:
     def __init__(self, scenario, vehicle):
 
         self._obstacleData = ArcObstacleData(vehicle.acceleration)
-        # self._obstacleData = LineSegmentObstacleData(NO_FLY_ZONE_POINT_OFFSET)
+#         self._obstacleData = LineSegmentObstacleData(NO_FLY_ZONE_POINT_OFFSET)
         self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
@@ -61,7 +62,7 @@ class DynamicPathFinder:
             startVelocity=self._currentVertex.velocity)
         self._findPathsTime += time.time()
         for pathSegment in self._pathSegments:
-            timeToVertex = self._currentVertex.timeToVertex + pathSegment.time
+            timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
 
             newVertex = Vertex(position=pathSegment.endPoint,
                                velocity=pathSegment.endVelocity,
@@ -90,7 +91,7 @@ class DynamicPathFinder:
                                                          targetPoint=self._goal,
                                                          velocityOfTarget=np.array((0, 0), np.double))
         if pathSegment is not None:
-            timeToGoal = self._currentVertex.timeToVertex + pathSegment.time
+            timeToGoal = self._currentVertex.timeToVertex + pathSegment.elapsedTime
             self._findPathsTime += time.time()
             if timeToGoal < self._bestSolutionTime:
                 self._solution = Vertex(position=self._goal,

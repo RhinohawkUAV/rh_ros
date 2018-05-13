@@ -1,9 +1,8 @@
-import numpy as np
-
 from constants import MAX_TURN_ANGLE_COS, NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs
 from linePathSegment import LinePathSegment
+import numpy as np
 
 
 class LineSegmentObstacleData(DefaultObstacleData):
@@ -15,12 +14,12 @@ class LineSegmentObstacleData(DefaultObstacleData):
     def __init__(self, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
         DefaultObstacleData.__init__(self, targetOffsetLength)
 
-    def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
         startSpeed = np.linalg.norm(startVelocity)
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
         if solution is not None and turnIsLegal(startVelocity, solution.velocity):
             endPoint = solution.endPoint
-            return LinePathSegment(startPoint, startSpeed, solution.time, endPoint, solution.velocity)
+            return LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, solution.velocity)
         return None
 
 

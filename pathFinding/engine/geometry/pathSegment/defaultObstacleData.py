@@ -72,10 +72,9 @@ class DefaultObstacleData(ObstacleData):
 
     def findPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
         # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment or None
-        pathSegment = self.createPathSegment(startPoint, startVelocity, targetPoint, velocityOfTarget)
+        pathSegment = self.createPathSegment(startTime, startPoint, startVelocity, targetPoint, velocityOfTarget)
 
-        # TODO: Make startTime part of pathSegment?
-        if pathSegment is not None and self.filterPathSegment(startTime, pathSegment, self.obstacleLines):
+        if pathSegment is not None and self.filterPathSegment(pathSegment, self.obstacleLines):
             return pathSegment
         else:
             return None
@@ -91,7 +90,7 @@ class DefaultObstacleData(ObstacleData):
 
             # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
             if not calcs.arePointsClose(startPoint, targetPoint):
-                pathSegment = self.createPathSegment(startPoint, startVelocity, targetPoint, velocityOfTarget)
+                pathSegment = self.createPathSegment(startTime, startPoint, startVelocity, targetPoint, velocityOfTarget)
                 if pathSegment is not None:
                     # Filter path segment based on incoming angle and known geometry around point.
                     pointNormal = self.targetPointNormals[i]
@@ -106,17 +105,17 @@ class DefaultObstacleData(ObstacleData):
         pathSegments = []
 
         for pathSegment in rawPathSegments:
-            if self.filterPathSegment(startTime, pathSegment, self.obstacleLinesAtTime):
+            if self.filterPathSegment(pathSegment, self.obstacleLinesAtTime):
                 pathSegments.append(pathSegment)
             else:
                 filteredPathSegments.append(pathSegment)
         return (pathSegments, filteredPathSegments)
 
-    def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        # type: () -> DefaultPathSegment
+    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
         """
         Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
         at a given velocity.
+        :param startTime: absolute time at start of segment
         :param startPoint:
         :param startVelocity:
         :param targetPoint:
@@ -125,9 +124,9 @@ class DefaultObstacleData(ObstacleData):
         """
         pass
 
-    def filterPathSegment(self, startTime, pathSegment, obstacleLines):
+    def filterPathSegment(self, pathSegment, obstacleLines):
         for i in range(len(obstacleLines)):
             obstacleLine = obstacleLines[i]
-            if pathSegment.intersectsObstacleLine(startTime, obstacleLine):
+            if pathSegment.intersectsObstacleLine(pathSegment.startTime, obstacleLine):
                 return False
         return True

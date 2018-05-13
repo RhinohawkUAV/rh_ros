@@ -1,17 +1,16 @@
 import Tkinter as tk
-
-import numpy as np
-
 from defaultPathSegment import DefaultPathSegment
 from engine.geometry import LineSegment
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
+import numpy as np
 from pathSegment import PathSegment
 
 
 class LinePathSegment(DefaultPathSegment):
-    def __init__(self, startPoint, speed, time, endPoint, endVelocity):
-        PathSegment.__init__(self, time, endPoint, endVelocity)
+
+    def __init__(self, startTime, startPoint, speed, elapsedTime, endPoint, endVelocity):
+        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endVelocity)
         self.startPoint = startPoint
         self.speed = speed
         self.lineSegment = LineSegment(startPoint, endPoint)
@@ -24,14 +23,14 @@ class LinePathSegment(DefaultPathSegment):
         draw.drawLine(canvas, self.startPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
 
     def calcPointDebug(self, point):
-        timeParametric = self.lineSegment.closestPointParametric(point)
-        if timeParametric > 1.0:
-            timeParametric = 1.0
-        elif timeParametric < 0.0:
-            timeParametric = 0.0
-        closestPoint = self.lineSegment.getParametricPoint(timeParametric)
+        timeInterp = self.lineSegment.closestPointParametric(point)
+        if timeInterp > 1.0:
+            timeInterp = 1.0
+        elif timeInterp < 0.0:
+            timeInterp = 0.0
+        closestPoint = self.lineSegment.getParametricPoint(timeInterp)
         distance = np.linalg.norm(point - closestPoint)
-        return (closestPoint, distance, timeParametric * self.time)
+        return (closestPoint, distance, self.startTime + timeInterp * self.elapsedTime)
 
     def intersectsObstacleLine(self, startTime, obstacleLine):
         return obstacleLine.checkPathIntersectsLine(startTime, self.startPoint, self.endPoint, self.speed)

@@ -2,8 +2,10 @@ from gui import Drawable
 
 
 class PathSegment(Drawable):
-    def __init__(self, time, endPoint, endVelocity):
-        self.time = time
+
+    def __init__(self, startTime, elapsedTime, endPoint, endVelocity):
+        self.startTime = startTime
+        self.elapsedTime = elapsedTime
         self.endPoint = endPoint
         self.endVelocity = endVelocity
 
@@ -13,7 +15,7 @@ class PathSegment(Drawable):
 
         The closest point on the path, to the given point.
         The distance to the closest point.
-        The time (in the range [0,self.time]) at the closest point
+        The time (in the range [self.startTime,self.startTime + self.elapsedTime]) at the closest point
 
         :param point:
         :return: (closestPoint,distance,timeAtClosestPoint)

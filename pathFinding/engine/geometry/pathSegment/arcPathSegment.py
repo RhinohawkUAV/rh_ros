@@ -1,26 +1,25 @@
 import Tkinter as tk
-
-import numpy as np
-
 from defaultPathSegment import DefaultPathSegment
 from engine.geometry import LineSegment
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
+import numpy as np
 from pathSegment import PathSegment
 
 MAX_ARC_INTERPOLATION_ERROR = 4.0
 
 
 class ArcPathSegment(DefaultPathSegment):
-    def __init__(self, time, endPoint, endVelocity, speed, arc, arcTime):
-        PathSegment.__init__(self, time, endPoint, endVelocity)
+
+    def __init__(self, startTime, elapsedTime, endPoint, endVelocity, speed, arc, arcTime):
+        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endVelocity)
         self.speed = speed
 
         self.lineStartPoint = arc.endPoint
         self.lineSegment = LineSegment(arc.endPoint, endPoint)
         self.arc = arc
         self.arcTime = arcTime
-        self.lineTime = self.time - self.arcTime
+        self.lineTime = self.elapsedTime - self.arcTime
 
         self.linearPathPoints = arc.interpolate(MAX_ARC_INTERPOLATION_ERROR)
         numArcSegments = len(self.linearPathPoints) - 1
@@ -49,19 +48,19 @@ class ArcPathSegment(DefaultPathSegment):
         arcPointDebug = self.arc.getPointDebug(point)
         if linePointDebug[1] < arcPointDebug[1]:
             pointDebug = linePointDebug
-            startTime = self.arcTime
-            segmentTime = self.lineTime
+            segmentStartTime = self.arcTime
+            segmentTimeElapsed = self.lineTime
         else:
             pointDebug = arcPointDebug
-            startTime = 0.0
-            segmentTime = self.arcTime
+            segmentStartTime = 0.0
+            segmentTimeElapsed = self.arcTime
 
         timeInterp = pointDebug[2]
         if timeInterp < 0.0:
             timeInterp = 0.0
         elif timeInterp > 1.0:
             timeInterp = 1.0
-        time = startTime + timeInterp * segmentTime
+        time = self.startTime + segmentStartTime + timeInterp * segmentTimeElapsed
         return (pointDebug[0], pointDebug[1], time)
 
     def linePointDebug(self, point):

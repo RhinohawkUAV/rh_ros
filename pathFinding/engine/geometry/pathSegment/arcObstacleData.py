@@ -28,7 +28,7 @@ class ArcObstacleData(DefaultObstacleData):
         DefaultObstacleData.__init__(self, targetOffsetLength)
         self.acceleration = acceleration
 
-    def createPathSegment(self, startPoint, startVelocity, targetPoint, velocityOfTarget):
+    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
         arcFinderCCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
         try:
             arcFinderCCW.solve()
@@ -52,7 +52,7 @@ class ArcObstacleData(DefaultObstacleData):
         else:
             return None
 
-        return ArcPathSegment(arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
+        return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
                               arcFinder.speed, arcFinder.arc, arcFinder.arcTime)
 
 
