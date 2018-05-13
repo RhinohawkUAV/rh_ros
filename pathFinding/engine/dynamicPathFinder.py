@@ -107,3 +107,25 @@ class DynamicPathFinder:
 
     def heuristic(self, point, velocity):
         return calcs.calcTravelTime(point, self._goal, np.linalg.norm(velocity))
+
+    def getSolution(self):
+        if self._solution is None:
+            return []
+        return self.getPathSegments(self._solution)
+        
+    def getDebugData(self):
+        if self._currentVertex is None:
+            return ([], [], [])
+        previousPathSegments = self.getPathSegments(self._currentVertex)
+        return (previousPathSegments, self._pathSegments, self._filteredPathSegments)
+        
+    def getPathSegments(self, pathEndVertex):
+        pathSegments = []
+        currentVertex = pathEndVertex
+        previousVertex = currentVertex.previousVertex
+
+        while not previousVertex is None:
+            pathSegments.append(currentVertex.pathSegment)
+            currentVertex = previousVertex
+            previousVertex = currentVertex.previousVertex
+        return pathSegments        

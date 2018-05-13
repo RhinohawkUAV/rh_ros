@@ -10,30 +10,6 @@ class PathFindDrawable(Drawable):
     def __init__(self, scenario, vehicle):
         self._obstacleCourseDebug = ObstacleCourseDebug(scenario.boundaryPoints, scenario.noFlyZones)
 
-#     def getPathSegments(self, pathEndVertices):
-#         pathSegments = []
-#         pathStartTimes = []
-#         for currentVertex in pathEndVertices:
-#             if currentVertex is None:
-#                 break
-#             previousVertex = currentVertex.previousVertex
-# 
-#             while not previousVertex is None:
-#                 pathSegments.append(currentVertex.pathSegment)
-#                 pathStartTimes.append(previousVertex.timeToVertex)
-#                 currentVertex = previousVertex
-#                 previousVertex = currentVertex.previousVertex
-#         return (pathSegments, pathStartTimes)
-# 
-#     def findClosestPointOnPath(self, point, snapDistance, pathEndVertices):
-#         (pathSegments, pathStartTimes) = self.getPathSegments(pathEndVertices)
-#         (closestSegmentIndex, closestPoint, minimumDistance, closestTime) = calcSegmentsPointDebug(point, pathSegments,
-#                                                                                                    snapDistance)
-#         if closestSegmentIndex is not None:
-#             return (closestPoint, pathStartTimes[closestSegmentIndex] + closestTime)
-#         else:
-#             return (None, 0.0)
-
     def draw(self, canvas, pointOfInterest=None, snapDistance=float("inf"), obstacleColor="black",
              lineOfSightColor="blue",
              vertexColor="green",

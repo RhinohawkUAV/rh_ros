@@ -11,9 +11,9 @@ class DynamicPathFinderDrawable(Drawable):
         self.fp = fp
         self._obstacleCourseDebug = obstacleCourseDebug
 
-    def getPathSegments(self, pathEndVertices):
+    def getPathSegments(self, pathEndVertex):
         pathSegments = []
-        for currentVertex in pathEndVertices:
+        for currentVertex in pathEndVertex:
             if currentVertex is None:
                 break
             previousVertex = currentVertex.previousVertex
@@ -25,7 +25,14 @@ class DynamicPathFinderDrawable(Drawable):
         return pathSegments
 
     def findClosestPointOnPath(self, point, snapDistance, pathEndVertices):
-        pathSegments = self.getPathSegments(pathEndVertices)
+        (pastSegments, futureSegments, filteredSegments) = self.fp.getDebugData()
+        solutionSegments = self.fp.getSolution()
+        pathSegments = []
+        pathSegments.extend(pastSegments)
+        pathSegments.extend(futureSegments)
+        pathSegments.extend(solutionSegments)
+        
+#         pathSegments = self.getPathSegments(pathEndVertices)
         (closestSegmentIndex, closestPoint, minimumDistance, closestTime) = calcSegmentsPointDebug(point, pathSegments,
                                                                                                    snapDistance)
         if closestSegmentIndex is not None:

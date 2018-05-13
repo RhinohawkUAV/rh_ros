@@ -1,4 +1,5 @@
 import os
+from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._Scenario import Scenario
 from pathfinding.srv._InitiateFindPath import InitiateFindPath, \
     InitiateFindPathResponse
@@ -39,6 +40,12 @@ def stepFindPathRequest(request):
                 return 
             while not pathFinder.isDone() and not pathFinder.step():
                 pass
+            (pastSegments, futureSegments, filteredSegments) = pathFinder.getDebugData()
+            pathDebug = PathDebug()
+            pathDebug.pastSegments = messageUtils.pathSegmentListToMsg(pastSegments)
+            pathDebug.futureSegments = messageUtils.pathSegmentListToMsg(futureSegments)
+            pathDebug.filteredSegments = messageUtils.pathSegmentListToMsg(filteredSegments)
+            print pathDebug
             print "Completed step"
 
     Thread(target=step).start()

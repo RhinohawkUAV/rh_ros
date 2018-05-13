@@ -1,19 +1,35 @@
 """
 Utilities for converting ROS messages to/from inputs to the path-finder.
 """
+from pathfinding.msg._Arc import Arc
 from pathfinding.msg._NoFlyZone import NoFlyZone
+from pathfinding.msg._PathSegment import PathSegment
 from pathfinding.msg._Road import Road
 from pathfinding.msg._Scenario import Scenario
 from pathfinding.msg._Vec2 import Vec2
 from pathfinding.msg._Vehicle import Vehicle
 
+from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY, loadInput
 from engine.interface.noFlyZoneInput import NoFlyZoneInput
 from engine.interface.roadInput import RoadInput
 from engine.interface.scenarioInput import ScenarioInput
 from engine.interface.vehicleInput import VehicleInput
 
-#**********************Msg objects to input objects********************
+
+#**********************Msg objects to path finding objects********************
+def msgToInput(scenarioMsg, vehicleMsg):
+    inputDict = {}
+    scenario = ScenarioInput(scenarioMsg.boundaryPoints,
+                             scenarioMsg.noFlyZones,
+                             scenarioMsg.roads,
+                             scenarioMsg.startPoint,
+                             scenarioMsg.startVelocity,
+                             scenarioMsg.wayPoints
+                             )
+    vehicle = None
+    inputDict[SCENARIO_KEY] = scenario
+    inputDict[VEHICLE_KEY] = vehicle
 
 
 def msgToVehicle(msg):
@@ -55,7 +71,7 @@ def msgToPoint(msg):
     return (float(msg.x), float(msg.y))
 
 
-#**********************Input objects to msg objects********************
+#**********************Path finding objects to msg objects********************
 def vehicleToMsg(vehicle):
     msg = Vehicle()
     msg.maxSpeed = vehicle.maxSpeed
@@ -98,22 +114,37 @@ def pointListToMsg(points):
         msg.append(pointToMsg(point))
     return msg
 
-        
+
+def pathSegmentListToMsg(pathSegments):
+    msg = []
+    for pathSegment in pathSegments:
+        msg.append(pathSegmentToMsg(pathSegment))
+    return msg
+
+
+def pathSegmentToMsg(pathSegment):
+    if isinstance(pathSegment, ArcPathSegment):
+        msg = PathSegment()
+        msg.startTime = pathSegment.startTime
+        msg.elapsedTime = pathSegment.elapsedTime
+        msg.speed = pathSegment.speed
+        msg.arc = arcToMsg(pathSegment.arc)
+        msg.endPoint = pointToMsg(pathSegment.endPoint)
+        msg.endVelocity = pointToMsg(pathSegment.endVelocity)
+        return msg
+    else:
+        raise "Path segment type not suppored by messages"
+
+            
+def arcToMsg(arc):
+    msg = Arc()
+    msg.direction = arc.direction
+    msg.radius = arc.radius
+    msg.center = pointToMsg(arc.center)
+    msg.start = arc.start
+    msg.length = arc.length
+    return msg
+
+    
 def pointToMsg(point):
     return Vec2(point[0], point[1])
-
-
-def msgToInput(scenarioMsg, vehicleMsg):
-    inputDict = {}
-#     boundaryPoints = vecListToPointList(scenarioMsg.boundaryPoints)
-    scenario = ScenarioInput(scenarioMsg.boundaryPoints,
-                             scenarioMsg.noFlyZones,
-                             scenarioMsg.roads,
-                             scenarioMsg.startPoint,
-                             scenarioMsg.startVelocity,
-                             scenarioMsg.wayPoints
-                             )
-    vehicle = None
-    inputDict[SCENARIO_KEY] = scenario
-    
-    inputDict[VEHICLE_KEY] = vehicle

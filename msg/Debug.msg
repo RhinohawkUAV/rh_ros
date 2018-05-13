@@ -1,2 +1,0 @@
-PathSegment[] currentTestPath
-PathSegment[] bestSolution
