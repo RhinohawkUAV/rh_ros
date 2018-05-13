@@ -1,2 +1,7 @@
+PATHFINDER_DEBUG_NODE_ID = "pathFinderDebug"
+PATHFINDER_NODE_ID = "pathFinder"
+
 PATHFINDER_INPUT_TOPIC = "pathFinderInput"
-PATHFINDER_DEBUG_NODE_ID = "pathfinderDebug"
+
+INITIATE_FINDPATH_SERVICE = "initiateFindPath"
+STEP_FINDPATH_SERVICE = "stepFindPath"

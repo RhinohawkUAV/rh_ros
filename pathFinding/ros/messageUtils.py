@@ -60,6 +60,7 @@ def vehicleToMsg(vehicle):
     msg = Vehicle()
     msg.maxSpeed = vehicle.maxSpeed
     msg.acceleration = vehicle.acceleration
+    return msg
 
 
 def scenarioToMsg(scenario):

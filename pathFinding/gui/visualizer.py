@@ -1,11 +1,10 @@
-import Tkinter as tk
-import os
 from Tkinter import Canvas
 from Tkinter import Toplevel
+import os
 
-import numpy as np
-
+import Tkinter as tk
 import core
+import numpy as np
 
 
 class Visualizer(Toplevel, core.DrawListener):
@@ -17,7 +16,7 @@ class Visualizer(Toplevel, core.DrawListener):
     - Allows posting drawing into the GUI thread.  This can be overwhelmed if submissions are too fast.  This should leverage TK's dirty/repaint scheme in some way in the future.
     """
 
-    def __init__(self, canvasWidth, canvasHeight, viewCenterX, viewCenterY, viewWidth, viewHeight, **kw):
+    def __init__(self, canvasWidth, canvasHeight, viewCenterX=0.0, viewCenterY=0.0, viewWidth=1.0, viewHeight=1.0, **kw):
         Toplevel.__init__(self, **kw)
         self.viewCenterX = viewCenterX
         self.viewCenterY = viewCenterY
@@ -28,6 +27,12 @@ class Visualizer(Toplevel, core.DrawListener):
         self.canvas.pack()
         self.protocol("WM_DELETE_WINDOW", self.onClose)
         self.bind("<Configure>", self.onResize)
+
+    def setView(self, viewCenterX, viewCenterY, viewWidth, viewHeight):
+        self.viewCenterX = viewCenterX
+        self.viewCenterY = viewCenterY
+        self.viewWidth = viewWidth
+        self.viewHeight = viewHeight
 
     def bindWithTransform(self, eventName, handler):
         """

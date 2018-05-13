@@ -44,6 +44,7 @@ class ArcObstacleData(DefaultObstacleData):
         except NoSolutionException:
             timeCW = float("inf")
 
+        # TODO: Should return both arcs and check for collisions before choosing
         if timeCCW < timeCW:
             arcFinder = arcFinderCCW
         elif timeCW < float("inf"):

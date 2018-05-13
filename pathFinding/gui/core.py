@@ -1,16 +1,19 @@
-import Tkinter as tk
 from Tkinter import Canvas
+
+import Tkinter as tk
 
 root = tk.Tk()
 root.withdraw()
 
 
 def startGUI():
+    global root
     root.mainloop()
 
 
 def inGUIThread(task, *args):
     """Run a task in the GUI thread"""
+    global root
     root.after_idle(task, *args)
 
 

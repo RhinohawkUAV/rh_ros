@@ -1,1 +1,2 @@
-PathSegment[] pathSegments
+PathSegment[] currentTestPath
+PathSegment[] bestSolution
