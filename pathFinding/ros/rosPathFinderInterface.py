@@ -12,7 +12,7 @@ from ros.rosConstants import INITIATE_FINDPATH_SERVICE, STEP_FINDPATH_SERVICE, \
 
 class RosPathFinderInterface(PathFinderInterface):
     """
-    A path finder interface, for the GUI, built around the ROS pathFinder node.
+    Manages a remote ROS path finder for use in PathFindViewer.
     """
 
     def __init__(self):

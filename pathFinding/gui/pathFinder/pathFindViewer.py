@@ -1,8 +1,14 @@
+from numpy.random.mtrand import np
 import os
+import string
 import tkFileDialog
 
 from engine import interface
+import engine
+from engine.geometry import calcs
 from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY
+from engine.interface.scenarioInput import ScenarioInput
+from engine.interface.vehicleInput import VehicleInput
 from gui.pathFinder.pathFinderListener import PathFinderListener
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 from gui.visualizer import Visualizer
@@ -31,10 +37,30 @@ class PathFindViewer(Visualizer, PathFinderListener):
             root = os.path.dirname(__file__)
             initialPath = os.path.normpath(os.path.join(root, "../../../scenarios"))
             fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir=initialPath)
-            if not fileName == '':
+            
+            if isinstance(fileName, basestring) and not fileName == '':
                 pathFindInput = interface.loadInput(fileName)
                 self.setState(pathFindInput[SCENARIO_KEY], pathFindInput[VEHICLE_KEY])
-
+        elif key == "r":
+            self.setStateRandom()
+            
+    def setStateRandom(self):
+        startPoint = (95, 95)
+        endPoint = (5, 5)
+        maxSpeed = 5.0
+        startVelocity = calcs.unit(np.array([-1.0, -1.0], np.double)) * maxSpeed
+        startVelocity = (startVelocity[0], startVelocity[1])
+        boundaryPoints = [(0, 0), (0, 100), (100, 100), (100, 0)]
+        
+        noFlyZones = engine.utils.genRandomNoFlyZoneInputsHard(50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=2.0,
+                                                                    startPoint=startPoint, endPoint=endPoint, averageSpeed=maxSpeed)
+        
+        roads = []
+        wayPoints = [endPoint]
+        scenario = ScenarioInput(boundaryPoints, noFlyZones, roads, startPoint, startVelocity, wayPoints)
+        vehicle = VehicleInput(maxSpeed=5.0, acceleration=1.0)
+        self.setState(scenario, vehicle)
+        
     def setState(self, scenario, vehicle):
         # Show a slight extra buffer around the border
         bounds = scenario.calcBounds()
