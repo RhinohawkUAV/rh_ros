@@ -1,6 +1,5 @@
 import time
 
-from constants import NO_FLY_ZONE_POINT_OFFSET
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.vertex import UniqueVertexQueue
@@ -10,7 +9,7 @@ import numpy as np
 from vertex import Vertex
 
 
-class DynamicPathFinder:
+class PathFinder:
 
     def __init__(self, scenario, vehicle):
 
@@ -105,6 +104,8 @@ class DynamicPathFinder:
             return True
         
     def heuristic(self, point, velocity):
+        # TODO: Heuristic should be based on obstacle data and in the case of arcs should account for the heading at a given point.
+        # This could use the, possibly filtered path, from the current vertex, to the goal
         return calcs.calcTravelTime(point, self._goal, np.linalg.norm(velocity))
 
     def hasSolution(self):

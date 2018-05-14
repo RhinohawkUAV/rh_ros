@@ -33,8 +33,7 @@ class EditableNoFlyZone(Drawable):
             line.draw(canvas, drawVectors=False, **kwargs)
 
         if np.linalg.norm(self.velocity) > 0.0:
-            gui.draw.drawLine(canvas, self._midPoint, self._midPoint + self.velocity,
-                              arrow=tk.LAST, **kwargs)
+            gui.draw.drawVelocity(canvas, self._midPoint, self.velocity, **kwargs)
 
     def isPointInside(self, point):
         """

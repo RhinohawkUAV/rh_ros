@@ -47,7 +47,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
     def setStateRandom(self):
         startPoint = (95, 95)
         endPoint = (5, 5)
-        maxSpeed = 5.0
+        maxSpeed = 3.0
         startVelocity = calcs.unit(np.array([-1.0, -1.0], np.double)) * maxSpeed
         startVelocity = (startVelocity[0], startVelocity[1])
         boundaryPoints = [(0, 0), (0, 100), (100, 100), (100, 0)]
@@ -58,7 +58,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         roads = []
         wayPoints = [endPoint]
         scenario = ScenarioInput(boundaryPoints, noFlyZones, roads, startPoint, startVelocity, wayPoints)
-        vehicle = VehicleInput(maxSpeed=5.0, acceleration=1.0)
+        vehicle = VehicleInput(maxSpeed=maxSpeed, acceleration=1.0)
         self.setState(scenario, vehicle)
         
     def setState(self, scenario, vehicle):

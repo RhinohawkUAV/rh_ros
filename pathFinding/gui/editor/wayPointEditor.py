@@ -2,7 +2,7 @@ import Tkinter as tk
 from engine.geometry import calcs
 from engine.interface.fileUtils import SCENARIO_KEY
 from gui import Drawable, draw
-from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE
+from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
 import numpy as np
 from subGUI import SubGUI
 
@@ -51,7 +51,7 @@ class WayPointEditor(SubGUI, Drawable):
 
     def onKey(self, point, key, ctrl=False):
         if key == "v":
-            self._startVelocity = point - self._points[0]
+            self._startVelocity = (point - self._points[0]) / VELOCITY_SCALE
         if key == "Delete":
             if len(self._points) > 1:
                 (distance, index) = calcs.findClosestPoint(point, self._points)

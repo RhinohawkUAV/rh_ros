@@ -1,4 +1,4 @@
-from engine.dynamicPathFinder import DynamicPathFinder
+from engine.pathFinder import PathFinder
 from gui.pathFinder.pathFinderInterface import PathFinderInterface
 
 
@@ -14,7 +14,7 @@ class LocalPathFinderInterface(PathFinderInterface):
         """
         Start a new path finding process.  Will wipe out previous process.
         """
-        self._pathFinder = DynamicPathFinder(scenario, vehicle)
+        self._pathFinder = PathFinder(scenario, vehicle)
     
     def step(self):
         """

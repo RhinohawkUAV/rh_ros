@@ -13,14 +13,19 @@ DEFAULT_POINT_SIZE = 0.5
 DEFAULT_COLOR = "black"
 DEFAULT_WIDTH = 1.0
 DEFAULT_DASH = (1, 6)
+VELOCITY_SCALE = 2.0
 
 
-def drawPoint(canvas, pos, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
-    canvas.create_oval(pos[0] - radius, pos[1] - radius, pos[0] + radius, pos[1] + radius, fill=color)
+def drawPoint(canvas, pos, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, outline=None, width=1.0, **kwargs):
+    canvas.create_oval(pos[0] - radius, pos[1] - radius, pos[0] + radius, pos[1] + radius, fill=color, outline=outline, width=width)
 
 
 def drawLine(canvas, p1, p2, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, arrow=None, dash=None, **kwargs):
     canvas.create_line(p1[0], p1[1], p2[0], p2[1], fill=color, width=width, arrow=arrow, dash=dash)
+
+
+def drawVelocity(canvas, start, velocity, **kwargs):
+    drawLine(canvas, start, start + velocity * VELOCITY_SCALE, arrow=tk.LAST, **kwargs)
 
 
 def drawPoly(canvas, points, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, dash=None, **kwargs):
@@ -61,9 +66,8 @@ def drawNoFlyZones(canvas, noFlyZones, **kwargs):
 def drawWayPoints(canvas, startPoint, startVelocity, wayPoints, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
     drawPoint(canvas, startPoint, radius=radius, color=color)
     drawText(canvas, startPoint + TEXT_OFFSET, "Start", color=color)
-    drawLine(canvas, startPoint,
-                  startPoint + startVelocity,
-                  arrow=tk.LAST)
+    drawVelocity(canvas, startPoint,
+                  startVelocity)
 
     for i in range(len(wayPoints)):
         point = wayPoints[i]

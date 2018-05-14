@@ -7,7 +7,7 @@ import rospy
 from threading import Thread
 import threading
 
-from engine.dynamicPathFinder import DynamicPathFinder
+from engine.pathFinder import PathFinder
 import messageUtils
 from ros.rosConstants import PATHFINDER_NODE_ID, INITIATE_FINDPATH_SERVICE, \
     STEP_FINDPATH_SERVICE, PATHFINDER_DEBUG_TOPIC, ROS_QUEUE_SIZE, \
@@ -29,7 +29,7 @@ class RosPathFinder:
         with self._lock:
             scenario = messageUtils.msgToScenario(request.scenario)
             vehicle = messageUtils.msgToVehicle(request.vehicle)
-            self._pathFinder = DynamicPathFinder(scenario, vehicle)
+            self._pathFinder = PathFinder(scenario, vehicle)
             return InitiateFindPathResponse()
     
     def stepFindPathRequest(self, request):

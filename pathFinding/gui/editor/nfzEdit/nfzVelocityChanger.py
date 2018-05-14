@@ -1,4 +1,5 @@
 from gui import Drawable
+from gui.draw import VELOCITY_SCALE
 import numpy as np
 
 
@@ -22,7 +23,7 @@ class NFZVelocityChanger(Drawable):
         if self._startPoint is not None:
             offset = point - self._startPoint
             for dragZone in self._dragZones:
-                dragZone.velocity = offset
+                dragZone.velocity = offset / VELOCITY_SCALE
 
     def draw(self, canvas, **kwargs):
         pass

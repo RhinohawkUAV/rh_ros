@@ -1,12 +1,11 @@
 import Tkinter as tk
-
-import numpy as np
-
 from gui import draw
 from gui.draw import DEFAULT_COLOR
+import numpy as np
 
 
 class NoFlyZoneDebug:
+
     def __init__(self, noFlyZoneInput):
         # Points composing the border of the NFZ
         self._points = np.array(noFlyZoneInput.points, np.double)
@@ -19,8 +18,7 @@ class NoFlyZoneDebug:
             draw.drawLine(canvas, self._points[i - 1] + offset, self._points[i] + offset, color=color)
 
         if np.linalg.norm(self._velocity) > 0.0:
-            draw.drawLine(canvas, self._midPoint + offset, self._midPoint + offset + self._velocity,
-                          arrow=tk.LAST, **kwargs)
+            draw.drawVelocity(canvas, self._midPoint + offset, self._velocity, **kwargs)
 
 
 class ObstacleCourseDebug:

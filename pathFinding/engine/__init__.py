@@ -1,3 +1,3 @@
 import geometry
-from dynamicPathFinder import DynamicPathFinder
+from engine.pathFinder import PathFinder
 from interface import *
