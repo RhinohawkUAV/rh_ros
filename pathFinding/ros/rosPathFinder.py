@@ -39,18 +39,15 @@ class RosPathFinder:
                 if self._pathFinder is None or self._pathFinder.isDone():
                     return
                 
-                while not self._pathFinder.isDone() and not self._pathFinder.step():
-                    pass
-                if not self._pathFinder.isDone():
-                    debugData = self._pathFinder.getDebugData()
-                    pathDebug = messageUtils.pathDebugToMsg(*debugData)
-                    self._pathDebugPub.publish(pathDebug)
-                
-                if self._pathFinder.hasSolution():
+                if self._pathFinder.step():
                     pathSolution = PathSolution()
                     pathSolution.solutionPathSegments = messageUtils.pathSegmentListToMsg(self._pathFinder.getSolution())
                     pathSolution.finished = self._pathFinder.isDone()
                     self._pathSolutionPub.publish(pathSolution)
+                else:
+                    debugData = self._pathFinder.getDebugData()
+                    pathDebug = messageUtils.pathDebugToMsg(*debugData)
+                    self._pathDebugPub.publish(pathDebug)
     
         Thread(target=step).start()
         return EmptyResponse()

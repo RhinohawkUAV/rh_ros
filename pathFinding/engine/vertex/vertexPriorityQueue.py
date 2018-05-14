@@ -1,4 +1,5 @@
-from engine.vertex.vertex import Vertex
+class QueueEmptyException(BaseException):
+    pass
 
 
 class VertexPriorityQueue:

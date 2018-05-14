@@ -1,6 +1,4 @@
-import copy
 import os
-from random import setstate
 import tkFileDialog
 
 from engine import interface
@@ -17,7 +15,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
 
     def __init__(self, pathFinderInterface, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
-        self.pointOfInterest = None
+        self._pointOfInterest = None
         self._pathFinderInterface = pathFinderInterface
         self._pathFinderInterface.setListener(self)
         self._pathFindDrawable = None
@@ -25,12 +23,6 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self.bindWithTransform('<Key>', self.onKeyPressed)
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Button-1>', self.onLeftClick)
-        
-#         self._resetDynamicPathFinder = dynamicPathFinder
-#         self._dynamicPathFinder = copy.deepcopy(self._resetDynamicPathFinder)
-#         self.pointOfInterest = None
-#         self.bindWithTransform('<Button-1>', self.onLeftClick)
-#         self.bindWithTransform('<Button-3>', self.onRightClick)
 
     def onKeyPressed(self, point, event):
         key = event.keysym
@@ -67,9 +59,9 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self._pathFinderInterface.step()
 
     def onMouseMotion(self, point, event):
-        self.pointOfInterest = point
+        self._pointOfInterest = point
         self.updateDisplay()
 
     def updateDisplay(self):
         if self._pathFindDrawable is not None:
-            self.drawToCanvas(self._pathFindDrawable, pointOfInterest=self.pointOfInterest, snapDistance=5.0)
+            self.drawToCanvas(self._pathFindDrawable, pointOfInterest=self._pointOfInterest, snapDistance=5.0)

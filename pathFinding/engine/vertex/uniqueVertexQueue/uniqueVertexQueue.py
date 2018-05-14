@@ -1,7 +1,7 @@
-import numpy as np
-
 from engine.utils import MinHeap
-from engine.vertex.vertexPriorityQueue import VertexPriorityQueue
+from engine.vertex.vertexPriorityQueue import VertexPriorityQueue, \
+    QueueEmptyException
+import numpy as np
 from uniqueVertexTree import UniqueTree
 
 
@@ -43,7 +43,7 @@ class UniqueVertexQueue(VertexPriorityQueue):
 
     def pop(self):
         if self._heap.isEmpty():
-            return None
+            raise QueueEmptyException
         return self._heap.pop()
 
     def isEmpty(self):

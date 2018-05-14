@@ -4,6 +4,7 @@ from constants import NO_FLY_ZONE_POINT_OFFSET
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.vertex import UniqueVertexQueue
+from engine.vertex.vertexPriorityQueue import QueueEmptyException
 from geometry import calcs
 import numpy as np
 from vertex import Vertex
@@ -48,52 +49,50 @@ class DynamicPathFinder:
         return self._vertexQueue.isEmpty()
     
     def step(self):
-        self._computeTime -= time.time()
-        self._currentVertex = self._vertexQueue.pop()
-        if self._currentVertex.estimatedTimeThroughVertex > self._bestSolutionTime:
-            self._computeTime += time.time()
-            return False
-
-        # TODO: SHOULD NOT FIND OTHER VERTICES IF THERE IS A PATH TO GOAL!
-        self.checkPathToGoal()
-        self._findPathsTime -= time.time()
-        (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(
-            startTime=self._currentVertex.timeToVertex,
-            startPoint=self._currentVertex.position,
-            startVelocity=self._currentVertex.velocity)
-        self._findPathsTime += time.time()
-        for pathSegment in self._pathSegments:
-            timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
-
-            newVertex = Vertex(position=pathSegment.endPoint,
-                               velocity=pathSegment.endVelocity,
-                               timeToVertex=timeToVertex,
-                               estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.endPoint,
-                                                                                        pathSegment.endVelocity),
-                               previousVertex=self._currentVertex,
-                               pathSegment=pathSegment)
-
-            self._queueComputeTime -= time.time()
-            self._vertexQueue.push(newVertex)
-            self._queueComputeTime += time.time()
-
-        self._computeTime += time.time()
-        return True
+        try:
+            self._currentVertex = self._vertexQueue.pop()
+            while self._currentVertex.estimatedTimeThroughVertex > self._bestSolutionTime:
+                self._currentVertex = self._vertexQueue.pop()
+            
+            if self.checkPathToGoal():
+                return True
+            else:
+                self._findPathsTime -= time.time()
+                (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(
+                    startTime=self._currentVertex.timeToVertex,
+                    startPoint=self._currentVertex.position,
+                    startVelocity=self._currentVertex.velocity)
+                self._findPathsTime += time.time()
+                for pathSegment in self._pathSegments:
+                    timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
+        
+                    newVertex = Vertex(position=pathSegment.endPoint,
+                                       velocity=pathSegment.endVelocity,
+                                       timeToVertex=timeToVertex,
+                                       estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.endPoint,
+                                                                                                pathSegment.endVelocity),
+                                       previousVertex=self._currentVertex,
+                                       pathSegment=pathSegment)
+        
+                    self._vertexQueue.push(newVertex)
+                return False
+        except QueueEmptyException:
+            return True
 
     def checkPathToGoal(self):
         """
         Check if there is a path from self._currentVertex to the goal.  Update the best solution if this is better.
         :return:
         """
-        self._findPathsTime -= time.time()
         pathSegment = self._obstacleData.findPathSegment(startTime=self._currentVertex.timeToVertex,
                                                          startPoint=self._currentVertex.position,
                                                          startVelocity=self._currentVertex.velocity,
                                                          targetPoint=self._goal,
                                                          velocityOfTarget=np.array((0, 0), np.double))
-        if pathSegment is not None:
+        if pathSegment is None:
+            return False
+        else:
             timeToGoal = self._currentVertex.timeToVertex + pathSegment.elapsedTime
-            self._findPathsTime += time.time()
             if timeToGoal < self._bestSolutionTime:
                 self._solution = Vertex(position=self._goal,
                                         velocity=pathSegment.endVelocity,
@@ -103,9 +102,8 @@ class DynamicPathFinder:
                                         pathSegment=pathSegment)
 
                 self._bestSolutionTime = timeToGoal
-        else:
-            self._findPathsTime += time.time()
-
+            return True
+        
     def heuristic(self, point, velocity):
         return calcs.calcTravelTime(point, self._goal, np.linalg.norm(velocity))
 
