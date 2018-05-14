@@ -1,2 +1,0 @@
-from dynamicPathFind import DynamicPathFindingVisualizer
-from staticPathFind.staticPathFindingVisualizer import PathFindingVisualizer
