@@ -11,14 +11,14 @@ MAX_ARC_INTERPOLATION_ERROR = 4.0
 
 class ArcPathSegment(DefaultPathSegment):
 
-    def __init__(self, startTime, elapsedTime, endPoint, endVelocity, speed, arc, arcTime):
+    def __init__(self, startTime, elapsedTime, endPoint, endVelocity, speed, arc):
         PathSegment.__init__(self, startTime, elapsedTime, endPoint, endVelocity)
         self.speed = speed
 
         self.lineStartPoint = arc.endPoint
         self.lineSegment = LineSegment(arc.endPoint, endPoint)
         self.arc = arc
-        self.arcTime = arcTime
+        self.arcTime = self.arc.length * self.arc.radius / self.speed
         self.lineTime = self.elapsedTime - self.arcTime
 
         self.linearPathPoints = arc.interpolate(MAX_ARC_INTERPOLATION_ERROR)

@@ -2,7 +2,7 @@ import math
 
 from constants import NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
-from engine.geometry import calcs
+from engine.geometry import calcs, arc
 from engine.geometry.arc import Arc
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 import numpy as np
@@ -53,7 +53,7 @@ class ArcObstacleData(DefaultObstacleData):
             return None
 
         return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
-                              arcFinder.speed, arcFinder.arc, arcFinder.arcTime)
+                              arcFinder.speed, arcFinder.arc)
 
 
 # TODO: Move to calcs module
@@ -73,7 +73,7 @@ class ArcFinder:
         self.velocityOfTarget = velocityOfTarget
         self.direction = direction
 
-        self.arc = Arc(self.startPoint, self._startVelocity, acceleration, direction)
+        self.arc = arc.createArc(self.startPoint, self._startVelocity, acceleration, direction)
         self.totalTime = 0.0
         self.arcTime = 0.0
         self.endPoint = None
@@ -118,3 +118,4 @@ class ArcFinder:
         self.arc.setLength(
             calcs.modAngleUnsigned(relativeAngle))
         self.arcTime = self.arc.length * self.arc.radius / self.speed
+

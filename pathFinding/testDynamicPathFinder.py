@@ -26,9 +26,9 @@ scenario = ScenarioInput(boundaryPoints, noFlyZones, roads, startPoint, startVel
 vehicle = VehicleInput(maxSpeed=5.0, acceleration=1.0)
 
 # Example of loading scenario
-# inputDict = engine.loadInput("../scenarios/test1.json")
-# scenario = inputDict[SCENARIO_KEY]
-# vehicle = inputDict[VEHICLE_KEY]
+inputDict = engine.loadInput("../scenarios/test2.json")
+scenario = inputDict[SCENARIO_KEY]
+vehicle = inputDict[VEHICLE_KEY]
 
 pathFinder = DynamicPathFinder(scenario, vehicle)
 

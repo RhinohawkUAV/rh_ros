@@ -3,6 +3,22 @@ import math
 from engine.geometry import calcs
 import numpy as np
 
+    
+def createArc(startPoint, startVelocity, acceleration, direction):
+    direction = direction
+    speed = np.linalg.norm(startVelocity)
+    startDirection = startVelocity / speed
+    radius = speed * speed / acceleration
+    fromCenterDir = -direction * calcs.CCWNorm(startDirection)
+    fromCenterToStart = fromCenterDir * radius
+
+    center = startPoint - fromCenterToStart
+    start = calcs.angleOfVector(fromCenterToStart, direction)
+
+    length = 0.0
+
+    return Arc(direction, radius, center, start, length)
+
 
 class Arc:
     """
@@ -16,20 +32,12 @@ class Arc:
     3. an interpolation into line segments for collision detection
     """
 
-    def __init__(self, startPoint, startVelocity, acceleration, direction):
+    def __init__(self, direction, radius, center, start, length):
         self.direction = direction
-        speed = np.linalg.norm(startVelocity)
-        startDirection = startVelocity / speed
-        self.radius = speed * speed / acceleration
-        fromCenterDir = -self.direction * calcs.CCWNorm(startDirection)
-        fromCenterToStart = fromCenterDir * self.radius
-
-        self.center = startPoint - fromCenterToStart
-        self.start = calcs.angleOfVector(fromCenterToStart, self.direction)
-
-        self.length = 0.0
-        self.endPoint = startPoint
-        self.endTangent = startDirection
+        self.radius = radius
+        self.center = center
+        self.start = start
+        self.setLength(length)
 
     def setLength(self, length):
         """

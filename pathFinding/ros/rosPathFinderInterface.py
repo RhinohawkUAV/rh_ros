@@ -1,11 +1,13 @@
+from pathfinding.msg._PathDebug import PathDebug
+from pathfinding.msg._PathSolution import PathSolution
 from pathfinding.srv._InitiateFindPath import InitiateFindPath
-from ros import messageUtils
 from ros import messageUtils
 import rospy
 from std_srvs.srv._Empty import Empty
 
 from gui.pathFinder.pathFinderInterface import PathFinderInterface
-from ros.rosConstants import INITIATE_FINDPATH_SERVICE, STEP_FINDPATH_SERVICE
+from ros.rosConstants import INITIATE_FINDPATH_SERVICE, STEP_FINDPATH_SERVICE, \
+    PATHFINDER_DEBUG_TOPIC, PATHFINDER_SOLUTION_TOPIC
 
 
 class RosPathFinderInterface(PathFinderInterface):
@@ -13,6 +15,10 @@ class RosPathFinderInterface(PathFinderInterface):
     A path finder interface, for the GUI, built around the ROS pathFinder node.
     """
 
+    def __init__(self):
+        rospy.Subscriber(PATHFINDER_DEBUG_TOPIC, PathDebug, self.receiveDebug)
+        rospy.Subscriber(PATHFINDER_SOLUTION_TOPIC, PathSolution, self.receiveSolution)
+    
     def initiate(self, scenario, vehicle):
         """
         Start a new path finding process.  Will wipe out previous process.
@@ -48,3 +54,12 @@ class RosPathFinderInterface(PathFinderInterface):
         rospy.wait_for_service(STEP_FINDPATH_SERVICE)
         func = rospy.ServiceProxy(STEP_FINDPATH_SERVICE, Empty)
         func()
+
+    def receiveDebug(self, pathDebug):
+        (pastPathSegments, futurePathSegments, filteredPathSegments) = messageUtils.msgToPathDebug(pathDebug)
+        self._listener.triggerDebug(pastPathSegments, futurePathSegments, filteredPathSegments)
+        
+    def receiveSolution(self, pathSolution):
+        solutionPathSegments = messageUtils.msgToPathSegmentList(pathSolution.solutionPathSegments)
+        self._listener.triggerSolution(solutionPathSegments, pathSolution.finished)
+        

@@ -1,0 +1,2 @@
+PathSegment[] solutionPathSegments
+bool finished

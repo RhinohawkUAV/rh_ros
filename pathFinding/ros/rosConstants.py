@@ -1,7 +1,11 @@
+ROS_QUEUE_SIZE = 10
+
 PATHFINDER_DEBUG_NODE_ID = "pathFinderDebug"
 PATHFINDER_NODE_ID = "pathFinder"
 
 PATHFINDER_INPUT_TOPIC = "pathFinderInput"
+PATHFINDER_SOLUTION_TOPIC = "pathFinderSolution"
+PATHFINDER_DEBUG_TOPIC = "pathFinderDebug"
 
 INITIATE_FINDPATH_SERVICE = "initiateFindPath"
 STEP_FINDPATH_SERVICE = "stepFindPath"

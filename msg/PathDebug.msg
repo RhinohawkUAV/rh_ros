@@ -1,4 +1,3 @@
-PathSegment[] pastSegments
-PathSegment[] futureSegments
-PathSegment[] filteredSegments
-PathSegment[] bestSolution
+PathSegment[] pastPathSegments
+PathSegment[] futurePathSegments
+PathSegment[] filteredPathSegments

@@ -5,7 +5,6 @@ import tkFileDialog
 
 from engine import interface
 from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY
-from gui.editor.pathSegmentTester.obstacleDebug import ObstacleCourseDebug
 from gui.pathFinder.pathFinderListener import PathFinderListener
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 from gui.visualizer import Visualizer
@@ -53,13 +52,15 @@ class PathFindViewer(Visualizer, PathFinderListener):
         rangeY = bounds[3] - bounds[1]        
         self.setView(centerX, centerY, rangeX + 1, rangeY + 1)
         self._pathFinderInterface.initiate(scenario, vehicle)
-        self._pathFindDrawable = PathFindDrawable(scenario, vehicle)
+        self._pathFindDrawable = PathFindDrawable(scenario)
         self.updateDisplay()
 
-    def debug(self, pathSegments, filteredSegments, currentPath):
+    def debug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
+        self._pathFindDrawable.updateDebug(pastPathSegments, futurePathSegments, filteredPathSegments)
         self.updateDisplay()
 
-    def solution(self, solutionPath):
+    def solution(self, solutionPathSegments, finished):
+        self._pathFindDrawable.updateSolution(solutionPathSegments, finished)
         self.updateDisplay()
 
     def onLeftClick(self, point, event):

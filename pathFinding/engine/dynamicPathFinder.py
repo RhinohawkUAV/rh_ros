@@ -46,7 +46,7 @@ class DynamicPathFinder:
 
     def isDone(self):
         return self._vertexQueue.isEmpty()
-
+    
     def step(self):
         self._computeTime -= time.time()
         self._currentVertex = self._vertexQueue.pop()
@@ -54,6 +54,7 @@ class DynamicPathFinder:
             self._computeTime += time.time()
             return False
 
+        # TODO: SHOULD NOT FIND OTHER VERTICES IF THERE IS A PATH TO GOAL!
         self.checkPathToGoal()
         self._findPathsTime -= time.time()
         (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(
@@ -107,6 +108,9 @@ class DynamicPathFinder:
 
     def heuristic(self, point, velocity):
         return calcs.calcTravelTime(point, self._goal, np.linalg.norm(velocity))
+
+    def hasSolution(self):
+        return self._solution is not None
 
     def getSolution(self):
         if self._solution is None:

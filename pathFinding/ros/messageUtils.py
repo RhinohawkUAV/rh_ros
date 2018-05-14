@@ -3,12 +3,14 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 """
 from pathfinding.msg._Arc import Arc
 from pathfinding.msg._NoFlyZone import NoFlyZone
+from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSegment import PathSegment
 from pathfinding.msg._Road import Road
 from pathfinding.msg._Scenario import Scenario
 from pathfinding.msg._Vec2 import Vec2
 from pathfinding.msg._Vehicle import Vehicle
 
+import engine
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY, loadInput
 from engine.interface.noFlyZoneInput import NoFlyZoneInput
@@ -67,6 +69,37 @@ def msgToPointList(msg):
     return pointList
 
 
+def msgToPathDebug(msg):
+    pastPathSegments = msgToPathSegmentList(msg.pastPathSegments)
+    futurePathSegments = msgToPathSegmentList(msg.futurePathSegments)
+    filteredPathSegments = msgToPathSegmentList(msg.filteredPathSegments)
+    return (pastPathSegments, futurePathSegments, filteredPathSegments)
+
+
+def msgToPathSegmentList(msg):
+    pathSegments = []
+    for pathSegmentMsg in msg:
+        pathSegments.append(msgToPathSegment(pathSegmentMsg))
+    return pathSegments
+
+
+def msgToPathSegment(msg):
+    return ArcPathSegment(float(msg.startTime),
+                                 float(msg.elapsedTime),
+                                 msgToPoint(msg.endPoint),
+                                 msgToPoint(msg.endVelocity),
+                                 float(msg.speed),
+                                 msgToArc(msg.arc))
+
+            
+def msgToArc(msg):
+    return engine.geometry.arc.Arc(float(msg.direction),
+                                  float(msg.radius),
+                                  msgToPoint(msg.center),
+                                  float(msg.start),
+                                  float(msg.length))
+
+
 def msgToPoint(msg):
     return (float(msg.x), float(msg.y))
 
@@ -115,6 +148,14 @@ def pointListToMsg(points):
     return msg
 
 
+def pathDebugToMsg(pastPathSegments, futurePathSegments, filteredPathSegments):
+    msg = PathDebug()
+    msg.pastPathSegments = pathSegmentListToMsg(pastPathSegments)
+    msg.futurePathSegments = pathSegmentListToMsg(futurePathSegments)
+    msg.filteredPathSegments = pathSegmentListToMsg(filteredPathSegments)
+    return msg
+
+
 def pathSegmentListToMsg(pathSegments):
     msg = []
     for pathSegment in pathSegments:
@@ -148,3 +189,4 @@ def arcToMsg(arc):
     
 def pointToMsg(point):
     return Vec2(point[0], point[1])
+
