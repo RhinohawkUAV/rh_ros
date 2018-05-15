@@ -45,5 +45,22 @@ export these paths so other applications can find ardupilot.
     export PATH=$PATH:$HOME/ardupilot/Tools/autotest
     export PATH=/usr/lib/ccache:$PATH
 
+reload bashrc:
+    
+    . ~/.bashrc
+    
+Start the generic SITL for arducoptor:
+
+    cd ardupilot/ArduCopter
+    
+For first run, this command will init all setings
+    
+    sim_vehicle.py -w
+    
+use this command to load the simulator with the map.
+
+
+
+
 
     
