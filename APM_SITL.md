@@ -21,7 +21,13 @@ Install all prerequisites for ardupilot
 reload the bash profile
     
     . ~/.profile
+
+make user a member of dialout: this is done in similer autopilots
     
-Install ardupilot
+    sudo usermod -a -G dialout $USER
+    
+unpack a specific version of gcc arm required by ardupilot
+
+    tar -xjvf gcc-arm-none-eabi-4_9-2015q3-20150921-linux.tar.bz2
 
     
