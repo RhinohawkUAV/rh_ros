@@ -1,19 +1,16 @@
 from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSolution import PathSolution
-from pathfinding.srv._InitiateFindPath import InitiateFindPath, \
-    InitiateFindPathResponse
-from roscpp.srv._Empty import Empty, EmptyResponse
+from pathfinding.srv._SolveProblem import SolveProblem, SolveProblemResponse
+from pathfinding.srv._StepProblem import StepProblem, StepProblemResponse
+from pathfinding.srv._SubmitProblem import SubmitProblem, SubmitProblemResponse
+from roscpp.srv._Empty import EmptyResponse
 import rospy
-from threading import Thread, Condition
-import threading
-import time
-
-from engine.pathFinder import PathFinder
+from std_msgs.msg import Int64
 from engine.pathFinderManager import PathFinderManager
 import messageUtils
-from ros.rosConstants import PATHFINDER_NODE_ID, INITIATE_FINDPATH_SERVICE, \
-    STEP_FINDPATH_SERVICE, PATHFINDER_DEBUG_TOPIC, ROS_QUEUE_SIZE, \
-    PATHFINDER_SOLUTION_TOPIC
+from ros.rosConstants import PATHFINDER_NODE_ID, SUBMIT_PROBLEM_SERVICE, \
+    STEP_PROBLEM_SERVICE, PATHFINDER_DEBUG_TOPIC, ROS_QUEUE_SIZE, \
+    PATHFINDER_SOLUTION_TOPIC, SOLVE_PROBLEM_SERVICE
 
 
 class ShutdownException(BaseException):
@@ -26,8 +23,9 @@ class RosPathFinder(PathFinderManager):
         PathFinderManager.__init__(self)
         rospy.init_node(PATHFINDER_NODE_ID, anonymous=True)
         rospy.core.add_shutdown_hook(self._rosShutdown)
-        rospy.Service(INITIATE_FINDPATH_SERVICE, InitiateFindPath, self._submitRequest)
-        rospy.Service(STEP_FINDPATH_SERVICE, Empty, self._stepRequest)
+        rospy.Service(SUBMIT_PROBLEM_SERVICE, SubmitProblem, self._submitProblem)
+        rospy.Service(STEP_PROBLEM_SERVICE, StepProblem, self._stepProblem)
+        rospy.Service(SOLVE_PROBLEM_SERVICE, SolveProblem, self._solveProblem)
         self._pathDebugPub = rospy.Publisher(PATHFINDER_DEBUG_TOPIC, PathDebug, queue_size=ROS_QUEUE_SIZE)
         self._pathSolutionPub = rospy.Publisher(PATHFINDER_SOLUTION_TOPIC, PathSolution, queue_size=ROS_QUEUE_SIZE)
         
@@ -55,13 +53,15 @@ class RosPathFinder(PathFinderManager):
         print "ROS is shutting down pathfinder cause: " + shutdownMessage
         self.shutdown()
 
-    def _submitRequest(self, request):
+    def _submitProblem(self, request):
         scenario = messageUtils.msgToScenario(request.scenario)
         vehicle = messageUtils.msgToVehicle(request.vehicle)
         self.submitProblem(scenario, vehicle)
-        return InitiateFindPathResponse()
+        return SubmitProblemResponse()
 
-    def _stepRequest(self, request):
-        self.stepProblem()
-        return EmptyResponse()
-
+    def _stepProblem(self, request):
+        self.stepProblem(request.numSteps)
+        return StepProblemResponse()
+    
+    def _solveProblem(self, request):
+        return SolveProblemResponse()

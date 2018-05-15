@@ -7,5 +7,6 @@ PATHFINDER_INPUT_TOPIC = "pathFinderInput"
 PATHFINDER_SOLUTION_TOPIC = "pathFinderSolution"
 PATHFINDER_DEBUG_TOPIC = "pathFinderDebug"
 
-INITIATE_FINDPATH_SERVICE = "initiateFindPath"
-STEP_FINDPATH_SERVICE = "stepFindPath"
+SUBMIT_PROBLEM_SERVICE = "submitProblem"
+STEP_PROBLEM_SERVICE = "stepProblem"
+SOLVE_PROBLEM_SERVICE = "solveProblem"

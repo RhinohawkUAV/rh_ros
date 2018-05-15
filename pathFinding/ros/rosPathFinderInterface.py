@@ -1,12 +1,12 @@
 from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSolution import PathSolution
-from pathfinding.srv._InitiateFindPath import InitiateFindPath
+from pathfinding.srv._StepProblem import StepProblem
+from pathfinding.srv._SubmitProblem import SubmitProblem
 from ros import messageUtils
 import rospy
-from std_srvs.srv._Empty import Empty
 
 from gui.pathFinder.pathFinderInterface import PathFinderInterface
-from ros.rosConstants import INITIATE_FINDPATH_SERVICE, STEP_FINDPATH_SERVICE, \
+from ros.rosConstants import SUBMIT_PROBLEM_SERVICE, STEP_PROBLEM_SERVICE, \
     PATHFINDER_DEBUG_TOPIC, PATHFINDER_SOLUTION_TOPIC
 
 
@@ -20,41 +20,26 @@ class RosPathFinderInterface(PathFinderInterface):
         rospy.Subscriber(PATHFINDER_SOLUTION_TOPIC, PathSolution, self.receiveSolution)
     
     def submitProblem(self, scenario, vehicle):
-        """
-        Start a new path finding process.  Will wipe out previous process.
-        """
         try:
             scenarioMsg = messageUtils.scenarioToMsg(scenario)
             vehicleMsg = messageUtils.vehicleToMsg(vehicle)
-            self.initiateFindPathROS(scenarioMsg, vehicleMsg)
+            # TODO: Do we need to do this every time?  Not in GUI thread.  Need to handle below as well.
+            rospy.wait_for_service(SUBMIT_PROBLEM_SERVICE)
+            func = rospy.ServiceProxy(SUBMIT_PROBLEM_SERVICE, SubmitProblem)
+            func(scenarioMsg, vehicleMsg)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e    
     
-    # TODO: Respect numSteps
     def stepProblem(self, numSteps=1):
-        """
-        Perform one step of the path finding process.
-        """
         try:
-            self.stepFindPathROS()
+            rospy.wait_for_service(STEP_PROBLEM_SERVICE)
+            func = rospy.ServiceProxy(STEP_PROBLEM_SERVICE, StepProblem)
+            func(numSteps)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e    
 
-    def initiateFindPathROS(self, scenarioMsg, vehicleMsg):
-        """
-        raises: rospy.ServiceException
-        """
-        rospy.wait_for_service(INITIATE_FINDPATH_SERVICE)
-        func = rospy.ServiceProxy(INITIATE_FINDPATH_SERVICE, InitiateFindPath)
-        func(scenarioMsg, vehicleMsg)
-
-    def stepFindPathROS(self):
-        """
-        raises: rospy.ServiceException
-        """
-        rospy.wait_for_service(STEP_FINDPATH_SERVICE)
-        func = rospy.ServiceProxy(STEP_FINDPATH_SERVICE, Empty)
-        func()
+    def solveProblem(self, timeout):
+        pass
 
     def receiveDebug(self, pathDebug):
         (pastPathSegments, futurePathSegments, filteredPathSegments) = messageUtils.msgToPathDebug(pathDebug)

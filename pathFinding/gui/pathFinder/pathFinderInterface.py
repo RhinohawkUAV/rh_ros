@@ -18,6 +18,12 @@ class PathFinderInterface():
     
     def stepProblem(self, numSteps=1):
         """
-        Perform one step of the path finding process.
+        Perform steps of the path finding process.
+        """
+        pass
+
+    def solveProblem(self, timeout):
+        """
+        Perform steps until problem is solved or timeout occurs.
         """
         pass
