@@ -59,7 +59,26 @@ For first run, this command will init all setings
     
 use this command to load the simulator with the map.
 
+    sim_vehicle.py --console --map
+note: The google map does not work, choose a different map provider in the gui.
 
+
+
+load the example waypoint mission.
+
+    wp load ../Tools/autotest/copter_mission.txt
+    
+commands to start the run in the ardupilot terminal. 
+
+        help : yields a more complete list of commands.
+        
+        arm throttle   
+        mode auto
+        rc 3 1500
+        
+
+        
+        
 
 
 
