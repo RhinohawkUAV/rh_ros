@@ -23,13 +23,13 @@ class PathFinderListener(object):
         """
         pass
 
-    def triggerDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
+    def fireDebugInGuiThread(self, pastPathSegments, futurePathSegments, filteredPathSegments):
         """
         For convenience of the pathFinderInterface.  This will call debug() in the GUI thread with given arguments.
         """
         gui.inGUIThread(self.debug, pastPathSegments, futurePathSegments, filteredPathSegments)
 
-    def triggerSolution(self, solutionPathSegments, finished):
+    def fireSolutionInGuiThread(self, solutionPathSegments, finished):
         """
         For convenience of the pathFinderInterface.  This will call debug() in the GUI thread with given arguments.
         """

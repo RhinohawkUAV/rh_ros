@@ -58,10 +58,10 @@ class RosPathFinder(PathFinderManager):
     def _submitRequest(self, request):
         scenario = messageUtils.msgToScenario(request.scenario)
         vehicle = messageUtils.msgToVehicle(request.vehicle)
-        self.submit(scenario, vehicle)
+        self.submitProblem(scenario, vehicle)
         return InitiateFindPathResponse()
 
     def _stepRequest(self, request):
-        self.step()
+        self.stepProblem()
         return EmptyResponse()
 

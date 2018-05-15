@@ -10,13 +10,13 @@ class PathFinderInterface():
     def setListener(self, listener):
         self._listener = listener
         
-    def initiate(self, scenario, vehicle):
+    def submitProblem(self, scenario, vehicle):
         """
         Start a new path finding process.  Will wipe out previous process.
         """
         pass
     
-    def step(self):
+    def stepProblem(self, numSteps=1):
         """
         Perform one step of the path finding process.
         """

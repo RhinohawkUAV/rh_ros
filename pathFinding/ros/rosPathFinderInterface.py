@@ -19,7 +19,7 @@ class RosPathFinderInterface(PathFinderInterface):
         rospy.Subscriber(PATHFINDER_DEBUG_TOPIC, PathDebug, self.receiveDebug)
         rospy.Subscriber(PATHFINDER_SOLUTION_TOPIC, PathSolution, self.receiveSolution)
     
-    def initiate(self, scenario, vehicle):
+    def submitProblem(self, scenario, vehicle):
         """
         Start a new path finding process.  Will wipe out previous process.
         """
@@ -30,7 +30,8 @@ class RosPathFinderInterface(PathFinderInterface):
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e    
     
-    def step(self):
+    # TODO: Respect numSteps
+    def stepProblem(self, numSteps=1):
         """
         Perform one step of the path finding process.
         """
@@ -57,9 +58,9 @@ class RosPathFinderInterface(PathFinderInterface):
 
     def receiveDebug(self, pathDebug):
         (pastPathSegments, futurePathSegments, filteredPathSegments) = messageUtils.msgToPathDebug(pathDebug)
-        self._listener.triggerDebug(pastPathSegments, futurePathSegments, filteredPathSegments)
+        self._listener.fireDebugInGuiThread(pastPathSegments, futurePathSegments, filteredPathSegments)
         
     def receiveSolution(self, pathSolution):
         solutionPathSegments = messageUtils.msgToPathSegmentList(pathSolution.solutionPathSegments)
-        self._listener.triggerSolution(solutionPathSegments, pathSolution.finished)
+        self._listener.fireSolutionInGuiThread(solutionPathSegments, pathSolution.finished)
         

@@ -51,7 +51,7 @@ class PathFinderManager:
         self.shutdown()
         self._thread.join()
 
-    def submit(self, scenario, vehicle):
+    def submitProblem(self, scenario, vehicle):
         """
         Submit a new path finding problem.  Will cancel any queued steps.  
         If a step is currently executing, its result will not be published.
@@ -60,7 +60,7 @@ class PathFinderManager:
             self._activePathFinder = PathFinder(scenario, vehicle)
             self._steps = 0
 
-    def step(self, numSteps=1):
+    def stepProblem(self, numSteps=1):
         """
         Request the path finder run until:
         1. the given number of steps are performed
@@ -73,7 +73,7 @@ class PathFinderManager:
             self._steps += numSteps
             self._controlLock.notifyAll()
 
-    def solve(self, timeout):
+    def solveProblem(self, timeout):
         # TODO: Implement
         pass
 

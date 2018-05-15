@@ -1,31 +1,29 @@
-from engine.pathFinder import PathFinder
+from engine.pathFinderManager import PathFinderManager
 from gui.pathFinder.pathFinderInterface import PathFinderInterface
 
 
-class LocalPathFinderInterface(PathFinderInterface):
+class LocalPathFinderInterface(PathFinderManager, PathFinderInterface):
     """
     Manages a local path finder for use in PathFindViewer.
     """
 
     def __init__(self):
-        self._activePathFinder = None
+        PathFinderManager.__init__(self)
     
-    def initiate(self, scenario, vehicle):
+    def submitProblem(self, scenario, vehicle):
         """
         Start a new path finding process.  Will wipe out previous process.
         """
-        self._activePathFinder = PathFinder(scenario, vehicle)
+        PathFinderManager.submitProblem(self, scenario, vehicle)
     
-    def step(self):
+    def stepProblem(self, numSteps=1):
         """
         Perform one step of the path finding process.
         """
-        if self._activePathFinder is None or self._activePathFinder.isDone():
-            return
-        if self._activePathFinder.step():
-            solutionPathSegments = self._activePathFinder.getSolution()
-            self._listener.triggerSolution(solutionPathSegments, self._activePathFinder.isDone())
-        else:
-            debugData = self._activePathFinder.getDebugData()
-            self._listener.triggerDebug(*debugData)
+        PathFinderManager.stepProblem(self, numSteps)
 
+    def publishSolution(self, solutionPathSegments, finished):
+        self._listener.fireSolutionInGuiThread(solutionPathSegments, finished)
+    
+    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
+        self._listener.fireDebugInGuiThread(pastPathSegments, futurePathSegments, filteredPathSegments)

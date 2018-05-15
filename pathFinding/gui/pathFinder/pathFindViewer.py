@@ -1,6 +1,5 @@
 from numpy.random.mtrand import np
 import os
-import string
 import tkFileDialog
 
 from engine import interface
@@ -69,7 +68,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         rangeX = bounds[2] - bounds[0]
         rangeY = bounds[3] - bounds[1]        
         self.setView(centerX, centerY, rangeX + 1, rangeY + 1)
-        self._pathFinderInterface.initiate(scenario, vehicle)
+        self._pathFinderInterface.submitProblem(scenario, vehicle)
         self._pathFindDrawable = PathFindDrawable(scenario)
         self.updateDisplay()
 
@@ -82,7 +81,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self.updateDisplay()
 
     def onLeftClick(self, point, event):
-        self._pathFinderInterface.step()
+        self._pathFinderInterface.stepProblem()
 
     def onMouseMotion(self, point, event):
         self._pointOfInterest = point
