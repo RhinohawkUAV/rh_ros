@@ -82,6 +82,7 @@ additional INFO (WIP)
                I got this running but did not go any further
 * Simulator: gazebo http://ardupilot.org/dev/docs/using-gazebo-simulator-with-sitl.html
                 This would not respond for me.
+*real flight:  http://ardupilot.org/dev/docs/sitl-with-realflight.html I have this running.
 
 
 
