@@ -1,4 +1,5 @@
 before you begin: Follow these steps to install ROS.
+30 GB recomended for you vm
 
 https://www.evernote.com/shard/s201/sh/fd17ab52-69a0-4390-8c36-259788e89891/2b22344beb9a4935
 
@@ -6,6 +7,8 @@ https://www.evernote.com/shard/s201/sh/fd17ab52-69a0-4390-8c36-259788e89891/2b22
 Instructions to install Ardupilot, and complete the SITL
 
 reference to Ardupilot: http://ardupilot.org/dev/docs/building-the-code.html
+
+mavproxy install instructions: https://ardupilot.github.io/MAVProxy/html/getting_started/download_and_installation.html#linux
 
 clone ardupilot and init submodules
 
@@ -32,6 +35,15 @@ Unpack a specific version of gcc arm required by ardupilot
     
 If there have been updates to some git submodules you may need to do a full clean build. To do that use:
 This also is important if modifying parts of the firmware.
+
+    make px4-clean
+    
+SITL Setup:
+
+export these paths so other applications can find ardupilot.
+
+    export PATH=$PATH:$HOME/ardupilot/Tools/autotest
+    export PATH=/usr/lib/ccache:$PATH
 
 
     
