@@ -77,8 +77,10 @@ commands to start the run in the ardupilot terminal.
         rc 3 1500
         
 
-        
-        
+additional INFO (WIP)
+Information on ros with SITL. I gogt this running but did not go any further.
+
+* http://ardupilot.org/dev/docs/ros-sitl.html
 
 
 
