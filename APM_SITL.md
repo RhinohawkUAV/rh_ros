@@ -14,6 +14,14 @@ clone ardupilot and init submodules
     git submodule update --init --recursive
         
 
+Install all prerequisites for ardupilot
+
+    Tools/scripts/install-prereqs-ubuntu.sh -y
+    
+reload the bash profile
+    
+    . ~/.profile
+    
 Install ardupilot
 
     
