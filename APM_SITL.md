@@ -39,8 +39,8 @@ This also is important if modifying parts of the firmware.
     cd ~/ardupilot
     cd ArduCoptor     //if building coptor
     cd ArduPlane      //if building plane
-    
-    make px4-clean
+    make px4        //to build
+    make px4-clean  //to clean or if you have issues.
     
 SITL Setup:
 
