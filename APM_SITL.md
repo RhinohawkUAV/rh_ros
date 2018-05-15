@@ -36,6 +36,10 @@ Unpack a specific version of gcc arm required by ardupilot
 If there have been updates to some git submodules you may need to do a full clean build. To do that use:
 This also is important if modifying parts of the firmware.
 
+    cd ~/ardupilot
+    cd ArduCoptor     //if building coptor
+    cd ArduPlane      //if building plane
+    
     make px4-clean
     
 SITL Setup:
