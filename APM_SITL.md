@@ -18,16 +18,20 @@ Install all prerequisites for ardupilot
 
     Tools/scripts/install-prereqs-ubuntu.sh -y
     
-reload the bash profile
+Reload the bash profile
     
     . ~/.profile
 
-make user a member of dialout: this is done in similer autopilots
+Make user a member of dialout: this is done in similer autopilots
     
     sudo usermod -a -G dialout $USER
     
-unpack a specific version of gcc arm required by ardupilot
+Unpack a specific version of gcc arm required by ardupilot
 
     tar -xjvf gcc-arm-none-eabi-4_9-2015q3-20150921-linux.tar.bz2
+    
+If there have been updates to some git submodules you may need to do a full clean build. To do that use:
+This also is important if modifying parts of the firmware.
+
 
     
