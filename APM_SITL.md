@@ -17,7 +17,7 @@ clone ardupilot and init submodules
     git submodule update --init --recursive
         
 
-Install all prerequisites for ardupilot
+Install all prerequisites for ardupilot this should include the arm-gcc.
 
     Tools/scripts/install-prereqs-ubuntu.sh -y
     
