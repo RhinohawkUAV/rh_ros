@@ -79,9 +79,9 @@ commands to start the run in the ardupilot terminal.
 
 additional INFO (WIP)
 * Information on ros with SITL. http://ardupilot.org/dev/docs/ros-sitl.html
-        i got this running but did not go any further
+               I got this running but did not go any further
 * Simulator: gazebo http://ardupilot.org/dev/docs/using-gazebo-simulator-with-sitl.html
-        this would not respond for me.
+                This would not respond for me.
 
 
 
