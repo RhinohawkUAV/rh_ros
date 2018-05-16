@@ -46,8 +46,8 @@ class PathFindDrawable(Drawable):
     def draw(self, canvas, pointOfInterest=None, snapDistance=float("inf"), obstacleColor="black",
              lineOfSightColor="blue",
              vertexColor="green",
-             pathColor="red",
-             solutionColor="purple",
+             pathColor="purple",
+             solutionColor="green",
              **kwargs):
 
         if pointOfInterest is None:
@@ -56,13 +56,13 @@ class PathFindDrawable(Drawable):
             (pointOfInterest, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance)
             
         self._obstacleCourseDebug.draw(canvas, time=drawTime, boundaryColor="red", nfzColor="black")
-        gui.draw.drawPoint(canvas, self._startPoint, color="green", outline="black", width=1.5, radius=1.0)
+        gui.draw.drawPoint(canvas, self._startPoint, color="cyan", outline="black", width=1.5, radius=1.0)
         gui.draw.drawVelocity(canvas, self._startPoint, self._startVelocity, color="black", width=2.0)
         for wayPoint in self._wayPoints:
             gui.draw.drawPoint(canvas, wayPoint, color="", outline="black", width=1.5, radius=1.0)
 
         if pointOfInterest is not None:
-            gui.draw.drawPoint(canvas, pointOfInterest, color="orange")
+            gui.draw.drawPoint(canvas, pointOfInterest, color="cyan", outline="black", width=1.5, radius=1.0)
 
         for pathSegment in self._futurePathSegments:
             pathSegment.draw(canvas, color=lineOfSightColor)            
