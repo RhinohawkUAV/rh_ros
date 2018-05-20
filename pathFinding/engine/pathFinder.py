@@ -6,13 +6,15 @@ from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
 from geometry import calcs
 import numpy as np
+from utils import profile
 from vertex import Vertex
 
 
 class PathFinder:
 
+    @profile.accumulate("setup")
     def __init__(self, scenario, vehicle):
-
+        
         self._obstacleData = ArcObstacleData(vehicle.acceleration)
 #         self._obstacleData = LineSegmentObstacleData(NO_FLY_ZONE_POINT_OFFSET)
         self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
@@ -47,6 +49,7 @@ class PathFinder:
     def isDone(self):
         return self._vertexQueue.isEmpty()
     
+    @profile.accumulate("step")
     def step(self):
         try:
             self._currentVertex = self._vertexQueue.pop()
@@ -77,7 +80,7 @@ class PathFinder:
                 return False
         except QueueEmptyException:
             return True
-
+            
     def checkPathToGoal(self):
         """
         Check if there is a path from self._currentVertex to the goal.  Update the best solution if this is better.

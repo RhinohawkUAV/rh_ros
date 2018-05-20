@@ -1,9 +1,8 @@
 import math
 
-import numpy as np
-
 from constants import DISTANCE_TOLERANCE_SQUARED
-from engine.utils import quadratic
+import numpy as np
+from utils import quadratic
 
 
 def arePointsClose(p1, p2):
@@ -102,7 +101,7 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     # Solve for towardsFactor:
 
     a = -towardsMagSquared
-    b = - 2 * velDotTowards
+    b = -2 * velDotTowards
     c = projectileSpeed * projectileSpeed - np.dot(targetVelocity, targetVelocity)
 
     solutions = quadratic.solveQuad(a, b, c)

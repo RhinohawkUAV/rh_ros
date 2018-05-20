@@ -1,5 +1,4 @@
-from threading import Thread, Condition
-import threading
+from threading import Thread, Condition, Lock
 from engine.pathFinder import PathFinder
 
 
@@ -13,7 +12,7 @@ class PathFinderManager:
     """
 
     def __init__(self):
-        self._controlLock = Condition(threading.Lock())
+        self._lock = Condition(Lock())
         self._steps = 0
         self._shutdown = False
         self._activePathFinder = None
@@ -40,9 +39,9 @@ class PathFinderManager:
         """
         Shutdown the path finding manager and cancel all remaining steps.
         """
-        with self._controlLock:
+        with self._lock:
             self._shutdown = True
-            self._controlLock.notifyAll()
+            self._lock.notifyAll()
 
     def shutdownAndWait(self):
         """
@@ -56,9 +55,10 @@ class PathFinderManager:
         Submit a new path finding problem.  Will cancel any queued steps.  
         If a step is currently executing, its result will not be published.
         """
-        with self._controlLock:
+        with self._lock:
             self._activePathFinder = PathFinder(scenario, vehicle)
             self._steps = 0
+            self._lock.notifyAll()
 
     def stepProblem(self, numSteps=1):
         """
@@ -67,11 +67,9 @@ class PathFinderManager:
         2. A solution is found
         3. A new problem is submitted
         """
-        with self._controlLock:
-            if self._activePathFinder is None or self._activePathFinder.isDone():
-                return
+        with self._lock:
             self._steps += numSteps
-            self._controlLock.notifyAll()
+            self._lock.notifyAll()
 
     def solveProblem(self, timeout):
         # TODO: Implement
@@ -94,10 +92,12 @@ class PathFinderManager:
         Waits until there is a step to perform and returns the path finder to perform it on.  
         May throw a ShutdownException instead if ROS is shutting down
         """
-        with self._controlLock:
+        with self._lock:
             self._checkShutdown()
-            while self._steps == 0:
-                self._controlLock.wait()
+            while self._activePathFinder is None or  \
+                  self._activePathFinder.isDone() or \
+                  self._steps == 0:
+                self._lock.wait()
                 self._checkShutdown()
 
             return self._activePathFinder
@@ -112,8 +112,8 @@ class PathFinderManager:
         # Calculate a step for the given path finder.  This takes non-zero time and is therefore not syncrhonized.
         solutionFound = pathFinder.step()
         
-        with self._controlLock:
-            # If ROS was shutdown while not locked, then throw exception and exit
+        with self._lock:
+            # If shutdown, then throw exception and exit
             self._checkShutdown()
             # If the active path finder has changed, then do not publish.
             if pathFinder is not self._activePathFinder:

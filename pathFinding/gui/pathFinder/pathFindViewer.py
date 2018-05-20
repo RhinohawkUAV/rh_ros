@@ -11,6 +11,7 @@ from engine.interface.vehicleInput import VehicleInput
 from gui.pathFinder.pathFinderListener import PathFinderListener
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 from gui.visualizer import Visualizer
+from utils import profile
 
 
 class PathFindViewer(Visualizer, PathFinderListener):
@@ -42,7 +43,9 @@ class PathFindViewer(Visualizer, PathFinderListener):
                 self.setState(pathFindInput[SCENARIO_KEY], pathFindInput[VEHICLE_KEY])
         elif key == "r":
             self.setStateRandom()
-            
+        elif key == "t":
+            print profile.result()
+
     def setStateRandom(self):
         startPoint = (95, 95)
         endPoint = (5, 5)

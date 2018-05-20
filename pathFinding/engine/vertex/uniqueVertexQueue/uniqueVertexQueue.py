@@ -1,8 +1,8 @@
-from engine.utils import MinHeap
 from engine.vertex.vertexPriorityQueue import VertexPriorityQueue, \
     QueueEmptyException
 import numpy as np
 from uniqueVertexTree import UniqueTree
+from utils.minheap import MinHeap
 
 
 class UniqueVertexQueue(VertexPriorityQueue):
