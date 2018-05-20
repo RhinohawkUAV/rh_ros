@@ -1,3 +1,4 @@
+from fileinput import filename
 from numpy.random.mtrand import np
 import os
 import tkFileDialog
@@ -25,7 +26,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self._pathFinderInterface = pathFinderInterface
         self._pathFinderInterface.setListener(self)
         self._pathFindDrawable = None
-        
+        self._pathFindInput = None
         self.bindWithTransform('<Key>', self.onKeyPressed)
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Button-1>', self.onLeftClick)
@@ -39,12 +40,21 @@ class PathFindViewer(Visualizer, PathFinderListener):
             fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir=initialPath)
             
             if isinstance(fileName, basestring) and not fileName == '':
-                pathFindInput = interface.loadInput(fileName)
-                self.setState(pathFindInput[SCENARIO_KEY], pathFindInput[VEHICLE_KEY])
+                self._pathFindInput = interface.loadInput(fileName)
+                self.setState(self._pathFindInput[SCENARIO_KEY], self._pathFindInput[VEHICLE_KEY])
+        if key == "s":
+            # Can always find the scenarios folder relative to this file regardless of how the program is started
+            root = os.path.dirname(__file__)
+            initialPath = os.path.normpath(os.path.join(root, "../../../scenarios"))
+            fileName = tkFileDialog.asksaveasfilename(defaultextension=".json", initialdir=initialPath)
+            
+            if isinstance(fileName, basestring) and not fileName == '':
+                interface.saveInput(fileName, self._pathFindInput)
         elif key == "r":
             self.setStateRandom()
         elif key == "t":
             print profile.result()
+            profile.printAggregate()
 
     def setStateRandom(self):
         startPoint = (95, 95)
@@ -71,6 +81,10 @@ class PathFindViewer(Visualizer, PathFinderListener):
         rangeX = bounds[2] - bounds[0]
         rangeY = bounds[3] - bounds[1]        
         self.setView(centerX, centerY, rangeX + 1, rangeY + 1)
+        self._pathFindInput = {}
+        self._pathFindInput[SCENARIO_KEY] = scenario
+        self._pathFindInput[VEHICLE_KEY] = vehicle
+        
         self._pathFinderInterface.submitProblem(scenario, vehicle)
         self._pathFindDrawable = PathFindDrawable(scenario)
         self.updateDisplay()

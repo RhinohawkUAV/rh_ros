@@ -7,6 +7,7 @@ from engine.geometry.pathSegment.defaultPathSegment import DefaultPathSegment
 from engine.geometry.pathSegment.obstacleLineSegment import ObstacleLineSegment
 import numpy as np
 from obstacleData import ObstacleData
+from utils import profile
 
 
 class DefaultObstacleData(ObstacleData):
@@ -29,6 +30,19 @@ class DefaultObstacleData(ObstacleData):
 
         # When finding paths to no fly zone vertices, this applies an "outward" offset to each vertex of this length
         self.targetOffsetLength = targetOffsetLength
+
+    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
+        """
+        Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
+        at a given velocity.
+        :param startTime: absolute time at start of segment
+        :param startPoint:
+        :param startVelocity:
+        :param targetPoint:
+        :param velocityOfTarget:
+        :return:
+        """
+        pass
 
     def setInitialState(self, boundaryPoints, noFlyZones):
         del self.targetPoints[:]
@@ -74,15 +88,16 @@ class DefaultObstacleData(ObstacleData):
         # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment or None
         pathSegment = self.createPathSegment(startTime, startPoint, startVelocity, targetPoint, velocityOfTarget)
 
-        if pathSegment is not None and self.filterPathSegment(pathSegment, self.obstacleLines):
+        if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
             return pathSegment
         else:
             return None
 
+    @profile.accumulate("Find Path Segments")
     def findPathSegments(self, startTime, startPoint, startVelocity):
         # type: (float,Sequence,Sequence) -> ([PathSegment],[PathSegment])
 
-        rawPathSegments = []  # type: List[DefaultPathSegment]
+        unfilteredPathSegments = []  # type: List[DefaultPathSegment]
         filteredPathSegments = []  # type: List[DefaultPathSegment]
         for i in range(len(self.targetPoints)):
             velocityOfTarget = self.targetVelocities[i]
@@ -98,33 +113,22 @@ class DefaultObstacleData(ObstacleData):
                     relativeVelocity = pathSegment.endVelocity - velocityOfTarget
                     relativeVelocity /= np.linalg.norm((relativeVelocity))
                     if np.dot(relativeVelocity, pointNormal) >= cosLimit:
-                        rawPathSegments.append(pathSegment)
+                        unfilteredPathSegments.append(pathSegment)
                     else:
                         filteredPathSegments.append(pathSegment)
+        return self._filterPathSegments(unfilteredPathSegments, filteredPathSegments, self.obstacleLinesAtTime)
 
+    @profile.accumulate("Collision Detection")
+    def _filterPathSegments(self, unfilteredPathSegments, filteredPathSegments, obstacleLines):
         pathSegments = []
-
-        for pathSegment in rawPathSegments:
-            if self.filterPathSegment(pathSegment, self.obstacleLinesAtTime):
+        for pathSegment in unfilteredPathSegments:
+            if self._filterPathSegment(pathSegment, self.obstacleLinesAtTime):
                 pathSegments.append(pathSegment)
             else:
                 filteredPathSegments.append(pathSegment)
         return (pathSegments, filteredPathSegments)
 
-    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        """
-        Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
-        at a given velocity.
-        :param startTime: absolute time at start of segment
-        :param startPoint:
-        :param startVelocity:
-        :param targetPoint:
-        :param velocityOfTarget:
-        :return:
-        """
-        pass
-
-    def filterPathSegment(self, pathSegment, obstacleLines):
+    def _filterPathSegment(self, pathSegment, obstacleLines):
         for i in range(len(obstacleLines)):
             obstacleLine = obstacleLines[i]
             if pathSegment.intersectsObstacleLine(pathSegment.startTime, obstacleLine):

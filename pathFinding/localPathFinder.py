@@ -1,7 +1,7 @@
 """
 Runs a local path finder instance (no ROS).  This is convenient for debugging.
 """
-from engine.localPathFinderInterface import LocalPathFinderInterface
+from gui.pathFinder.guiPathFinderInterface import LocalPathFinderInterface
 import gui
 from gui.pathFinder.pathFindViewer import PathFindViewer
 

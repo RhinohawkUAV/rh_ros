@@ -24,6 +24,9 @@ class PathFinderManager:
         Override me.
         Called whenever a step on the active path finder concludes with a solutionPathSegments.
         This is called from within the path finder thread and should execute quickly.
+        This is intentionally behind a lock to guarantee order of operations.  
+        This will NOT publish results for an old problem.  Once a call to submitProblem()
+        concludes, no call to this method will be made for any previous problem being worked on.
         """
         pass
     
@@ -32,6 +35,9 @@ class PathFinderManager:
         Override me.
         Called whenever a step on the active path finder concludes with debug data.
         This is called from within the path finder thread and should execute quickly.
+        This is intentionally behind a lock to guarantee order of operations.  
+        This will NOT publish results for an old problem.  Once a call to submitProblem()
+        concludes, no call to this method will be made for any previous problem being worked on.
         """
         pass
             

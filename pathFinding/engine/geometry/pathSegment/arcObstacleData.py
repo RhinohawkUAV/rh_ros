@@ -6,6 +6,7 @@ from engine.geometry import calcs, arc
 from engine.geometry.arc import Arc
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 import numpy as np
+from utils import profile
 
 # TODO: Move to constants
 MAX_ITERATIONS = 4
@@ -28,6 +29,7 @@ class ArcObstacleData(DefaultObstacleData):
         DefaultObstacleData.__init__(self, targetOffsetLength)
         self.acceleration = acceleration
 
+    @profile.accumulate("Find Arc")
     def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
         arcFinderCCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
         try:
