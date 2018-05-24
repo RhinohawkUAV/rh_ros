@@ -2,13 +2,11 @@
 
 import cv2
 import numpy as np
-import yaml
 
 import rospy
-import rospkg
 
 from sensor_msgs.msg import Image,CompressedImage
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 
 from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import Point
