@@ -122,7 +122,7 @@ class DefaultObstacleData(ObstacleData):
     def _filterPathSegments(self, unfilteredPathSegments, filteredPathSegments, obstacleLines):
         pathSegments = []
         for pathSegment in unfilteredPathSegments:
-            if self._filterPathSegment(pathSegment, self.obstacleLinesAtTime):
+            if self._filterPathSegment(pathSegment, obstacleLines):
                 pathSegments.append(pathSegment)
             else:
                 filteredPathSegments.append(pathSegment)

@@ -1,10 +1,9 @@
-import math
 from Tkinter import Canvas
+import math
 
-import numpy as np
-
-import gui.draw
 from gui import Drawable
+import gui.draw
+import numpy as np
 
 textOffsetFactor = 4.0
 normalDisplayFactor = 4.0
@@ -95,7 +94,6 @@ class LineSegment(Drawable):
         :param endPoint: (x,y) 2nd point of the line
         :return: is there an intersection
         """
-
         # Distance to one-sided line segment, from startPoint, in the direction of the normal.
         p1diff = startPoint - self.p1
         normalDistanceP1 = np.dot(self.n, p1diff)

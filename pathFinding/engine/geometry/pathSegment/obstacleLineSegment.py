@@ -1,6 +1,7 @@
-import numpy as np
+import testmod
 
 from engine.geometry import LineSegment
+import numpy as np
 
 
 class ObstacleLineSegment(LineSegment):
@@ -10,12 +11,27 @@ class ObstacleLineSegment(LineSegment):
 
     def __init__(self, p1, p2, velocity):
         LineSegment.__init__(self, p1, p2)
-        self.velocity = velocity
+        self.velocity = np.array(velocity, np.double)
 
     def checkPathIntersectsLine(self, startTime, startPoint, endPoint, speed):
         """
         Does a path from startPoint to endPoint, at the given speed intersect?
         """
+        return self.checkPathIntersectsLinePy(startTime, startPoint, endPoint, speed)
+    
+    def checkPathIntersectsLineC(self, startTime, startPoint, endPoint, speed):
+        """
+        Does a path from startPoint to endPoint, at the given speed intersect?
+        """
+        # TODO: How are float64s getting in here?!?!
+        result = testmod.intersectPathAndLine(self, float(startTime), startPoint, endPoint, float(speed))
+        return result == 1
+    
+    def checkPathIntersectsLinePy(self, startTime, startPoint, endPoint, speed):
+        """
+        Does a path from startPoint to endPoint, at the given speed intersect?
+        """
+       
         direction = endPoint - startPoint
         distance = np.linalg.norm(direction)
         if distance == 0.0:
@@ -36,4 +52,6 @@ class ObstacleLineSegment(LineSegment):
         # Given the start time, this line will have moved.  Alternately, we offset the start and end points in the
         # opposite direction
         offset = -self.velocity * startTime
+
         return self.checkLineIntersection(startPoint + offset, endPoint + offset)
+    
