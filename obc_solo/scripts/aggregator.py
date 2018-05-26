@@ -80,8 +80,7 @@ class SpatialAggregation:
             self.mean_dists = [np.mean([np.sqrt((x-centroids[i][0])**2+(y-centroids[i][1])**2) for (x, y) in X[labels == i]]) for i in range(n_clusters_)]
 
             for i, c in enumerate(centroids):
-                print "Cluster %d - Centroid: (%2.4f,%2.4f) - Mean Distance: %2.4f" % (i,c[0],c[1],mean_dists[i])
-               
+                print("Cluster %d - Centroid: (%2.4f,%2.4f) - Mean Distance: %2.4f" % (i,c[0],c[1],mean_dists[i]))   
             self.marker = self.centroids[k] 
         
 

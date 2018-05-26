@@ -10,8 +10,8 @@ from functools import partial
 import rospy
 
 import mavros
-from mavros_msgs.msg import State, Waypoint, ParamValue
 from sensor_msgs.msg import NavSatFix
+from mavros_msgs.msg import State, Waypoint, WaypointReached, ParamValue
 from mavros_msgs.srv import SetMode, ParamSet
 from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
     WaypointPush, WaypointClear
@@ -68,26 +68,6 @@ def arm(state):
     return True
 
 
-def find_gps_topic(op_name, any_gps=False):
-    # XXX: since 0.13 global position always exists. need redo that.
-    global_fix = mavros.get_topic('global_position', 'global')
-    gps_fix = mavros.get_topic('global_position', 'raw', 'fix')
-
-    topics = rospy.get_published_topics()
-    # need find more elegant way
-    if len([topic for topic, type_ in topics if topic == global_fix]):
-        return global_fix
-    elif len([topic for topic, type_ in topics if topic == gps_fix]):
-        rospy.loginfo("Using GPS_RAW_INT data!")
-        return gps_fix
-    #elif any_gps:
-    #    t = [topic for topic, type_ in topics if type_ == 'sensor_msgs/NavSatFix']
-    #    if len(t) > 0:
-    #        rospy.loginfo("Using %s NavSatFix topic for %s", t[0], op_name)
-    #        return t[0]
-    return None
-
-
 def set_int_param(param, value):
 
     try:
@@ -118,12 +98,14 @@ def set_custom_mode(custom_mode):
     def clean():
         global mode_sub
         if mode_sub and mode_sub.type:
+            rospy.loginfo("Clearing mode sub")
             mode_sub.unregister()
             mode_sub = None
 
     done_evt = threading.Event()
     def state_cb(state):
         global mode_sub
+        rospy.loginfo("NEW MODE: "+state)
         if state.mode == custom_mode:
             rospy.loginfo("Mode changed to %s", state.mode)
             done_evt.set()
@@ -137,10 +119,10 @@ def set_custom_mode(custom_mode):
         rospy.logerr('Set mode failed:\n' + ''.join(traceback.format_stack()))
 
     success = False
-    if not ret.success:
-        rospy.logerr("Set mode failed: unknown")
-    elif not done_evt.wait(5):
-        rospy.logerr("Set mode failed: timed out")
+    if not ret.mode_sent:
+        rospy.logerr("Set mode %s failed: unknown" % custom_mode)
+    elif not done_evt.wait(10):
+        rospy.logerr("Set mode %s failed: timed out" % custom_mode)
     else:
         success = True
 
@@ -150,7 +132,6 @@ def set_custom_mode(custom_mode):
 
 def do_takeoff_cur_gps(min_pitch, yaw, altitude):
 
-    #fix = rospy.wait_for_message(gps_topic, NavSatFix, timeout=10)
     fix = values.get_value(gps_topic)
     if not fix:
         rospy.logerr("No GPS fix is latched")
@@ -179,7 +160,6 @@ def do_takeoff_cur_gps(min_pitch, yaw, altitude):
 
 def do_land_cur_gps(yaw, altitude):
 
-    #fix = rospy.wait_for_message(gps_topic, NavSatFix, timeout=10)
     fix = values.get_value(gps_topic)
     if not fix:
         rospy.logerr("No GPS fix is latched")
@@ -242,13 +222,17 @@ def handle_land(req):
 
 def push_waypoints(waypoints):
     try:
-        ret = wp_push(waypoints)
+        ret = wp_push(start_index=0, waypoints=waypoints)
     except rospy.ServiceException:
         rospy.logerr('Error setting waypoints:\n' + ''.join(traceback.format_stack()))
         return False
 
     if not ret.success:
         rospy.logerr('Error setting waypoints: unknown')
+        return False
+
+    if not ret.wp_transfered == len(waypoints):
+        rospy.logerr("Only %d/%d waypoints were transferred" % (ret.wp_transfered,len(waypoints)))
         return False
 
     return True
@@ -309,6 +293,10 @@ def handle_flyto(req):
 
     fix = values.get_value(gps_topic)
 
+    if not fix:
+        rospy.logerr('No GPS fix')
+        return FlyToResponse(False)
+
     set_custom_mode(MODE_LOITER)
 
     wps = mission_planner(fix.latitude, fix.longitude, \
@@ -354,6 +342,9 @@ def handle_flyto(req):
     return FlyToResponse(True)
 
 
+def waypoint_reached(state):
+    rospy.loginfo("We have reached waypoint %s!" % state.wp_seq)
+
 
 def get_proxy(topic, serviceType):
     rospy.loginfo("Waiting for service: %s", topic)
@@ -376,17 +367,20 @@ def start():
     wp_push = get_proxy('/mavros/mission/push', WaypointPush)
     wp_clear = get_proxy('/mavros/mission/clear', WaypointClear)
 
-    global gps_topic
-    gps_topic = find_gps_topic("takeoff")
+    global gps_topic 
+    gps_topic = mavros.get_topic('global_position', 'global')
     if gps_topic is None:
-        raise Exception("NavSatFix topic not exist")
+        raise Exception("GPS topic not exist")
+
+    rospy.loginfo("GPS_TOPIC=%s"%gps_topic)
 
     rospy.Service('command/takeoff', TakeOff, handle_takeoff)
     rospy.Service('command/land', Land, handle_land)
     rospy.Service('command/land2', Land, handle_land)
     rospy.Service('command/flyto', FlyTo, handle_flyto)
 
-    rospy.Subscriber(gps_topic, NavSatFix, partial(values.latch_value, gps_topic, max_age=10))
+    rospy.Subscriber("/mavros/global_position/global", NavSatFix, partial(values.latch_value, gps_topic, max_age=10))
+    rospy.Subscriber("/mavros/mission/reached", WaypointReached, waypoint_reached)
 
     wp_clear()
 
