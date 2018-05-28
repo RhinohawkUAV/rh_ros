@@ -9,10 +9,10 @@ from pathSegment import PathSegment
 
 class LinePathSegment(DefaultPathSegment):
 
-    def __init__(self, startTime, startPoint, speed, elapsedTime, endPoint, endVelocity):
-        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endVelocity)
+    def __init__(self, startTime, startPoint, startSpeed, elapsedTime, endPoint, endSpeed, endUnitVelocity):
+        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity)
         self.startPoint = startPoint
-        self.speed = speed
+        self.startSpeed = startSpeed
         self.lineSegment = LineSegment(startPoint, endPoint)
 
     def draw(self, canvas, color=DEFAULT_COLOR, filtered=False, width=DEFAULT_WIDTH, **kwargs):
@@ -33,4 +33,4 @@ class LinePathSegment(DefaultPathSegment):
         return (closestPoint, distance, self.startTime + timeInterp * self.elapsedTime)
 
     def intersectsObstacleLine(self, startTime, obstacleLine):
-        return obstacleLine.checkPathIntersectsLine(startTime, self.startPoint, self.endPoint, self.speed)
+        return obstacleLine.checkPathIntersectsLine(startTime, self.startPoint, self.endPoint, self.startSpeed)

@@ -28,27 +28,25 @@ class ArcObstacleData(DefaultObstacleData):
         self.acceleration = acceleration
 
     @profile.accumulate("Find Arc")
-    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
+    def createPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
 #         try:
-#             arcFinder = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
+#             arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
 #             arcFinder.solve()
 #             return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
 #                                   arcFinder.speed, arcFinder.arc)
 #         except NoSolutionException:
 #             return None
-
         try:
-            arcFinderCCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
+            arcFinderCCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
             arcFinderCCW.solve()
             timeCCW = arcFinderCCW.totalTime
         except NoSolutionException:
             timeCCW = float("inf")
  
         try:
-            arcFinderCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, -1.0, self.acceleration)
+            arcFinderCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, -1.0, self.acceleration)
             arcFinderCW.solve()
             timeCW = arcFinderCW.totalTime
- 
         except NoSolutionException:
             timeCW = float("inf")
  
@@ -60,8 +58,7 @@ class ArcObstacleData(DefaultObstacleData):
         else:
             return None
  
-        return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
-                              arcFinder.speed, arcFinder.arc)
+        return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.endPoint, arcFinder.speed, arcFinder.arc)
 
 
 # TODO: Move to calcs module
@@ -71,15 +68,14 @@ class NoSolutionException(BaseException):
 
 class ArcFinder:
 
-    def __init__(self, startPoint, velocity, targetPoint, velocityOfTarget, rotDirection,
+    def __init__(self, startPoint, startSpeed, unitVelocity, targetPoint, velocityOfTarget, rotDirection,
                  acceleration):
-        self.startPoint = startPoint
-        self.speed = np.linalg.norm(velocity)
-        
         # TODO: Should move check to higher level
-        if self.speed == 0.0 or acceleration == 0.0:
+        if startSpeed == 0.0 or acceleration == 0.0:
             raise NoSolutionException
-        
+
+        self.startPoint = startPoint
+        self.speed = startSpeed
         self.targetPoint = targetPoint
         
         self.speedOfTarget = np.linalg.norm(velocityOfTarget)
@@ -89,7 +85,7 @@ class ArcFinder:
         self.velocityOfTarget = velocityOfTarget
         self.rotDirection = rotDirection
 
-        self.arc = arc.createArc(self.startPoint, velocity, acceleration, rotDirection)
+        self.arc = arc.createArc(self.startPoint, startSpeed, unitVelocity, acceleration, rotDirection)
         self.totalTime = 0.0
         self.arcTime = 0.0
         self.endPoint = None

@@ -6,10 +6,10 @@ class LinearPath:
     Represents a path from startPoint to endPoint at a given speed.
     """
 
-    def __init__(self, startPoint, endPoint, speed):
+    def __init__(self, startPoint, endPoint, startSpeed):
         self._startPoint = startPoint
         self._endPoint = endPoint
-        self._speed = speed
+        self._speed = startSpeed
         self._lineSegment = LineSegment(self._startPoint, self._endPoint)
 
     def intersectsWithObstacleLine(self, obstacleLine):

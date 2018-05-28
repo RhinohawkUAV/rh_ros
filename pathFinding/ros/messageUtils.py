@@ -87,7 +87,6 @@ def msgToPathSegment(msg):
     return ArcPathSegment(float(msg.startTime),
                                  float(msg.elapsedTime),
                                  msgToPoint(msg.endPoint),
-                                 msgToPoint(msg.endVelocity),
                                  float(msg.speed),
                                  msgToArc(msg.arc))
 
@@ -171,7 +170,7 @@ def pathSegmentToMsg(pathSegment):
         msg.speed = pathSegment.speed
         msg.arc = arcToMsg(pathSegment.arc)
         msg.endPoint = pointToMsg(pathSegment.endPoint)
-        msg.endVelocity = pointToMsg(pathSegment.endVelocity)
+        msg.endSpeed = pathSegment.endSpeed
         return msg
     else:
         raise "Path segment type not suppored by messages"

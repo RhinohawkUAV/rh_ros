@@ -1,5 +1,6 @@
-import numpy as np
 from typing import Union
+
+import numpy as np
 
 _subIndexMultipliers = np.array([1, 2, 4, 8], np.int32)
 
@@ -18,12 +19,12 @@ def checkCoincident(p1, p2):
     """
     return (p1 == p2).sum() == 4
 
-
 # Not clear what the best data structure is for this. Numpy supports kd-trees and Voronoi diagrams, but:
 # kd-trees are not considered good in dynamic situations.
 # Voronoi uses n^2 space, not clear if this is good for dynamic situations.
 # R-trees are supposed to be good for dynamics, but they don't appear to be supported out of the box (there is some GIS version on the web).
 # In a recent test, insertion into this tree accounted for ~1.2% of the computation time, so this is NOT the place to optimize.
+
 
 class UniqueTree:
     """
@@ -47,7 +48,7 @@ class UniqueTree:
         :param vertex:
         :return:
         """
-        position = np.array([vertex.position[0], vertex.position[1], vertex.velocity[0], vertex.velocity[1]])
+        position = np.array([vertex.position[0], vertex.position[1], vertex.speed * vertex.unitVelocity[0], vertex.speed * vertex.unitVelocity[1]])
 
         # TODO: OK I lied.  For now we do check this.  However, we'll remove this check once the geo-fence is in place.
         if (position < self._root._minPosition).sum() + (

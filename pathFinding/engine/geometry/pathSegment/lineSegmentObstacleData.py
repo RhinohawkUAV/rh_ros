@@ -1,8 +1,15 @@
-from constants import MAX_TURN_ANGLE_COS, NO_FLY_ZONE_POINT_OFFSET
+import math
+
+from constants import NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs
 from linePathSegment import LinePathSegment
 import numpy as np
+
+MAX_TURN_ANGLE = 60
+
+# For calculation convenience
+MAX_TURN_ANGLE_COS = math.cos(math.radians(MAX_TURN_ANGLE))
 
 
 class LineSegmentObstacleData(DefaultObstacleData):
@@ -14,23 +21,21 @@ class LineSegmentObstacleData(DefaultObstacleData):
     def __init__(self, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
         DefaultObstacleData.__init__(self, targetOffsetLength)
 
-    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        startSpeed = np.linalg.norm(startVelocity)
+    def createPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
-        if solution is not None and turnIsLegal(startVelocity, solution.velocity):
+        if solution is not None and turnIsLegal(startSpeed, startUnitVelocity, solution.velocity):
             endPoint = solution.endPoint
-            return LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, solution.velocity)
+            
+            return LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, startSpeed, solution.velocity / startSpeed)
         return None
 
 
-def turnIsLegal(velocity1, velocity2):
+def turnIsLegal(speed, unitVelocity, velocity2):
     """
     Assumes all velocities have equal magnitude and only need their relative angle checked.
     :param velocity1:
     :param velocity2:
     :return:
     """
-    if velocity1[0] == 0.0 and velocity1[1] == 0.0:
-        return True
-    cosAngle = np.dot(velocity1, velocity2) / (np.linalg.norm(velocity1) * np.linalg.norm(velocity2))
+    cosAngle = np.dot(unitVelocity, velocity2) / speed
     return cosAngle > MAX_TURN_ANGLE_COS

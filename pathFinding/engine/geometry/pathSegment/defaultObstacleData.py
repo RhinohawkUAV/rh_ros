@@ -31,13 +31,14 @@ class DefaultObstacleData(ObstacleData):
         # When finding paths to no fly zone vertices, this applies an "outward" offset to each vertex of this length
         self.targetOffsetLength = targetOffsetLength
 
-    def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
+    def createPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         """
         Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
         at a given velocity.
         :param startTime: absolute time at start of segment
         :param startPoint:
-        :param startVelocity:
+        :param startSpeed: the speed of the vehicle at the start of the path
+        :param startUnitVelocity: the direction of the vehicle at the start of the path
         :param targetPoint:
         :param velocityOfTarget:
         :return:
@@ -84,9 +85,9 @@ class DefaultObstacleData(ObstacleData):
         self.targetPointsAtTime = self.targetPoints[:]
         self.obstacleLinesAtTime = self.obstacleLines[:]
 
-    def findPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
+    def findPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment or None
-        pathSegment = self.createPathSegment(startTime, startPoint, startVelocity, targetPoint, velocityOfTarget)
+        pathSegment = self.createPathSegment(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
 
         if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
             return pathSegment
@@ -94,23 +95,23 @@ class DefaultObstacleData(ObstacleData):
             return None
 
     @profile.accumulate("Find Path Segments")
-    def findPathSegments(self, startTime, startPoint, startVelocity):
+    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
         # type: (float,Sequence,Sequence) -> ([PathSegment],[PathSegment])
-
         unfilteredPathSegments = []  # type: List[DefaultPathSegment]
         filteredPathSegments = []  # type: List[DefaultPathSegment]
         for i in range(len(self.targetPoints)):
             velocityOfTarget = self.targetVelocities[i]
             targetPoint = self.targetPoints[i] + self.targetVelocities[i] * startTime
 
+            # TODO: Use a target indexing scheme
             # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
             if not calcs.arePointsClose(startPoint, targetPoint):
-                pathSegment = self.createPathSegment(startTime, startPoint, startVelocity, targetPoint, velocityOfTarget)
+                pathSegment = self.createPathSegment(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
                 if pathSegment is not None:
                     # Filter path segment based on incoming angle and known geometry around point.
                     pointNormal = self.targetPointNormals[i]
                     cosLimit = self.targetCosLimits[i]
-                    relativeVelocity = pathSegment.endVelocity - velocityOfTarget
+                    relativeVelocity = pathSegment.endSpeed * pathSegment.endUnitVelocity - velocityOfTarget
                     relativeVelocity /= np.linalg.norm((relativeVelocity))
                     if np.dot(relativeVelocity, pointNormal) >= cosLimit:
                         unfilteredPathSegments.append(pathSegment)

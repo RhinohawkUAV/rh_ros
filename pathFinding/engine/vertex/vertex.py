@@ -1,18 +1,20 @@
-import gui.draw
 from gui import Drawable
+import gui.draw
 
 DRAW_RADIUS = 0.5
 TEXT_OFFSET = 3.0
 
 
 class Vertex(Drawable):
-    def __init__(self, position, velocity, timeToVertex, estimatedTimeThroughVertex, previousVertex=None,
+
+    def __init__(self, position, startSpeed, unitVelocity, timeToVertex, estimatedTimeThroughVertex, previousVertex=None,
                  pathSegment=None):
         # The location of the vertex
         self.position = position
 
         # The incoming velocity vector when arriving at this point
-        self.velocity = velocity
+        self.speed = startSpeed
+        self.unitVelocity = unitVelocity
 
         # The timeToVertex from start to this vertex
         self.timeToVertex = timeToVertex

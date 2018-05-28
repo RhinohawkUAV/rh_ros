@@ -4,6 +4,7 @@ from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY, VEHICLE_KEY
 from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE
 from gui.editor.subGUI import SubGUI
+import numpy as np
 from obstacleDebug import ObstacleCourseDebug
 
 
@@ -50,10 +51,14 @@ class PathSegmentTester(Drawable, SubGUI):
         draw.drawLine(canvas, self._inputDict[TEST_INPUT_KEY].startPoint,
                       self._inputDict[TEST_INPUT_KEY].startPoint + self._inputDict[TEST_INPUT_KEY].startVelocity,
                       arrow=tk.LAST)
-
+        
+        startSpeed = np.linalg.norm(self._inputDict[TEST_INPUT_KEY].startVelocity)
+        startUnitVelocity = self._inputDict[TEST_INPUT_KEY].startVelocity / startSpeed
+                
         goalSegment = self._obstacleData.findPathSegment(startTime=0.0,
                                                          startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
-                                                         startVelocity=self._inputDict[TEST_INPUT_KEY].startVelocity,
+                                                         startSpeed=startSpeed,
+                                                         startUnitVelocity=startUnitVelocity,
                                                          targetPoint=self._inputDict[TEST_INPUT_KEY].targetPoint,
                                                          velocityOfTarget=self._inputDict[TEST_INPUT_KEY].velocityOfTarget)
 
@@ -72,7 +77,8 @@ class PathSegmentTester(Drawable, SubGUI):
         if self._showPathsToPoints:
             (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(startTime=0.0,
                                                                                                    startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
-                                                                                                   startVelocity=self._inputDict[TEST_INPUT_KEY].startVelocity)
+                                                                                                   startSpeed=startSpeed,
+                                                                                                   startUnitVelocity=startUnitVelocity)
         else:
             self._pathSegments = []
             self._filteredPathSegments = []

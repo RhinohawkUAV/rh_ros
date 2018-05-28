@@ -4,11 +4,9 @@ from engine.geometry import calcs
 import numpy as np
 
     
-def createArc(startPoint, velocity, acceleration, rotDirection):
-    speed = np.linalg.norm(velocity)
-    startDirection = velocity / speed
+def createArc(startPoint, speed, unitVelocity, acceleration, rotDirection):
     radius = speed * speed / acceleration
-    fromCenterDir = -rotDirection * calcs.CCWNorm(startDirection)
+    fromCenterDir = -rotDirection * calcs.CCWNorm(unitVelocity)
     fromCenterToStart = fromCenterDir * radius
 
     center = startPoint - fromCenterToStart
