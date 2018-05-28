@@ -4,27 +4,25 @@ from engine.geometry import calcs
 import numpy as np
 
     
-def createArc(startPoint, startVelocity, acceleration, direction):
-    direction = direction
-    speed = np.linalg.norm(startVelocity)
-    startDirection = startVelocity / speed
+def createArc(startPoint, velocity, acceleration, rotDirection):
+    speed = np.linalg.norm(velocity)
+    startDirection = velocity / speed
     radius = speed * speed / acceleration
-    fromCenterDir = -direction * calcs.CCWNorm(startDirection)
+    fromCenterDir = -rotDirection * calcs.CCWNorm(startDirection)
     fromCenterToStart = fromCenterDir * radius
 
     center = startPoint - fromCenterToStart
-    start = calcs.angleOfVector(fromCenterToStart, direction)
+    start = calcs.angleOfVector(fromCenterToStart, rotDirection)
 
     length = 0.0
 
-    return Arc(direction, radius, center, start, length)
+    return Arc(rotDirection, radius, center, start, length)
 
 
 class Arc:
     """
-    Represents an arc for the purposes of path finding.  An arc is created based on a starting position, velocity and
-    acceleration.  An arc can be CCW (direction = 1) or CW (direction = -1).  The initial length of the arc is 0.0 and
-    can be changed by calling the setLength() method.
+    Represents an arc for the purposes of path finding.  An arc can be CCW (rotDirection = 1) or CW (rotDirection = -1).  
+    The initial length of the arc is 0.0 and can be changed by calling the setLength() method.
 
     Once setup a number of useful queries can be made:
     1. endPoint and endTangent (position and direction of travel at the end of the arc of given length)
@@ -32,8 +30,8 @@ class Arc:
     3. an interpolation into line segments for collision detection
     """
 
-    def __init__(self, direction, radius, center, start, length):
-        self.direction = direction
+    def __init__(self, rotDirection, radius, center, start, length):
+        self.rotDirection = rotDirection
         self.radius = radius
         self.center = center
         self.start = start
@@ -47,9 +45,9 @@ class Arc:
         """
         self.length = length
         endAngle = self.start + self.length
-        arcEnd = calcs.unitVectorOfAngle(endAngle, self.direction)
+        arcEnd = calcs.unitVectorOfAngle(endAngle, self.rotDirection)
 
-        self.endTangent = self.direction * calcs.CCWNorm(arcEnd)
+        self.endTangent = self.rotDirection * calcs.CCWNorm(arcEnd)
         self.endPoint = self.center + self.radius * arcEnd
 
     def getPointDebug(self, point):
@@ -65,12 +63,12 @@ class Arc:
         fromCenterDir = point - self.center
         dirLength = np.linalg.norm(fromCenterDir)
         if dirLength == 0.0:
-            # At center of circle we have to pick an arbitrary direction which is closest
+            # At center of circle we have to pick an arbitrary rotDirection which is closest
             fromCenterDir = np.array([1.0, 0.0], np.double)
         else:
             fromCenterDir /= dirLength
 
-        pointAngle = calcs.angleOfVector(fromCenterDir, self.direction)
+        pointAngle = calcs.angleOfVector(fromCenterDir, self.rotDirection)
 
         # Clamp the angle to be between start and end of the arc
         pointAngle = calcs.clampAngleCCW(pointAngle, self.start, self.length)
@@ -92,7 +90,7 @@ class Arc:
         :param pointAngle:
         :return:
         """
-        return self.center + self.radius * calcs.unitVectorOfAngle(pointAngle, self.direction)
+        return self.center + self.radius * calcs.unitVectorOfAngle(pointAngle, self.rotDirection)
 
     def interpolate(self, maxError):
         """
@@ -102,6 +100,7 @@ class Arc:
         :return:
         """
 
+        # TODO: Check various div 0s
         # If the arc has no length just return 2 points at the start of the arc
         if self.length == 0.0:
             startPoint = self.pointAtAngle(self.start)
@@ -111,6 +110,7 @@ class Arc:
             maxError = self.radius
         maxAngle = math.acos(1.0 - maxError / self.radius)
         numLines = int(math.ceil(self.length / maxAngle))
+
         step = self.length / numLines
         points = []
 

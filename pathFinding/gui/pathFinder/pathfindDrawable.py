@@ -63,16 +63,15 @@ class PathFindDrawable(Drawable):
 
         if pointOfInterest is not None:
             gui.draw.drawPoint(canvas, pointOfInterest, color="cyan", outline="black", width=1.5, radius=1.0)
-
-        for pathSegment in self._futurePathSegments:
-            pathSegment.draw(canvas, color=lineOfSightColor)            
-        for pathSegment in self._pastPathSegments:
-            pathSegment.draw(canvas, color=pathColor, width=2.0)
             
-        if self._finished:
-            solutionWidth = 4
-        else:
+        if not self._finished:
+            for pathSegment in self._futurePathSegments:
+                pathSegment.draw(canvas, color=lineOfSightColor)            
+            for pathSegment in self._pastPathSegments:
+                pathSegment.draw(canvas, color=pathColor, width=2.0)
             solutionWidth = 2
+        else:
+            solutionWidth = 4
             
         for pathSegment in self._solutionPathSegments:
             pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            

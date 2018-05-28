@@ -62,7 +62,6 @@ def findClosestPoint(point, points):
             closestPointIndex = i
     return (closestDistanceSquared, closestPointIndex)
 
-
 class StraightPathSolution:
     """
     Holds _solution to the hitTargetAtSpeed problem.
@@ -111,14 +110,9 @@ def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetV
     # If num solutions or negative time, when speed is too slow to catch projectile
     if len(solutions) == 0:
         return None
-    elif len(solutions) == 1:
-        towardsFactor = solutions[0]
     else:
-        if solutions[0] > solutions[1]:
-            towardsFactor = solutions[0]
-        else:
-            towardsFactor = solutions[1]
-            print "1!"
+        towardsFactor = solutions[0]
+
     if towardsFactor < 0.0:
         return None
 
@@ -149,21 +143,21 @@ def calcBounds(points):
     return [xMin, yMin, xMax, yMax]
 
 
-def calcEdgeAngle(prev, vertex, next):
+def calcEdgeAngle(prevVertex, vertex, nextVertex):
     """
     Calculate the angle at a vertex in a polygon assuming CCW winding
     """
-    diff = vertex - prev
+    diff = vertex - prevVertex
     length = np.linalg.norm(diff)
     dir1 = diff / length
 
-    diff = vertex - next
+    diff = vertex - nextVertex
     length = np.linalg.norm(diff)
     dir2 = diff / length
 
     cosAngle = np.dot(dir1, dir2)
 
-    diff = next - prev
+    diff = nextVertex - prevVertex
     length = np.linalg.norm(diff)
     dir3 = diff / length
 
@@ -178,11 +172,11 @@ def calcEdgeAngle(prev, vertex, next):
 def woundCCW(points):
     angle = 0
     for i in range(-1, len(points) - 1):
-        prev = points[i - 1]
-        curr = points[i]
-        next = points[i + 1]
+        prevVertex = points[i - 1]
+        currVertex = points[i]
+        nextVertex = points[i + 1]
 
-        angle += calcEdgeAngle(prev, curr, next)
+        angle += calcEdgeAngle(prevVertex, currVertex, nextVertex)
     # If the points are wound CCW then this should given an answer following the standard formula for angle inside a polygon.
     # If wound CW, we will get a much bigger number (4*pi bigger).  We add a small margin of error (0.1) to the calculation.
     if angle < math.pi * (len(points) - 2) + 0.1:
@@ -216,15 +210,15 @@ def rotate2dtrig(vec, cosAngle, sinAngle):
     return np.array([vec[0] * cosAngle - vec[1] * sinAngle, vec[1] * cosAngle + vec[0] * sinAngle], np.double)
 
 
-def relativeAngle(startVec, endVec, direction=1.0):
+def relativeAngle(startVec, endVec, rotDirection=1.0):
     """
     How far you would have to turn, to go from startVec to endVec.  This will be in the range (-2*pi, 2*pi).
     :param startVec:
     :param endVec:
-    :param direction: CCW = 1, CW = -1
+    :param rotDirection: CCW = 1, CW = -1
     :return:
     """
-    return direction * (angleOfVector(endVec) - angleOfVector(startVec))
+    return rotDirection * (angleOfVector(endVec) - angleOfVector(startVec))
     # sinRotate = startVec[0] * endVec[1] - startVec[1] * endVec[0]
     # if np.dot(startVec, endVec) < 0.0:
     #     return math.pi - math.asin(sinRotate)
@@ -239,6 +233,7 @@ def modAngle(angle, lowAngle):
     :param lowAngle:
     :return:
     """
+    angle = math.fmod(angle, 2.0 * math.pi)
     if angle < lowAngle:
         return angle + 2.0 * math.pi
     elif angle >= lowAngle + 2.0 * math.pi:
@@ -265,55 +260,75 @@ def modAngleUnsigned(angle):
     return modAngle(angle, 0)
 
 
-def isAngleInArcCCW(angle, startPoint, length):
+def isAngleInArcCCW(angle, start, length):
     """
-    Is angle within the given CCW arc (startPoint,length)
+    Is angle within the given CCW arc (start,length)
     :param angle:
-    :param startPoint:
+    :param start:
     :param length:
     :return:
     """
-    return modAngleUnsigned(angle - startPoint) <= length
+    return modAngleUnsigned(angle - start) <= length
 
 
-def clampAngleCCW(angle, startPoint, length):
+def clampAngleCCW(angle, start, length):
     """
-    Given a CCW arc (startPoint, length), clamp angle to be within the arc.
+    Given a CCW arc (start, length), clamp angle to be within the arc.
     :param angle:
-    :param startPoint:
+    :param start:
     :param length:
     :return:
     """
-    if isAngleInArcCCW(angle, startPoint, length):
+    if isAngleInArcCCW(angle, start, length):
         return angle
 
-    diff = modAngleSigned(angle - startPoint + length / 2.0)
+    diff = modAngleSigned(angle - start + length / 2.0)
     if diff > 0.0:
-        return startPoint + length
+        return start + length
     else:
-        return startPoint
+        return start
 
 
-def angleOfVector(vector, direction=1.0):
+def angleOfVector(vector, rotDirection=1.0):
     """
     Angle of a given vector [0,2*pi).  Defaults to CCW.
     :param vector:
-    :param direction: CCW = 1, CW = -1
+    :param rotDirection: CCW = 1, CW = -1
     :return: corresponding unit vector
     """
-    return modAngleUnsigned(direction * math.atan2(vector[1], vector[0]))
+    return modAngleUnsigned(rotDirection * math.atan2(vector[1], vector[0]))
 
 
-def unitVectorOfAngle(angle, direction=1.0):
+def unitVectorOfAngle(angle, rotDirection=1.0):
     """
     Unit vector corresponding to a given angle.  Defaults to CCW.
     :param angle:
-    :param direction: CCW = 1, CW = -1
+    :param rotDirection: CCW = 1, CW = -1
     :return: corresponding unit vector
     """
-    angle = angle * direction
+    angle = angle * rotDirection
     return np.array([math.cos(angle), math.sin(angle)], np.double)
 
 
 def unit(vector):
     return vector / np.linalg.norm(vector)
+
+
+def rayIntersectCircle(startPoint, direction, center, radius):
+    """
+    Calculate distances, from start, where a ray intersects a circle.  
+    Returns a list of distances of length 0, 1 or 2.  
+    The smallest distance always appears 1st.
+    """
+    fromCenter = startPoint - center
+    return quadratic.solveQuad(1.0,
+                               2.0 * np.dot(direction, fromCenter),
+                               np.dot(fromCenter, fromCenter) - radius * radius)
+
+# def lineIntersectCircle(startPoint, endPoint, center, radius):
+#     tangent = endPoint - startPoint
+#     fromCenter = startPoint - center
+#     tanSquared = np.dot(tangent, tangent)
+#     tanDotFromCenter = np.dot(tangent, fromCenter)
+#     fromCenterSquared = np.dot(fromCenter, fromCenter)
+#     solution = quadratic.solveQuad(tanSquared, 2.0 * tanDotFromCenter, fromCenterSquared - radius * radius)

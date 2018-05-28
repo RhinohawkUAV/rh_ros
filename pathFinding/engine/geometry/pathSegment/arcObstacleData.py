@@ -1,15 +1,13 @@
 import math
-
 from constants import NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs, arc
-from engine.geometry.arc import Arc
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 import numpy as np
 from utils import profile
 
 # TODO: Move to constants
-MAX_ITERATIONS = 4
+MAX_ITERATIONS = 5
 
 # There will be difference between an arc's exit velocity and the correct velocity vector.
 # This represents the allowed angular error (in radians) and corresponds to missing a target
@@ -31,21 +29,29 @@ class ArcObstacleData(DefaultObstacleData):
 
     @profile.accumulate("Find Arc")
     def createPathSegment(self, startTime, startPoint, startVelocity, targetPoint, velocityOfTarget):
-        arcFinderCCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
+#         try:
+#             arcFinder = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
+#             arcFinder.solve()
+#             return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
+#                                   arcFinder.speed, arcFinder.arc)
+#         except NoSolutionException:
+#             return None
+
         try:
+            arcFinderCCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, 1.0, self.acceleration)
             arcFinderCCW.solve()
             timeCCW = arcFinderCCW.totalTime
         except NoSolutionException:
             timeCCW = float("inf")
-
-        arcFinderCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, -1.0, self.acceleration)
+ 
         try:
+            arcFinderCW = ArcFinder(startPoint, startVelocity, targetPoint, velocityOfTarget, -1.0, self.acceleration)
             arcFinderCW.solve()
             timeCW = arcFinderCW.totalTime
-
+ 
         except NoSolutionException:
             timeCW = float("inf")
-
+ 
         # TODO: Should return both arcs and check for collisions before choosing
         if timeCCW < timeCW:
             arcFinder = arcFinderCCW
@@ -53,7 +59,7 @@ class ArcObstacleData(DefaultObstacleData):
             arcFinder = arcFinderCW
         else:
             return None
-
+ 
         return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.endPoint, arcFinder.finalVelocity,
                               arcFinder.speed, arcFinder.arc)
 
@@ -65,59 +71,97 @@ class NoSolutionException(BaseException):
 
 class ArcFinder:
 
-    def __init__(self, startPoint, startVelocity, targetPoint, velocityOfTarget, direction,
+    def __init__(self, startPoint, velocity, targetPoint, velocityOfTarget, rotDirection,
                  acceleration):
         self.startPoint = startPoint
-        self._startVelocity = startVelocity
-        self.speed = np.linalg.norm(startVelocity)
-        self.startDirection = startVelocity / self.speed
+        self.speed = np.linalg.norm(velocity)
+        
+        # TODO: Should move check to higher level
+        if self.speed == 0.0 or acceleration == 0.0:
+            raise NoSolutionException
+        
         self.targetPoint = targetPoint
+        
+        self.speedOfTarget = np.linalg.norm(velocityOfTarget)
+        if self.speedOfTarget > 0.0:
+            self.directionOfTarget = velocityOfTarget / self.speedOfTarget
+        
         self.velocityOfTarget = velocityOfTarget
-        self.direction = direction
+        self.rotDirection = rotDirection
 
-        self.arc = arc.createArc(self.startPoint, self._startVelocity, acceleration, direction)
+        self.arc = arc.createArc(self.startPoint, velocity, acceleration, rotDirection)
         self.totalTime = 0.0
         self.arcTime = 0.0
         self.endPoint = None
         self.finalVelocity = None
 
-    def solve(self):
+    def findArcIntersectionInfo(self, distance):
+        intersectionPoint = self.targetPoint + distance * self.directionOfTarget
+        intersectionTime = distance / self.speedOfTarget
+        intersectionAngle = calcs.angleOfVector(intersectionPoint - self.arc.center, self.rotDirection)
+        arcLengthToIntersection = calcs.modAngle(intersectionAngle, self.arc.start) - self.arc.start
+        arcTime = arcLengthToIntersection * self.arc.radius / self.speed
+        return (intersectionTime, arcTime)
+
+    def calcInitialGuess(self):
+        if self.speedOfTarget == 0.0:
+            # Target is unmoving and contained within the the vehicle's arc's circle.
+            # It is impossible to reach this target.
+            toCenter = self.targetPoint - self.arc.center
+            if np.dot(toCenter, toCenter) < self.arc.radius * self.arc.radius:
+                raise NoSolutionException
+        else:
+            distances = calcs.rayIntersectCircle(self.targetPoint, self.directionOfTarget, self.arc.center, self.arc.radius)
+            if len(distances) > 0:
+                # Path of target intersects the vehicle's arc's circle.  This requires special care in order to solve.
+                (intersectionTime, arcTime) = self.findArcIntersectionInfo(distances[0])
+                if intersectionTime < arcTime and len(distances) > 1:
+                    # Either target reaches vehicle's arc's circle faster than vheicle could get there OR
+                    # intersectionTime is negative, meaning target is already within/past circle.
+                    (intersectionTime, arcTime) = self.findArcIntersectionInfo(distances[1])
+                    if arcTime < intersectionTime :
+                        # Vehicle reaches vehicle's arc's circle faster than target
+                        # Solution would require making another full loop (or multiple loops).  This is not a worthwhile target!
+                        raise NoSolutionException
+                    if intersectionTime > 0.0:
+                        # Target is exiting the vehicle's arc's circle before the vehicle can get there.
+                        # This allows us to iterate to a solution
+                        return intersectionTime * self.speed / self.arc.radius
+        
         solution = calcs.hitTargetAtSpeed(self.startPoint, self.speed, self.targetPoint, self.velocityOfTarget)
         if solution is None:
             raise NoSolutionException
-
-        solutionDirection = solution.velocity / self.speed
-        self.initialGuess(solutionDirection)
+        angle = calcs.angleOfVector(solution.velocity, self.rotDirection)
+        angle -= math.pi / 2.0
+        return calcs.modAngleUnsigned(angle - self.arc.start)
+        
+    def solve(self):
+        initialArcLength = self.calcInitialGuess()
+        self.arc.setLength(initialArcLength)
+        self.arcTime = self.arc.length * self.arc.radius / self.speed
+        
         iteration = 0
         while iteration < MAX_ITERATIONS:
             newTarget = self.targetPoint + self.velocityOfTarget * self.arcTime
             solution = calcs.hitTargetAtSpeed(self.arc.endPoint, self.speed, newTarget, self.velocityOfTarget)
             if solution is None:
                 raise NoSolutionException
-            solutionDirection = solution.velocity / self.speed
-            cosError = np.dot(self.arc.endTangent, solutionDirection)
-            if cosError >= MIN_ANGLE_ERROR_COS:
+            angle = calcs.angleOfVector(solution.velocity, self.rotDirection)
+            angle -= math.pi / 2.0
+            
+            angleDiff = calcs.modAngleSigned(angle - (self.arc.start + self.arc.length))
+            if math.fabs(angleDiff) <= MAX_ANGLE_ERROR:
                 self.totalTime = solution.time + self.arcTime
                 self.endPoint = solution.endPoint
                 self.finalVelocity = solution.velocity
                 return
-            self.iterateFindArc(solutionDirection)
+            self.iterateFindArc(angleDiff)
             iteration += 1
         raise NoSolutionException
 
-    def iterateFindArc(self, desiredFinalDirection):
-        angleDiff = calcs.modAngleSigned(
-            calcs.relativeAngle(self.arc.endTangent, desiredFinalDirection, self.direction))
-        newArcLength = self.arc.length + angleDiff
-        if newArcLength < 0.0 or newArcLength > 2.0 * math.pi:
+    def iterateFindArc(self, angleDiff):
+        self.arc.setLength(self.arc.length + angleDiff)
+        if self.arc.length < 0.0:
             raise NoSolutionException
-        self.arc.setLength(newArcLength)
         self.arcTime = self.arc.length * self.arc.radius / self.speed
-
-    def initialGuess(self, desiredFinalDirection):
-        relativeAngle = calcs.relativeAngle(self.arc.endTangent, desiredFinalDirection, self.direction)
-
-        self.arc.setLength(
-            calcs.modAngleUnsigned(relativeAngle))
-        self.arcTime = self.arc.length * self.arc.radius / self.speed
-
+   

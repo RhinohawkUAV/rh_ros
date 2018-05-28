@@ -1,0 +1,38 @@
+{
+    "testInput": {
+        "startVelocity": [
+            3.1172069825436424, 
+            -0.4987531172069808
+        ], 
+        "targetPoint": [
+            71.19700748129677, 
+            63.96508728179551
+        ], 
+        "startPoint": [
+            56.85785536159601, 
+            37.905236907730675
+        ], 
+        "velocityOfTarget": [
+            -0.9975062344139758, 
+            -1.4962593516209495
+        ]
+    }, 
+    "scenario": {
+        "boundaryPoints": [], 
+        "noFlyZones": [], 
+        "wayPoints": [], 
+        "startVelocity": [
+            1.0, 
+            1.0
+        ], 
+        "roads": [], 
+        "startPoint": [
+            5.0, 
+            5.0
+        ]
+    }, 
+    "vehicle": {
+        "acceleration": 1.0, 
+        "maxSpeed": 5.0
+    }
+}

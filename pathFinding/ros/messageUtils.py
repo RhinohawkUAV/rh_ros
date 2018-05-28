@@ -179,7 +179,7 @@ def pathSegmentToMsg(pathSegment):
             
 def arcToMsg(arc):
     msg = Arc()
-    msg.direction = arc.direction
+    msg.direction = arc.rotDirection
     msg.radius = arc.radius
     msg.center = pointToMsg(arc.center)
     msg.start = arc.start
