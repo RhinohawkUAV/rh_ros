@@ -105,13 +105,12 @@ def set_custom_mode(custom_mode):
     done_evt = threading.Event()
     def state_cb(state):
         global mode_sub
-        rospy.loginfo("NEW MODE: "+state)
         if state.mode == custom_mode:
             rospy.loginfo("Mode changed to %s", state.mode)
             done_evt.set()
             clean()
 
-    mode_sub = rospy.Subscriber(mavros.get_topic('state'), State, state_cb)
+    mode_sub = rospy.Subscriber('/mavros/state', State, state_cb)
 
     try:
         ret = set_mode(base_mode=0, custom_mode=custom_mode)
@@ -314,7 +313,7 @@ def handle_flyto(req):
 
     # wait for waypoints to be accepted
     # TODO: this should be event driven
-    rospy.sleep(5.)
+    rospy.sleep(2.)
 
     # try arming a few times
     c = 0
