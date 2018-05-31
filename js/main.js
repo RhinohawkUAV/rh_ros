@@ -24,7 +24,12 @@ var knowPositionIcon;
 var groundSpeedGauge;
 var airSpeedGauge;
 
-var imageTopic
+var imageTopic;
+
+var clickPoint;
+var drawing = false;
+var nfzCoords = [];
+var tempLayers = [];
 
 
 // Connect to ROSBridge -----------------------------------------------------------------------
@@ -179,8 +184,14 @@ function connectToTopics() {
     });
 
     imageTopic.subscribe(function(message) {
-      currentImg = "data:image/png;base64," + message.data;
-      document.getElementById( 'aruco-image' ).setAttribute( 'src', currentImg );
+      if (counter == 15){
+        currentImg = "data:image/png;base64," + message.data;
+        document.getElementById( 'aruco-image' ).setAttribute( 'src', currentImg );
+        counter = 0;
+      }else {
+        counter ++;
+      }
+      
     });
 
     altitudeTopic.subscribe(function(message) {
@@ -473,6 +484,53 @@ function toggleVideo(toToggle){
     theToggle(true,toToggle);
     showVideo = true;
   }
+}
+
+
+// Create NFZ ---------------------------------------------
+
+function createNFZPopUp(e){
+  console.log(e.containerPoint);
+  clickPoint = e.latlng;
+  var popUp = document.getElementById('NFCPopUp');
+
+  popUp.setAttribute('style', 'top:'+e.containerPoint.y+'px; left:'+e.containerPoint.x+'px;');
+}
+
+function createNFZ(){
+  startDrawing = true;
+  map.addEventListener("click", drawNFZ);
+}
+
+function drawNFZ(e){
+  nfzCoords.push(e.latlng);
+  var vertex;
+  if (startDrawing == true){
+    vertex = L.circleMarker(e.latlng, {radius: 10, color:'#DF3500', weight:2, fillOpacity:.5}).addTo(map);
+    vertex.addEventListener("click", finishNFZ);
+    startDrawing = false;
+  }else{
+    vertex = L.circleMarker(e.latlng, {radius: 5, weight:0, fillColor:'#DF3500', fillOpacity:1}).addTo(map);
+    var prevlatlng = nfzCoords[nfzCoords.length-2];
+    var polyline = L.polyline([prevlatlng, e.latlng], {weight:3, color: '#DF3500', dashArray:"2, 10 "}).addTo(map);
+    tempLayers.push(polyline);
+  }
+  tempLayers.push(vertex);
+}
+
+function finishNFZ(e){
+  console.log('finished drawing');
+  console.log(tempLayers);
+  map.removeEventListener("click", drawNFZ);
+
+  var newNFZ = L.polygon(nfzCoords, {color:'#DF3500', weight:2, fillOpacity:.5}).addTo(map);
+
+  for(var i=0; i<tempLayers.length; i++){
+    map.removeLayer(tempLayers[i]);
+  }
+  
+  tempLayers = [];
+  nfzCoords = [];
 }
 
 
