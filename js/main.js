@@ -489,14 +489,6 @@ function toggleVideo(toToggle){
 
 // Create NFZ ---------------------------------------------
 
-function createNFZPopUp(e){
-  console.log(e.containerPoint);
-  clickPoint = e.latlng;
-  var popUp = document.getElementById('NFCPopUp');
-
-  popUp.setAttribute('style', 'top:'+e.containerPoint.y+'px; left:'+e.containerPoint.x+'px;');
-}
-
 function createNFZ(){
   startDrawing = true;
   map.addEventListener("click", drawNFZ);
@@ -519,16 +511,11 @@ function drawNFZ(e){
 }
 
 function finishNFZ(e){
-  console.log('finished drawing');
-  console.log(tempLayers);
   map.removeEventListener("click", drawNFZ);
-
   var newNFZ = L.polygon(nfzCoords, {color:'#DF3500', weight:2, fillOpacity:.5}).addTo(map);
-
   for(var i=0; i<tempLayers.length; i++){
     map.removeLayer(tempLayers[i]);
   }
-  
   tempLayers = [];
   nfzCoords = [];
 }
