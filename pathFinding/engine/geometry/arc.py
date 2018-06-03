@@ -94,7 +94,7 @@ class Arc:
         """
         Return a series of points along the arc for linear interpolation.  The maximum error (distance from a line
         segment to a true point on the arc) defines the number of points in the interpolation.
-        :param maxError: cannot exceed radius (the result will be single line interpolation whose error is radius).
+        :param maxError: if this exceeds radius the result will be single line interpolation whose error is radius.
         :return:
         """
 

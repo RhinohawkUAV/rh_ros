@@ -62,6 +62,7 @@ def findClosestPoint(point, points):
             closestPointIndex = i
     return (closestDistanceSquared, closestPointIndex)
 
+
 class StraightPathSolution:
     """
     Holds _solution to the hitTargetAtSpeed problem.
@@ -311,7 +312,17 @@ def unitVectorOfAngle(angle, rotDirection=1.0):
 
 
 def unit(vector):
-    return vector / np.linalg.norm(vector)
+    length = np.linalg.norm(vector)
+    if length == 0.0:
+        return vector
+    return vector / length
+
+
+def unitAndLength(vector):
+    length = np.linalg.norm(vector)
+    if length == 0.0:
+        return (vector, length)
+    return (vector / length, length)
 
 
 def rayIntersectCircle(startPoint, direction, center, radius):
