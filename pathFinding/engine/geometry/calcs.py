@@ -5,6 +5,11 @@ import numpy as np
 from utils import quadratic
 
 
+# TODO: Use where appropriate
+class NoSolutionException(BaseException):
+    pass
+
+
 def arePointsClose(p1, p2):
     """
     Are 2 points almost equal (within tolerance of each other)
@@ -68,10 +73,10 @@ class StraightPathSolution:
     Holds _solution to the hitTargetAtSpeed problem.
     """
 
-    def __init__(self, time, velocity, endPoint):
+    def __init__(self, time, velocity, lineEndPoint):
         self.time = time
         self.velocity = velocity
-        self.endPoint = endPoint
+        self.lineEndPoint = lineEndPoint
 
 
 def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetVelocity):
@@ -336,8 +341,8 @@ def rayIntersectCircle(startPoint, direction, center, radius):
                                2.0 * np.dot(direction, fromCenter),
                                np.dot(fromCenter, fromCenter) - radius * radius)
 
-# def lineIntersectCircle(startPoint, endPoint, center, radius):
-#     tangent = endPoint - startPoint
+# def lineIntersectCircle(startPoint, lineEndPoint, center, radius):
+#     tangent = lineEndPoint - startPoint
 #     fromCenter = startPoint - center
 #     tanSquared = np.dot(tangent, tangent)
 #     tanDotFromCenter = np.dot(tangent, fromCenter)

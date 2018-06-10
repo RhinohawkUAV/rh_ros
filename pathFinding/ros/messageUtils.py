@@ -86,7 +86,7 @@ def msgToPathSegmentList(msg):
 def msgToPathSegment(msg):
     return ArcPathSegment(float(msg.startTime),
                                  float(msg.elapsedTime),
-                                 msgToPoint(msg.endPoint),
+                                 msgToPoint(msg.lineEndPoint),
                                  float(msg.speed),
                                  msgToArc(msg.arc))
 
@@ -128,7 +128,7 @@ def scenarioToMsg(scenario):
 def roadToMsg(road):
     msg = Road()
     msg.startPoint = pointToMsg(road.startPoint)
-    msg.endPoint = pointToMsg(road.endPoint)
+    msg.lineEndPoint = pointToMsg(road.lineEndPoint)
     msg.width = road.width
     return msg
 
@@ -169,7 +169,7 @@ def pathSegmentToMsg(pathSegment):
         msg.elapsedTime = pathSegment.elapsedTime
         msg.speed = pathSegment.speed
         msg.arc = arcToMsg(pathSegment.arc)
-        msg.endPoint = pointToMsg(pathSegment.endPoint)
+        msg.lineEndPoint = pointToMsg(pathSegment.lineEndPoint)
         msg.endSpeed = pathSegment.endSpeed
         return msg
     else:

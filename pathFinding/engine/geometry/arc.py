@@ -3,29 +3,10 @@ import math
 from engine.geometry import calcs
 import numpy as np
 
-    
-def createArc(startPoint, speed, unitVelocity, acceleration, rotDirection):
-    radius = speed * speed / acceleration
-    fromCenterDir = -rotDirection * calcs.CCWNorm(unitVelocity)
-    fromCenterToStart = fromCenterDir * radius
-
-    center = startPoint - fromCenterToStart
-    start = calcs.angleOfVector(fromCenterToStart, rotDirection)
-
-    length = 0.0
-
-    return Arc(rotDirection, radius, center, start, length)
-
 
 class Arc:
     """
     Represents an arc for the purposes of path finding.  An arc can be CCW (rotDirection = 1) or CW (rotDirection = -1).  
-    The initial length of the arc is 0.0 and can be changed by calling the setLength() method.
-
-    Once setup a number of useful queries can be made:
-    1. endPoint and endTangent (position and direction of travel at the end of the arc of given length)
-    2. point debug which gets the closest point on the arc, to a given point, along with distance and time interpolation for display.
-    3. an interpolation into line segments for collision detection
     """
 
     def __init__(self, rotDirection, radius, center, start, length):
@@ -33,20 +14,7 @@ class Arc:
         self.radius = radius
         self.center = center
         self.start = start
-        self.setLength(length)
-
-    def setLength(self, length):
-        """
-        Set the arc's length and calculate a new end point/tangent as well
-        :param length:
-        :return:
-        """
         self.length = length
-        endAngle = self.start + self.length
-        arcEnd = calcs.unitVectorOfAngle(endAngle, self.rotDirection)
-
-        self.endTangent = self.rotDirection * calcs.CCWNorm(arcEnd)
-        self.endPoint = self.center + self.radius * arcEnd
 
     def getPointDebug(self, point):
         """
@@ -94,13 +62,12 @@ class Arc:
         """
         Return a series of points along the arc for linear interpolation.  The maximum error (distance from a line
         segment to a true point on the arc) defines the number of points in the interpolation.
-        :param maxError: if this exceeds radius the result will be single line interpolation whose error is radius.
+        :param maxError: MUST BE > 0.0!  If this exceeds radius the result will be single line interpolation whose error is radius.
         :return:
         """
 
-        # TODO: Check various div 0s
         # If the arc has no length just return 2 points at the start of the arc
-        if self.length == 0.0:
+        if self.length == 0.0 or self.radius == 0.0:
             startPoint = self.pointAtAngle(self.start)
             return [startPoint, startPoint]
 

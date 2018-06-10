@@ -11,12 +11,12 @@ MAX_ARC_INTERPOLATION_ERROR = 4.0
 
 class ArcPathSegment(DefaultPathSegment):
 
-    def __init__(self, startTime, elapsedTime, endPoint, speed, arc):
-        PathSegment.__init__(self, startTime, elapsedTime, endPoint, speed, arc.endTangent)
-        self.speed = speed
+    def __init__(self, startTime, elapsedTime, lineStartPoint, lineEndPoint, endSpeed, endDirection, arc):
+        PathSegment.__init__(self, startTime, elapsedTime, lineEndPoint, endSpeed, endDirection)
+        self.speed = endSpeed
 
-        self.lineStartPoint = arc.endPoint
-        self.lineSegment = LineSegment(arc.endPoint, endPoint)
+        self.lineStartPoint = lineStartPoint
+        self.lineSegment = LineSegment(self.lineStartPoint, lineEndPoint)
         self.arc = arc
         self.arcTime = self.arc.length * self.arc.radius / self.speed
         self.lineTime = self.elapsedTime - self.arcTime
@@ -24,7 +24,7 @@ class ArcPathSegment(DefaultPathSegment):
         self.linearPathPoints = arc.interpolate(MAX_ARC_INTERPOLATION_ERROR)
         numArcSegments = len(self.linearPathPoints) - 1
 
-        self.linearPathPoints.append(endPoint)
+        self.linearPathPoints.append(lineEndPoint)
 
         # Remember the start times for each path segment to individually query for collisions
         self.linearPathStartTimes = []
@@ -38,7 +38,7 @@ class ArcPathSegment(DefaultPathSegment):
             dash = DEFAULT_DASH
         else:
             dash = None
-        draw.drawLine(canvas, self.lineStartPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
+        draw.drawLine(canvas, self.lineStartPoint, self.lineEndPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
         draw.drawArcObj(canvas, self.arc, color=color, dash=dash, width=width)
         for i in range(0, len(self.linearPathPoints) - 2):
             draw.drawLine(canvas, self.linearPathPoints[i], self.linearPathPoints[i + 1], color="orange", dash=dash)

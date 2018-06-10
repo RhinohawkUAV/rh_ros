@@ -6,9 +6,9 @@ class LinearPath:
     Represents a path from startPoint to endPoint at a given speed.
     """
 
-    def __init__(self, startPoint, endPoint, startSpeed):
+    def __init__(self, startPoint, lineEndPoint, startSpeed):
         self._startPoint = startPoint
-        self._endPoint = endPoint
+        self._endPoint = lineEndPoint
         self._speed = startSpeed
         self._lineSegment = LineSegment(self._startPoint, self._endPoint)
 
