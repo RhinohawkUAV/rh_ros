@@ -73,10 +73,10 @@ class StraightPathSolution:
     Holds _solution to the hitTargetAtSpeed problem.
     """
 
-    def __init__(self, time, velocity, lineEndPoint):
+    def __init__(self, time, velocity, endPoint):
         self.time = time
         self.velocity = velocity
-        self.lineEndPoint = lineEndPoint
+        self.endPoint = endPoint
 
 
 def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetVelocity):
@@ -340,11 +340,3 @@ def rayIntersectCircle(startPoint, direction, center, radius):
     return quadratic.solveQuad(1.0,
                                2.0 * np.dot(direction, fromCenter),
                                np.dot(fromCenter, fromCenter) - radius * radius)
-
-# def lineIntersectCircle(startPoint, lineEndPoint, center, radius):
-#     tangent = lineEndPoint - startPoint
-#     fromCenter = startPoint - center
-#     tanSquared = np.dot(tangent, tangent)
-#     tanDotFromCenter = np.dot(tangent, fromCenter)
-#     fromCenterSquared = np.dot(fromCenter, fromCenter)
-#     solution = quadratic.solveQuad(tanSquared, 2.0 * tanDotFromCenter, fromCenterSquared - radius * radius)

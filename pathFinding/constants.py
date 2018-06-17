@@ -10,3 +10,5 @@ NO_FLY_ZONE_POINT_OFFSET = 0.0001
 
 # This is used to determine if 2 points are identical (is the distance squared between them less than this)
 DISTANCE_TOLERANCE_SQUARED = NO_FLY_ZONE_POINT_OFFSET * NO_FLY_ZONE_POINT_OFFSET
+
+CANBERRA_GPS = (149.1300, -35.2809)

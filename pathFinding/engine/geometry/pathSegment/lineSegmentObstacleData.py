@@ -24,7 +24,7 @@ class LineSegmentObstacleData(DefaultObstacleData):
     def createPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
         if solution is not None and turnIsLegal(startSpeed, startUnitVelocity, solution.velocity):
-            endPoint = solution.lineEndPoint
+            endPoint = solution.endPoint
             
             return LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, startSpeed, solution.velocity / startSpeed)
         return None

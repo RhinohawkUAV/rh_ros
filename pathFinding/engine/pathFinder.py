@@ -77,11 +77,11 @@ class PathFinder:
                 for pathSegment in self._pathSegments:
                     timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
         
-                    newVertex = Vertex(position=pathSegment.lineEndPoint,
+                    newVertex = Vertex(position=pathSegment.endPoint,
                                        startSpeed=pathSegment.endSpeed,
                                        unitVelocity=pathSegment.endUnitVelocity,
                                        timeToVertex=timeToVertex,
-                                       estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.lineEndPoint,
+                                       estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.endPoint,
                                                                                                 pathSegment.endSpeed,
                                                                                                 pathSegment.endUnitVelocity),
                                        previousVertex=self._currentVertex,

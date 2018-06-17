@@ -84,7 +84,7 @@ class ArcFinder:
             (angleDiff, solution) = self.getSolution(targetStartPoint, velocityOfTarget)
             if math.fabs(angleDiff) <= MAX_ANGLE_ERROR:
                 self.totalTime = solution.time + self.arcTime
-                self.lineEndPoint = solution.lineEndPoint
+                self.lineEndPoint = solution.endPoint
                 self.finalVelocity = solution.velocity
                 return
             self.arcLength += angleDiff

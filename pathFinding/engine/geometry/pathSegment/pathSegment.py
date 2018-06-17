@@ -3,10 +3,10 @@ from gui import Drawable
 
 class PathSegment(Drawable):
 
-    def __init__(self, startTime, elapsedTime, lineEndPoint, endSpeed, endUnitVelocity):
+    def __init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity):
         self.startTime = startTime
         self.elapsedTime = elapsedTime
-        self.lineEndPoint = lineEndPoint
+        self.endPoint = endPoint
         self.endSpeed = endSpeed
         self.endUnitVelocity = endUnitVelocity
 
