@@ -7,7 +7,6 @@ from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSegment import PathSegment
 from pathfinding.msg._Road import Road
 from pathfinding.msg._Scenario import Scenario
-from pathfinding.msg._Vec2 import Vec2
 from pathfinding.msg._Vehicle import Vehicle
 
 import engine
@@ -18,6 +17,7 @@ from engine.interface.noFlyZoneInput import NoFlyZoneInput
 from engine.interface.roadInput import RoadInput
 from engine.interface.scenarioInput import ScenarioInput
 from engine.interface.vehicleInput import VehicleInput
+import numpy as np
 
 
 #**********************Msg objects to path finding objects********************
@@ -83,20 +83,24 @@ class MessageConverter:
     
     def msgToPathSegment(self, msg): 
 #         (self, startTime, elapsedTime, lineStartPoint, endPoint, endSpeed, endDirection, arc):
-
+        endVelocity = self.msgToVector(msg.endVelocity)
+        endSpeed = np.linalg.norm(endVelocity)
+        endUnitVelocity = endVelocity / endSpeed
         return ArcPathSegment(float(msg.startTime),
                                      float(msg.elapsedTime),
                                      self.msgToPoint(msg.lineStartPoint),
                                      self.msgToPoint(msg.endPoint),
-                                     float(msg.speed),
-                                     self.msgToVector(msg.endUnitVelocity),
+                                     endSpeed,
+                                     endUnitVelocity,
                                      self.msgToArc(msg.arc))
                 
     def msgToArc(self, msg):
-        return engine.geometry.arc.Arc(float(msg.direction),
+        start = self._gpsTransformer.gpsAngleToLocal(float(msg.start))
+
+        return engine.geometry.arc.Arc(-float(msg.direction),
                                       float(msg.radius),
                                       self.msgToPoint(msg.center),
-                                      float(msg.start),
+                                      start,
                                       float(msg.length))
     
     #**********************Path finding objects to msg objects********************
@@ -160,44 +164,31 @@ class MessageConverter:
             msg.arc = self.arcToMsg(pathSegment.arc)
             msg.lineStartPoint = self.pointToMsg(pathSegment.lineStartPoint)
             msg.endPoint = self.pointToMsg(pathSegment.endPoint)
-            msg.endUnitVelocity = self.pointToMsg(pathSegment.endUnitVelocity)
-            msg.endSpeed = pathSegment.endSpeed
+            msg.endVelocity = self.vectorToMsg(pathSegment.endUnitVelocity * pathSegment.endSpeed)
             return msg
         else:
             raise "Path segment type not suppored by messages"
                 
     def arcToMsg(self, arc):
         msg = Arc()
-        msg.direction = arc.rotDirection
+        msg.direction = -arc.rotDirection
         msg.radius = arc.radius
         msg.center = self.pointToMsg(arc.center)
-        msg.start = arc.start
+        msg.start = self._gpsTransformer.localAngleToGPS(arc.start)
         msg.length = arc.length
         return msg
 
 #***************************Point/vector Conversions*****************************
+
     def msgToPoint(self, msg):
-        return (float(msg.x), float(msg.y))
-
+        return self._gpsTransformer.gpsToLocal(msg)
+         
     def pointToMsg(self, point):
-        return Vec2(point[0], point[1])
-
+        return self._gpsTransformer.localToGPS(point)
+ 
     def msgToVector(self, msg):
-        return (float(msg.x), float(msg.y))
-        
+        return self._gpsTransformer.gpsVelocityToLocal(msg)
+         
     def vectorToMsg(self, vec):
-        return Vec2(vec[0], vec[1])
-
-#     def msgToPoint(self, msg):
-#         
-#         return self._gpsTransformer.gpsToLocal(msg)
-#         
-#     def pointToMsg(self, point):
-#         return self._gpsTransformer.localToGPS(point)
-# 
-#     def msgToVector(self, msg):
-#         return self._gpsTransformer.gpsVelocityToLocal(msg)
-#         
-#     def vectorToMsg(self, vec):
-#         return self._gpsTransformer.localToGPSVelocity(vec)
-#     
+        return self._gpsTransformer.localToGPSVelocity(vec)
+     

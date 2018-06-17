@@ -71,6 +71,20 @@ class GPSTransformer:
         angle = math.degrees(math.atan2(local[0], local[1]))
         return Vec2(speed, angle)
 
+    def localAngleToGPS(self, angle):
+        angle = math.degrees(angle)
+        angle = angle * -1.0 + 90.0
+        if angle < 0.0:
+            angle += 360
+        return angle
+
+    def gpsAngleToLocal(self, angle):
+        angle = (angle - 90.0) * -1.0
+        if angle < 0.0:
+            angle += 360
+        angle = math.radians(angle)
+        return angle
+
     def _gpsToECEF(self, gps):
         """
         Converts a GPS Vec2 to a (X,Y,Z) ECEF np.Array.

@@ -4,5 +4,4 @@ float64 speed
 Arc arc
 Vec2 lineStartPoint
 Vec2 endPoint
-float64 endSpeed
-Vec2 endUnitVelocity
+Vec2 endVelocity
