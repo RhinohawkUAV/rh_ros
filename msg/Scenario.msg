@@ -1,6 +1,6 @@
-Vec2[] boundaryPoints
+GPSCoord[] boundaryPoints
 NoFlyZone[] noFlyZones
 Road[] roads
-Vec2 startPoint
+GPSCoord startPoint
 GPSVelocity startVelocity
-Vec2[] wayPoints
+GPSCoord[] wayPoints

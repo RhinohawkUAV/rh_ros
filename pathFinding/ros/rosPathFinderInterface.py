@@ -1,6 +1,6 @@
+from pathfinding.msg._GPSCoord import GPSCoord
 from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSolution import PathSolution
-from pathfinding.msg._Vec2 import Vec2
 from pathfinding.srv._StepProblem import StepProblem
 from pathfinding.srv._SubmitProblem import SubmitProblem
 import rospy
@@ -18,7 +18,7 @@ class RosPathFinderInterface(PathFinderInterface):
     """
 
     def __init__(self):
-        self.messageConverter = MessageConverter(gpsRef=Vec2(constants.CANBERRA_GPS[0], constants.CANBERRA_GPS[1]))
+        self.messageConverter = MessageConverter(gpsRef=GPSCoord(constants.CANBERRA_GPS[0], constants.CANBERRA_GPS[1]))
         rospy.Subscriber(PATHFINDER_DEBUG_TOPIC, PathDebug, self.receiveDebug)
         rospy.Subscriber(PATHFINDER_SOLUTION_TOPIC, PathSolution, self.receiveSolution)
     

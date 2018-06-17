@@ -1,3 +1,3 @@
-Vec2[] points
-Vec2 velocity
+GPSCoord[] points
+GPSCoord velocity
 int64 ID

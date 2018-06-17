@@ -1,8 +1,8 @@
 # Based on the paper Datum Transformations of GPS Positions (https://www.u-blox.com/en)
 import math
 from numpy.random.mtrand import np
+from pathfinding.msg._GPSCoord import GPSCoord
 from pathfinding.msg._GPSVelocity import GPSVelocity
-from pathfinding.msg._Vec2 import Vec2
 
 import constants
 from engine.geometry import calcs
@@ -36,9 +36,7 @@ class GPSTransformer:
     
     def gpsToLocal(self, gps):
         """
-        Converts a GPS Vec2 to a 2d np.Array in local coordinate space
-        gps.x = longitude
-        gps.y = latitude
+        Converts a GPSCoord to a 2d np.Array in local coordinate space
         Altitude is ignored and assumed to be 0 for all points.
         """        
         ecef = self._gpsToECEF(gps)
@@ -46,9 +44,7 @@ class GPSTransformer:
 
     def localToGPS(self, local):
         """
-        Converts a 2d np.Array in local coordinate space to a GPS Vec2
-        gps.x = longitude
-        gps.y = latitude
+        Converts a 2d np.Array in local coordinate space to a GPSCoord
         Altitude is ignored and assumed to be 0 for all points.
         """        
         ecef = self._localToECEF(local)
@@ -57,7 +53,6 @@ class GPSTransformer:
     def gpsVelocityToLocal(self, gpsVelocity):
         """
         Converts a gps velocity to a 2D np.Array in local coordinates.
-        @param gpsVelocity Vec2(speed,angle), speed in m/2, angle = 0 for north and angle = 90 for east
         """
         speed = float(gpsVelocity.speed)
         angle = math.radians(float(gpsVelocity.heading))
@@ -66,7 +61,6 @@ class GPSTransformer:
     def localToGPSVelocity(self, local):
         """
         2D np.Array in local coordinates to a GPS velocity
-        A GPS velocity is Vec2(speed,angle), speed in m/2, angle = 0 for north and angle = 90 for east
         """
         speed = math.sqrt(local[0] * local[0] + local[1] * local[1])
         heading = math.degrees(math.atan2(local[0], local[1]))
@@ -88,13 +82,11 @@ class GPSTransformer:
 
     def _gpsToECEF(self, gps):
         """
-        Converts a GPS Vec2 to a (X,Y,Z) ECEF np.Array.
-        gps.x = longitude
-        gps.y = latitude
+        Converts a GPSCoord to a (X,Y,Z) ECEF np.Array.
         Altitude is ignored and assumed to be 0 for all points.
         """
-        lonRad = math.radians(gps.x)
-        latRad = math.radians(gps.y)
+        lonRad = math.radians(gps.lon)
+        latRad = math.radians(gps.lat)
         cosLat = math.cos(latRad)
         N = _radiusCurvature(latRad)
         x = float(N * cosLat * math.cos(lonRad))
@@ -111,9 +103,9 @@ class GPSTransformer:
     
     def _ecefToGPS(self, ecef):
         """
-        Converts an ECEF np.Array to GPS Vec2 (longitude,lattitude).
+        Converts an ECEF np.Array to GPSCoord (lon,lattitude).
         """
-        longitude = math.atan2(ecef[1], ecef[0])
+        lon = math.atan2(ecef[1], ecef[0])
         
         p = math.sqrt(ecef[0] * ecef[0] + ecef[1] * ecef[1])
         theta = math.atan2(ecef[2] * a, p * b)
@@ -122,18 +114,18 @@ class GPSTransformer:
         latY = ecef[2] + e2 * e2 * b * sinTheta * sinTheta * sinTheta
         latX = p - e1 * e1 * a * cosTheta * cosTheta * cosTheta
         lat = math.atan2(latY, latX)
-        return Vec2(math.degrees(longitude), math.degrees(lat))
+        return GPSCoord(math.degrees(lat), math.degrees(lon))
     
-    def _localToECEF(self, localVec2):
+    def _localToECEF(self, local):
         """
         Converts a 2d np.Array in local coordinate space to an ECEF np.Array.
         """
-        return localVec2[0] * self.localUnitXECEF + localVec2[1] * self.localUnitYECEF + self.localZECEF
+        return local[0] * self.localUnitXECEF + local[1] * self.localUnitYECEF + self.localZECEF
 
 
 if __name__ == "__main__":
     # Canberra
-    gpsRef = Vec2(constants.CANBERRA_GPS[0], constants.CANBERRA_GPS[1])
+    gpsRef = GPSCoord(constants.CANBERRA_GPS[0], constants.CANBERRA_GPS[1])
     trans = GPSTransformer(gpsRef)
     
     # A good worst case would be if start an end were at diagonals of a square 
@@ -145,13 +137,13 @@ if __name__ == "__main__":
     
     # In this example we pick a point 
     # which is max angle away in lattitude AND longitude, which is worse than the worst case!
-    gps = Vec2(gpsRef.x - maxAngleDiff, gpsRef.y - maxAngleDiff)
+    gps = GPSCoord(gpsRef.lat - maxAngleDiff, gpsRef.lon - maxAngleDiff)
     gps2 = trans.localToGPS(trans.gpsToLocal(gps))
     
-    diff = Vec2(math.radians(gps2.x - gps.x), math.radians(gps2.y - gps.y))
+    diff = GPSCoord(math.radians(gps2.lat - gps.lat), math.radians(gps2.lon - gps.lon))
     
     # Norm together the two angles (more or less correct)
-    angleError = math.acos(math.cos(diff.x) * math.cos(diff.y))
+    angleError = math.acos(math.cos(diff.lat) * math.cos(diff.lon))
     
     # Distance error
     errorMeters = angleError * 6371000.0

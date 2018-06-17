@@ -1,3 +1,3 @@
-Vec2 startPoint
-Vec2 endPoint
+GPSCoord startPoint
+GPSCoord endPoint
 float64 width

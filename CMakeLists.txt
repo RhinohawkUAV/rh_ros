@@ -60,7 +60,7 @@ add_message_files(
     Scenario.msg
     Road.msg
     NoFlyZone.msg
-    Vec2.msg
+    GPSCoord.msg
     GPSVelocity.msg
  )
 
