@@ -61,6 +61,7 @@ add_message_files(
     Road.msg
     NoFlyZone.msg
     Vec2.msg
+    GPSVelocity.msg
  )
 
 ## Generate services in the 'srv' folder

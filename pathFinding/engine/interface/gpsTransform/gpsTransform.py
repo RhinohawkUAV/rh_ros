@@ -1,6 +1,7 @@
 # Based on the paper Datum Transformations of GPS Positions (https://www.u-blox.com/en)
 import math
 from numpy.random.mtrand import np
+from pathfinding.msg._GPSVelocity import GPSVelocity
 from pathfinding.msg._Vec2 import Vec2
 
 import constants
@@ -58,8 +59,8 @@ class GPSTransformer:
         Converts a gps velocity to a 2D np.Array in local coordinates.
         @param gpsVelocity Vec2(speed,angle), speed in m/2, angle = 0 for north and angle = 90 for east
         """
-        speed = gpsVelocity.x
-        angle = math.radians(gpsVelocity.y)
+        speed = float(gpsVelocity.speed)
+        angle = math.radians(float(gpsVelocity.heading))
         return np.array((speed * math.sin(angle), speed * math.cos(angle)), np.double)
     
     def localToGPSVelocity(self, local):
@@ -68,8 +69,8 @@ class GPSTransformer:
         A GPS velocity is Vec2(speed,angle), speed in m/2, angle = 0 for north and angle = 90 for east
         """
         speed = math.sqrt(local[0] * local[0] + local[1] * local[1])
-        angle = math.degrees(math.atan2(local[0], local[1]))
-        return Vec2(speed, angle)
+        heading = math.degrees(math.atan2(local[0], local[1]))
+        return GPSVelocity(heading, speed)
 
     def localAngleToGPS(self, angle):
         angle = math.degrees(angle)

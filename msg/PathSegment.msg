@@ -4,4 +4,4 @@ float64 speed
 Arc arc
 Vec2 lineStartPoint
 Vec2 endPoint
-Vec2 endVelocity
+GPSVelocity endVelocity
