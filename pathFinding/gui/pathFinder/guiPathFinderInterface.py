@@ -15,7 +15,7 @@ class LocalPathFinderInterface(PathFinderManager, PathFinderInterface):
         PathFinderManager.__init__(self)
     
     def submitProblem(self, scenario, vehicle):
-        PathFinderManager.submitProblem(self, scenario, vehicle)
+        PathFinderManager.submitProblem(self, scenario, vehicle, None)
     
     def stepProblem(self, numSteps=1):
         PathFinderManager.stepProblem(self, numSteps)
@@ -23,10 +23,10 @@ class LocalPathFinderInterface(PathFinderManager, PathFinderInterface):
     def solveProblem(self, timeout):
         pass
 
-    def publishSolution(self, solutionPathSegments, finished):
+    def publishSolution(self, solutionPathSegments, finished, referenceGPS):
         Thread(target=self._doPublishSolution, args=(solutionPathSegments, finished)).start()
     
-    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
+    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments, referenceGPS):
         Thread(target=self._doPublishDebug, args=(pastPathSegments, futurePathSegments, filteredPathSegments)).start()
 
 # These functions are necessray due to the failings of the TK library:

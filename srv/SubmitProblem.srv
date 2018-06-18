@@ -1,3 +1,4 @@
 Scenario scenario
 Vehicle vehicle
+GPSCoord referenceGPS
 ---

@@ -16,10 +16,11 @@ class PathFinderManager:
         self._steps = 0
         self._shutdown = False
         self._activePathFinder = None
+        self._referenceGPS = None
         self._thread = Thread(target=self._run)
         self._thread.start()
 
-    def publishSolution(self, solutionPathSegments, finished):
+    def publishSolution(self, solutionPathSegments, finished, referenceGPS):
         """
         Override me.
         Called whenever a step on the active path finder concludes with a solutionPathSegments.
@@ -27,10 +28,13 @@ class PathFinderManager:
         This is intentionally behind a lock to guarantee order of operations.  
         This will NOT publish results for an old problem.  Once a call to submitProblem()
         concludes, no call to this method will be made for any previous problem being worked on.
+        
+        Arguments in local coordinates.  The given GPS reference can be used to convert to GPS.
+        
         """
         pass
     
-    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
+    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments, referenceGPS):
         """
         Override me.
         Called whenever a step on the active path finder concludes with debug data.
@@ -38,6 +42,8 @@ class PathFinderManager:
         This is intentionally behind a lock to guarantee order of operations.  
         This will NOT publish results for an old problem.  Once a call to submitProblem()
         concludes, no call to this method will be made for any previous problem being worked on.
+
+        Arguments in local coordinates.  The given GPS reference can be used to convert to GPS.
         """
         pass
             
@@ -56,13 +62,18 @@ class PathFinderManager:
         self.shutdown()
         self._thread.join()
 
-    def submitProblem(self, scenario, vehicle):
+    def submitProblem(self, scenario, vehicle, referenceGPS):
         """
         Submit a new path finding problem.  Will cancel any queued steps.  
         If a step is currently executing, its result will not be published.
+        
+        Arguments already in local coordinates.  
+        The given GPS reference was used for the conversion and will be retained and passed to publish()
+        methods to convert back.
         """
         with self._lock:
             self._activePathFinder = PathFinder(scenario, vehicle)
+            self._referenceGPS = referenceGPS
             self._steps = 0
             self._lock.notifyAll()
 
@@ -84,8 +95,8 @@ class PathFinderManager:
     def _run(self):
         try:
             while True:
-                pathFinder = self._getNextStep()
-                self._performStep(pathFinder)
+                (pathFinder, referenceGPS) = self._getNextStep()
+                self._performStep(pathFinder, referenceGPS)
         except ShutdownException:
             pass
 
@@ -106,9 +117,9 @@ class PathFinderManager:
                 self._lock.wait()
                 self._checkShutdown()
 
-            return self._activePathFinder
+            return (self._activePathFinder, self._referenceGPS)
 
-    def _performStep(self, pathFinder):
+    def _performStep(self, pathFinder, referenceGPS):
         """
         Runs a step on the given path finder instance.  Afterwards one of 3 things can happen:
         1. Can throw a ShutdownException if manager was shutdown.
@@ -127,10 +138,10 @@ class PathFinderManager:
             
             # Publish and decrement number of steps
             if solutionFound:
-                self.publishSolution(pathFinder.getSolution(), pathFinder.isDone())
+                self.publishSolution(pathFinder.getSolution(), pathFinder.isDone(), referenceGPS)
             else:
-                debugData = pathFinder.getDebugData()
-                self.publishDebug(*debugData)
+                (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
+                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments, referenceGPS)
             self._steps -= 1
 
 
