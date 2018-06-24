@@ -32,7 +32,7 @@ def name():
 
 def process_location(point_stamped):
 
-    rospy.loginfo("process_location:\n%s", point_stamped)
+    rospy.logdebug("process_location:\n%s", point_stamped)
     
     # Normalized image coordinates, homogenous coordinates
     image_target = np.array([point_stamped.point.x, point_stamped.point.y, 1., 1.])
@@ -54,7 +54,7 @@ def process_location(point_stamped):
     target_frame = 'local_origin'
     
     if tf_listener.canTransform(source_frame, target_frame, point_stamped.header.stamp):
-        rospy.loginfo("Transforming")
+        rospy.logdebug("Transforming")
 
         target = to_point_stamped(target, source_frame, point_stamped.header.seq, point_stamped.header.stamp)
         camera = to_point_stamped(camera, source_frame, point_stamped.header.seq, point_stamped.header.stamp)
@@ -86,7 +86,7 @@ def process_location(point_stamped):
         location_publisher.publish(joe)
         
     else:
-        rospy.loginfo("Not transforming")
+        rospy.logdebug("Not transforming")
 
 def to_point_stamped(np_point, frame, seq, stamp):
     point = Point(x=np_point[0], y=np_point[1], z=np_point[2])
