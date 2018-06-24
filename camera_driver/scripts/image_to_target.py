@@ -10,6 +10,7 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import Header
 from sensor_msgs.msg import CameraInfo
 
+import tf2_msgs.msg
 
 global location_publisher
 global inverse_camera_projection_matrix
@@ -94,6 +95,32 @@ def to_point_stamped(np_point, frame, seq, stamp):
     point_stamped = PointStamped(point=point, header=header)
     return point_stamped
 
+
+
+def process_tf(tfm):
+    global last_tf
+    global latch_tf
+
+    for transform in tfm.transforms:
+        frame = transform.header.frame_id
+        child = transform.child_frame_id
+        name = "%s to %s" % (frame, child)
+        latch_tf[name] = transform.transform
+
+    now = rospy.Time.now()
+    if now - last_tf > rospy.Duration(3):
+        info = ""
+        for name in sorted(latch_tf.keys()):
+            frame, child = name.split(" to ")
+            transform = latch_tf[name]
+            t = transform.translation
+            r = transform.rotation
+            info += "\n  %-12s  %-7s  translation: [%2.2f,%2.2f,%2.2f]  rotation: [%2.2f,%2.2f,%2.2f,%2.2f]" % \
+                    (frame, child, t.x, t.y, t.z, r.x, r.y, r.z, r.w)
+        rospy.loginfo("%s", info)
+        last_tf = now
+
+
 def image_to_target():
     global location_publisher
     global tf_listener
@@ -108,10 +135,17 @@ def image_to_target():
     
     # subscribe to get camera calibration
     rospy.Subscriber("camera_info", CameraInfo, process_camera_info)
-    
+
+    global last_tf
+    global latch_tf
+    last_tf = rospy.Time.now()
+    latch_tf = {}
+    rospy.Subscriber("/tf", tf2_msgs.msg.TFMessage, process_tf)
+
     # subscribe to 2D image locations
     rospy.Subscriber("image_location", PointStamped, process_location)
     rospy.spin()
 
 if __name__ == "__main__":
     image_to_target()
+    
