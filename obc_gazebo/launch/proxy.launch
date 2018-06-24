@@ -17,7 +17,7 @@
   </node>
 
   <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="nikon">
-    <remap from="image_location" to="/nikon/landing_box_location"/>
+    <remap from="image_location" to="/nikon/aruco/location"/>
     <remap from="camera_info" to="/nikon/camera_info"/>
   </node>
   

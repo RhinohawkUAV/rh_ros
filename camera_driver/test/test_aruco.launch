@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="camera_driver" type="aruco_detector.py" name="aruco_detector" />
+    <test pkg="camera_driver" type="test_aruco.py"  test-name="test_aruco" />
+</launch>

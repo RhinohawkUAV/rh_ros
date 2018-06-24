@@ -7,6 +7,7 @@ find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  rostest
   std_msgs
   message_generation
   cv_bridge
@@ -62,4 +63,10 @@ target_link_libraries(people_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(to_stream ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
+if(CATKIN_ENABLE_TESTING)
+  foreach(T
+      test/test_aruco.launch)
+    add_rostest(${T})
+  endforeach()
+endif()
 

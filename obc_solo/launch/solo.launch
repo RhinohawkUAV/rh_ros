@@ -75,12 +75,12 @@ capable of
     <remap from="image" to="image_raw"/>
   </node>
 
-  <node pkg="camera_driver" type="aruco_detector.py"   name="aruco_detector"   ns="gopro">
-	<remap from="image" to="image_rect"/>
+  <node pkg="camera_driver" type="aruco_detector.py"   name="aruco_detector"   ns="vision">
+	<remap from="image" to="/gopro/image_rect"/>
   </node>
 
-  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="gopro">
-    <remap from="image_location" to="/gopro/landing_box_location"/>
+  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="vision">
+    <remap from="image_location" to="/vision/aruco/location"/>
     <remap from="camera_info" to="/gopro/camera_info"/>
   </node>
 
@@ -95,5 +95,10 @@ capable of
   <node pkg="tf" type="static_transform_publisher" name="gopro_link_broadcaster"
 	args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu gopro 200"
 	/>
+
+  <!-- rhinohawk mission nodes -->
+
+  <node pkg="obc_solo" type="mission.py" name="mission" ns="rhinohawk" output="screen"/>
+
 
 </launch>
