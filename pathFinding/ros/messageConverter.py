@@ -191,4 +191,24 @@ class MessageConverter:
          
     def vectorToMsg(self, vec):
         return self._gpsTransformer.localToGPSVelocity(vec)
-     
+    
+    def printSegmentList(self, segList):
+        for segment in segList:
+            print "Segment:"
+            print "  startTime: " + str(segment.startTime) + ""
+            print "  elapsedTime: " + str(segment.elapsedTime) + ""
+            print "  speed: " + str(segment.speed) + ""
+            print "  lineStartPoint:"
+            print "    lat: " + str(segment.lineStartPoint.lat) + ""
+            print "    lon: " + str(segment.lineStartPoint.lon) + ""
+            print "  endPoint: " + str(segment.endPoint) + ""
+            print "    lat: " + str(segment.endPoint.lat) + ""
+            print "    lon: " + str(segment.endPoint.lon) + ""
+            print "  endVelocity" + str(segment.endVelocity) + ""
+            print "    heading: " + str(segment.endVelocity.heading) + ""
+            print "    speed: " + str(segment.endVelocity.speed) + ""
+            print "  arc:" + str(segment.arc.direction) + ""
+            print "    radius: " + str(segment.arc.radius) + ""
+            print "    center: " + str(segment.arc.center) + ""
+            print "    start: " + str(segment.arc.start) + ""
+            print "    length: " + str(segment.arc.length) + ""

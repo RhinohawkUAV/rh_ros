@@ -27,6 +27,10 @@ class Encoder(json.JSONEncoder):
             return obj.__dict__
 
 
+def encode(obj):
+    return json.dumps(obj, cls=Encoder, indent=4)
+
+
 def saveInput(fileName, inputDict):
     fileHandle = open(fileName, 'w')
     json.dump(inputDict, fileHandle, cls=Encoder, indent=4)
