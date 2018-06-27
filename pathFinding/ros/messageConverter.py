@@ -1,6 +1,7 @@
 """
 Utilities for converting ROS messages to/from inputs to the path-finder.
 """
+import math
 from pathfinding.msg._Arc import Arc
 from pathfinding.msg._NoFlyZone import NoFlyZone
 from pathfinding.msg._PathDebug import PathDebug
@@ -95,13 +96,20 @@ class MessageConverter:
                                      self.msgToArc(msg.arc))
                 
     def msgToArc(self, msg):
-        start = self._gpsTransformer.gpsAngleToLocal(float(msg.start))
+        if msg.length < 0.0:
+            rotDirection = 1.0
+            length = -math.radians(float(msg.length))
+        else:
+            rotDirection = -1.0
+            length = math.radians(float(msg.length))
+            
+        start = self._gpsTransformer.gpsAngleToLocal(float(msg.start), rotDirection)
 
-        return engine.geometry.arc.Arc(-float(msg.direction),
+        return engine.geometry.arc.Arc(rotDirection,
                                       float(msg.radius),
                                       self.msgToPoint(msg.center),
                                       start,
-                                      float(msg.length))
+                                      length)
     
     #**********************Path finding objects to msg objects********************
     def vehicleToMsg(self, vehicle):
@@ -171,11 +179,10 @@ class MessageConverter:
                 
     def arcToMsg(self, arc):
         msg = Arc()
-        msg.direction = -arc.rotDirection
         msg.radius = arc.radius
         msg.center = self.pointToMsg(arc.center)
-        msg.start = self._gpsTransformer.localAngleToGPS(arc.start)
-        msg.length = arc.length
+        msg.start = self._gpsTransformer.localAngleToGPS(arc.start, arc.rotDirection)
+        msg.length = math.degrees(arc.length) * -arc.rotDirection
         return msg
 
 #***************************Point/vector Conversions*****************************
@@ -201,14 +208,16 @@ class MessageConverter:
             print "  lineStartPoint:"
             print "    lat: " + str(segment.lineStartPoint.lat) + ""
             print "    lon: " + str(segment.lineStartPoint.lon) + ""
-            print "  endPoint: " + str(segment.endPoint) + ""
+            print "  endPoint: "
             print "    lat: " + str(segment.endPoint.lat) + ""
             print "    lon: " + str(segment.endPoint.lon) + ""
-            print "  endVelocity" + str(segment.endVelocity) + ""
+            print "  endVelocity:"
             print "    heading: " + str(segment.endVelocity.heading) + ""
             print "    speed: " + str(segment.endVelocity.speed) + ""
-            print "  arc:" + str(segment.arc.direction) + ""
+            print "  arc:" 
             print "    radius: " + str(segment.arc.radius) + ""
-            print "    center: " + str(segment.arc.center) + ""
+            print "    center:"
+            print "      lat: " + str(segment.arc.center.lat) + ""
+            print "      lon: " + str(segment.arc.center.lon) + ""
             print "    start: " + str(segment.arc.start) + ""
             print "    length: " + str(segment.arc.length) + ""

@@ -66,17 +66,22 @@ class GPSTransformer:
         heading = math.degrees(math.atan2(local[0], local[1]))
         return GPSVelocity(heading, speed)
 
-    def localAngleToGPS(self, angle):
-        angle = math.degrees(angle)
+    def localAngleToGPS(self, angle, rotDirection):
+        angle = math.degrees(angle) * rotDirection
         angle = angle * -1.0 + 90.0
         if angle < 0.0:
             angle += 360
+        elif angle >= 360.0:
+            angle -= 360.0
         return angle
 
-    def gpsAngleToLocal(self, angle):
+    def gpsAngleToLocal(self, angle, rotDirection):
         angle = (angle - 90.0) * -1.0
+        angle *= rotDirection
         if angle < 0.0:
             angle += 360
+        elif angle >= 360.0:
+            angle -= 360.0
         angle = math.radians(angle)
         return angle
 
