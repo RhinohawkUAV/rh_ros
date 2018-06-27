@@ -50,11 +50,14 @@ class ArcFinder:
 
     def calcInitialGuess(self, targetStartPoint, targetUnitVelocity, speedOfTarget):
         if speedOfTarget == 0.0:
-            # Target is unmoving and contained within the the vehicle's arc's circle.
-            # It is impossible to reach this target.
             toCenter = targetStartPoint - self.center
             if np.dot(toCenter, toCenter) < self.arcRadius * self.arcRadius:
+                # Target is unmoving and contained within the the vehicle's arc's circle.
+                # It is impossible to reach this target.
                 raise NoSolutionException
+            else:
+                # Otherwise just start with an arc length of 0 and iterate.
+                return 0.0
         else:
             distances = calcs.rayIntersectCircle(targetStartPoint, targetUnitVelocity, self.center, self.arcRadius)
             if len(distances) > 0:
