@@ -42,6 +42,10 @@ function connectToROS(address){
     setUpIcons();
     setUpGauges();
     connectToTopics();
+
+    drawArc(2, [-35.2802273575, 149.130612897], 242.178467417, 40.107, 1, [-35.2802105398, 149.130604981], [-35.2801391502, 149.130830561]);
+    drawArc(2, [-35.2806058227, 149.130369289], 225.0,  342.82, 1, [-35.2805974093, 149.130349847], [-35.2802189442,149.130593454]);
+
 }
   
 
@@ -520,4 +524,18 @@ function finishNFZ(e){
   nfzCoords = [];
 }
 
+// Draw Arc ---------------------------------------------
+
+function drawArc(radius, latlong, startAngle, angleLength, direction, lineStart, lineEnd){
+  L.arc({
+    center: latlong,
+    radius: radius,
+    startBearing: startAngle-(angleLength)+96,
+    endBearing: startAngle+96
+  }).addTo(map);
+  
+  L.polyline([lineStart, lineEnd]).addTo(map)
+
+  map.setView(latlong, 20);
+}
 
