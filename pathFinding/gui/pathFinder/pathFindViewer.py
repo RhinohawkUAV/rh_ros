@@ -6,9 +6,10 @@ import tkFileDialog
 from engine import interface
 import engine
 from engine.geometry import calcs
-from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY
+from engine.interface.fileUtils import SCENARIO_KEY
+from engine.interface.paramsInput import DEFAULT_PARAMS
 from engine.interface.scenarioInput import ScenarioInput
-from engine.interface.vehicleInput import VehicleInput
+from engine.interface.vehicleInput import VehicleInput, DEFAULT_VEHICLE
 from gui.pathFinder.pathFinderListener import PathFinderListener
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 from gui.visualizer import Visualizer
@@ -22,6 +23,8 @@ class PathFindViewer(Visualizer, PathFinderListener):
 
     def __init__(self, pathFinderInterface, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
+        self._params = DEFAULT_PARAMS
+        self._vehicle = DEFAULT_VEHICLE
         self._pointOfInterest = None
         self._pathFinderInterface = pathFinderInterface
         self._pathFinderInterface.setListener(self)
@@ -41,7 +44,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
             
             if isinstance(fileName, basestring) and not fileName == '':
                 self._pathFindInput = interface.loadInput(fileName)
-                self.setState(self._pathFindInput[SCENARIO_KEY], self._pathFindInput[VEHICLE_KEY])
+                self.setScenario(self._pathFindInput[SCENARIO_KEY])
         if key == "s":
             # Can always find the scenarios folder relative to this file regardless of how the program is started
             root = os.path.dirname(__file__)
@@ -73,7 +76,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         vehicle = VehicleInput(maxSpeed=maxSpeed, acceleration=1.0)
         self.setState(scenario, vehicle)
         
-    def setState(self, scenario, vehicle):
+    def setScenario(self, scenario):
         # Show a slight extra buffer around the border
         bounds = scenario.calcBounds()
         centerX = (bounds[0] + bounds[2]) / 2.0
@@ -83,9 +86,8 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self.setView(centerX, centerY, rangeX + 1, rangeY + 1)
         self._pathFindInput = {}
         self._pathFindInput[SCENARIO_KEY] = scenario
-        self._pathFindInput[VEHICLE_KEY] = vehicle
         
-        self._pathFinderInterface.submitProblem(scenario, vehicle)
+        self._pathFinderInterface.submitProblem(self._params, scenario, self._vehicle)
         self._pathFindDrawable = PathFindDrawable(scenario)
         self.updateDisplay()
 

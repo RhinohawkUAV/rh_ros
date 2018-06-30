@@ -4,6 +4,7 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 import math
 from pathfinding.msg._Arc import Arc
 from pathfinding.msg._NoFlyZone import NoFlyZone
+from pathfinding.msg._Params import Params
 from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSegment import PathSegment
 from pathfinding.msg._Road import Road
@@ -12,9 +13,10 @@ from pathfinding.msg._Vehicle import Vehicle
 
 import engine
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
-from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY
+from engine.interface.fileUtils import SCENARIO_KEY, INPUT_PARAMS_KEY
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
 from engine.interface.noFlyZoneInput import NoFlyZoneInput
+from engine.interface.paramsInput import ParamsInput
 from engine.interface.roadInput import RoadInput
 from engine.interface.scenarioInput import ScenarioInput
 from engine.interface.vehicleInput import VehicleInput
@@ -26,19 +28,10 @@ class MessageConverter:
 
     def __init__(self, gpsRef):
         self._gpsTransformer = GPSTransformer(gpsRef)
-        
-    def msgToInput(self, scenarioMsg, vehicleMsg):
-        inputDict = {}
-        scenario = ScenarioInput(scenarioMsg.boundaryPoints,
-                                 scenarioMsg.noFlyZones,
-                                 scenarioMsg.roads,
-                                 scenarioMsg.startPoint,
-                                 scenarioMsg.startVelocity,
-                                 scenarioMsg.wayPoints
-                                 )
-        vehicle = self.msgToVehicle(vehicleMsg)
-        inputDict[SCENARIO_KEY] = scenario
-        inputDict[VEHICLE_KEY] = vehicle
+
+    def msgToParams(self, inputParamsMsg):
+        return ParamsInput(float(inputParamsMsg.waypointAcceptanceRadii),
+                                  float(inputParamsMsg.nfzBufferSize))
     
     def msgToVehicle(self, msg):
         return VehicleInput(float(msg.maxSpeed), float(msg.acceleration))
@@ -112,6 +105,12 @@ class MessageConverter:
                                       length)
     
     #**********************Path finding objects to msg objects********************
+    def paramsToMsg(self, inputParams):
+        msg = Params()
+        msg.waypointAcceptanceRadii = inputParams.waypointAcceptanceRadii
+        msg.nfzBufferSize = inputParams.nfzBufferSize
+        return msg
+    
     def vehicleToMsg(self, vehicle):
         msg = Vehicle()
         msg.maxSpeed = vehicle.maxSpeed

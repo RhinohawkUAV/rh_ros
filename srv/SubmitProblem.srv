@@ -1,3 +1,4 @@
+Params inputParams
 Scenario scenario
 Vehicle vehicle
 GPSCoord referenceGPS

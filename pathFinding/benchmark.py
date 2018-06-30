@@ -2,17 +2,19 @@
 Benchmarks running the path-finder.
 """
 from engine import interface
-from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY
+from engine.interface.fileUtils import SCENARIO_KEY
+from engine.interface.paramsInput import DEFAULT_PARAMS
+from engine.interface.vehicleInput import DEFAULT_VEHICLE
 from engine.pathFinder import PathFinder
 from utils import profile
 
-input = interface.loadInput("../scenarios/benchmark_veryeasy.json")
-pathFinder = PathFinder(input[SCENARIO_KEY], input[VEHICLE_KEY])
+input = interface.loadInput("../scenarios/mainTest1.json")
+pathFinder = PathFinder(DEFAULT_PARAMS, input[SCENARIO_KEY], DEFAULT_VEHICLE)
 pathFinder.findPath()
 profile.printAggregate()
-profile.reset()
-input = interface.loadInput("../scenarios/benchmark_veryhard.json")
-pathFinder = PathFinder(input[SCENARIO_KEY], input[VEHICLE_KEY])
-for i in range(25):
-    pathFinder.step()
-profile.printAggregate()
+# profile.reset()
+# input = interface.loadInput("../scenarios/benchmark_veryhard.json")
+# pathFinder = PathFinder(DEFAULT_PARAMS, input[SCENARIO_KEY], DEFAULT_VEHICLE)
+# for i in range(25):
+#     pathFinder.step()
+# profile.printAggregate()

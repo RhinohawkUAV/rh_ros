@@ -13,7 +13,7 @@ DEFAULT_POINT_SIZE = 0.5
 DEFAULT_COLOR = "black"
 DEFAULT_WIDTH = 1.0
 DEFAULT_DASH = (1, 6)
-VELOCITY_SCALE = 2.0
+VELOCITY_SCALE = 10.0
 
 
 def drawPoint(canvas, pos, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, outline=None, width=1.0, **kwargs):
@@ -56,7 +56,7 @@ def drawNoFlyZone(canvas, noFlyZone, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, *
         drawLine(canvas, noFlyZone.points[i - 1], noFlyZone.points[i], color=color, width=width)
     if np.linalg.norm(noFlyZone.velocity) > 0.0:
         midPoint = noFlyZone.points.sum(axis=0) / len(noFlyZone.points)
-        drawLine(canvas, midPoint, midPoint + noFlyZone.velocity, arrow=tk.LAST, **kwargs)
+        drawVelocity(canvas, midPoint, noFlyZone.velocity, **kwargs)
     
         
 def drawNoFlyZones(canvas, noFlyZones, **kwargs):

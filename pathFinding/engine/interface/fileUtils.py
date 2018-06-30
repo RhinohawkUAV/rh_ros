@@ -11,8 +11,8 @@ from engine.interface.testInput import TestInput
 from engine.interface.vehicleInput import VehicleInput
 import numpy as np
 
+INPUT_PARAMS_KEY = "params"
 SCENARIO_KEY = "scenario"
-VEHICLE_KEY = "vehicle"
 TEST_INPUT_KEY = "testInput"
 
 
@@ -62,9 +62,6 @@ def loadInput(fileName):
                                   scenarioDict["wayPoints"])
     
     inputDict[SCENARIO_KEY] = scenarioInput
-
-    vehicleInput = VehicleInput(fileDict[VEHICLE_KEY]["maxSpeed"], fileDict[VEHICLE_KEY]["acceleration"])
-    inputDict[VEHICLE_KEY] = vehicleInput
 
     if fileDict.has_key(TEST_INPUT_KEY):
         testDict = fileDict[TEST_INPUT_KEY]

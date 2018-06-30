@@ -51,11 +51,14 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
+    FlightControllerSolution.msg
     PathSolution.msg
     PathDebug.msg
     PathSegment.msg
     Arc.msg
+	SolutionWaypoint.msg
 
+	Params.msg
     Vehicle.msg
     Scenario.msg
     Road.msg

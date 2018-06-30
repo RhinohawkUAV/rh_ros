@@ -14,8 +14,8 @@ class LocalPathFinderInterface(PathFinderManager, PathFinderInterface):
     def __init__(self):
         PathFinderManager.__init__(self)
     
-    def submitProblem(self, scenario, vehicle):
-        PathFinderManager.submitProblem(self, scenario, vehicle, None)
+    def submitProblem(self, params, scenario, vehicle):
+        PathFinderManager.submitProblem(self, params, scenario, vehicle, None)
     
     def stepProblem(self, numSteps=1):
         PathFinderManager.stepProblem(self, numSteps)

@@ -1,8 +1,9 @@
 import Tkinter as tk
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
-from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY, VEHICLE_KEY
+from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
+from engine.interface.vehicleInput import DEFAULT_VEHICLE
 from gui import Drawable, draw
-from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE
+from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
 from gui.editor.subGUI import SubGUI
 import numpy as np
 from obstacleDebug import ObstacleCourseDebug
@@ -27,9 +28,9 @@ class PathSegmentTester(Drawable, SubGUI):
     def onKey(self, point, key, ctrl=False):
         if key == "v":
             if ctrl:
-                self._inputDict[TEST_INPUT_KEY].velocityOfTarget = point - self._inputDict[TEST_INPUT_KEY].targetPoint
+                self._inputDict[TEST_INPUT_KEY].velocityOfTarget = (point - self._inputDict[TEST_INPUT_KEY].targetPoint) / VELOCITY_SCALE
             else:
-                self._inputDict[TEST_INPUT_KEY].startVelocity = point - self._inputDict[TEST_INPUT_KEY].startPoint
+                self._inputDict[TEST_INPUT_KEY].startVelocity = (point - self._inputDict[TEST_INPUT_KEY].startPoint) / VELOCITY_SCALE
 
         if key == "z":
             self._showPathsToPoints = not self._showPathsToPoints
@@ -39,7 +40,7 @@ class PathSegmentTester(Drawable, SubGUI):
 
     def onSwitch(self, inputDict):
         SubGUI.onSwitch(self, inputDict)
-        self._obstacleData = ArcObstacleData(self._inputDict[VEHICLE_KEY].acceleration)
+        self._obstacleData = ArcObstacleData(DEFAULT_VEHICLE.acceleration)
         self._obstacleData.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
         
@@ -48,9 +49,8 @@ class PathSegmentTester(Drawable, SubGUI):
 
     def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
         draw.drawPoint(canvas, self._inputDict[TEST_INPUT_KEY].startPoint, radius=radius, color=color)
-        draw.drawLine(canvas, self._inputDict[TEST_INPUT_KEY].startPoint,
-                      self._inputDict[TEST_INPUT_KEY].startPoint + self._inputDict[TEST_INPUT_KEY].startVelocity,
-                      arrow=tk.LAST)
+        draw.drawVelocity(canvas, self._inputDict[TEST_INPUT_KEY].startPoint,
+                      self._inputDict[TEST_INPUT_KEY].startVelocity)
         
         startSpeed = np.linalg.norm(self._inputDict[TEST_INPUT_KEY].startVelocity)
         startUnitVelocity = self._inputDict[TEST_INPUT_KEY].startVelocity / startSpeed

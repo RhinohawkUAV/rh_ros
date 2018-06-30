@@ -2,10 +2,8 @@ import tkFileDialog
 
 from boundaryBuilder import BoundaryBuilder
 from engine import interface
-from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.interface.scenarioInput import ScenarioInput
 from engine.interface.testInput import TestInput
-from engine.interface.vehicleInput import VehicleInput
 from gui import draw
 from gui.editor.pathSegmentTester.pathSegmentTester import PathSegmentTester
 from gui.editor.wayPointEditor import WayPointEditor
@@ -25,7 +23,6 @@ class ScenarioEditor(Visualizer, Drawable):
         Visualizer.__init__(self, *args, **kwargs)
         self._inputDict = {
                             interface.SCENARIO_KEY:ScenarioInput(),
-                            interface.VEHICLE_KEY:VehicleInput(),
                             interface.TEST_INPUT_KEY:TestInput()
                            }
         self._nfzBuilder = NFZBuilder()
@@ -64,9 +61,12 @@ class ScenarioEditor(Visualizer, Drawable):
             self._mode.onSwitch(self._inputDict)
             self._mode.onMotion(point)
         elif key == "s":
+            # Make sure current mode's state is dumped back to central data structure
+            self._mode.onExit()
             fileName = tkFileDialog.asksaveasfilename(defaultextension=".json", initialdir="scenarios")
             if not fileName == '':
                 interface.saveInput(fileName, self._inputDict)
+            self._mode.onSwitch(self._inputDict)
         elif key == "l":
             fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir="scenarios")
             if not fileName == '':

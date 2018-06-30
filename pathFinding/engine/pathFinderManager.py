@@ -62,7 +62,7 @@ class PathFinderManager:
         self.shutdown()
         self._thread.join()
 
-    def submitProblem(self, scenario, vehicle, referenceGPS):
+    def submitProblem(self, params, scenario, vehicle, referenceGPS):
         """
         Submit a new path finding problem.  Will cancel any queued steps.  
         If a step is currently executing, its result will not be published.
@@ -72,7 +72,7 @@ class PathFinderManager:
         methods to convert back.
         """
         with self._lock:
-            self._activePathFinder = PathFinder(scenario, vehicle)
+            self._activePathFinder = PathFinder(params, scenario, vehicle)
             self._referenceGPS = referenceGPS
             self._steps = 0
             self._lock.notifyAll()

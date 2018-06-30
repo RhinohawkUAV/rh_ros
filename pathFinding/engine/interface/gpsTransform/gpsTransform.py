@@ -4,6 +4,7 @@ from numpy.random.mtrand import np
 from pathfinding.msg._GPSCoord import GPSCoord
 from pathfinding.msg._GPSVelocity import GPSVelocity
 
+from constants import COURSE_DIM
 import constants
 from engine.geometry import calcs
 
@@ -132,17 +133,12 @@ if __name__ == "__main__":
     # Canberra
     gpsRef = GPSCoord(constants.CANBERRA_GPS[0], constants.CANBERRA_GPS[1])
     trans = GPSTransformer(gpsRef)
+
+    # If the reference position were in the center of the square then each edge of the square would be:
+    edgeAngle = math.degrees(COURSE_DIM / 2.0 / 6371000.0)
     
-    # A good worst case would be if start an end were at diagonals of a square 
-    # and the path were a completely straight line.  If the boundaries were just barely surrounding
-    # this square, then they would be ~30km appart (16 nautical miles).
-    # If we set the reference position to be the center of this square then
-    # the furthest corner would be able (15km/6371km) radians away.
-    maxAngleDiff = math.degrees(15.0 / 6371.0)
-    
-    # In this example we pick a point 
-    # which is max angle away in lattitude AND longitude, which is worse than the worst case!
-    gps = GPSCoord(gpsRef.lat - maxAngleDiff, gpsRef.lon - maxAngleDiff)
+    # In this example we pick a point edgeAngle away in lattitude AND longitude.
+    gps = GPSCoord(gpsRef.lat - edgeAngle, gpsRef.lon - edgeAngle)
     gps2 = trans.localToGPS(trans.gpsToLocal(gps))
     
     diff = GPSCoord(math.radians(gps2.lat - gps.lat), math.radians(gps2.lon - gps.lon))
@@ -152,6 +148,6 @@ if __name__ == "__main__":
     
     # Distance error
     errorMeters = angleError * 6371000.0
-    
-    # 0.465086077192m - This is not significant so we are all good!
-    print errorMeters
+
+    # Error is 0 to 10 decimal places!
+    print "{0:.10f}".format(errorMeters)

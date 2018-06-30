@@ -22,15 +22,16 @@ class RosPathFinderInterface(PathFinderInterface):
         rospy.Subscriber(PATHFINDER_DEBUG_TOPIC, PathDebug, self.receiveDebug)
         rospy.Subscriber(PATHFINDER_SOLUTION_TOPIC, PathSolution, self.receiveSolution)
     
-    def submitProblem(self, scenario, vehicle):
+    def submitProblem(self, params, scenario, vehicle):
         try:
             messageConverter = MessageConverter(self._gpsReference)
+            paramsMsg = messageConverter.paramsToMsg(params)
             scenarioMsg = messageConverter.scenarioToMsg(scenario)
             vehicleMsg = messageConverter.vehicleToMsg(vehicle)
             # TODO: Do we need to do this every time?  Not in GUI thread.  Need to handle below as well.
             rospy.wait_for_service(SUBMIT_PROBLEM_SERVICE)
             func = rospy.ServiceProxy(SUBMIT_PROBLEM_SERVICE, SubmitProblem)
-            func(scenarioMsg, vehicleMsg, self._gpsReference)
+            func(paramsMsg, scenarioMsg, vehicleMsg, self._gpsReference)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e    
     

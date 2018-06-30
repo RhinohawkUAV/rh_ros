@@ -1,0 +1,2 @@
+float64 waypointAcceptanceRadii
+float64 nfzBufferSize

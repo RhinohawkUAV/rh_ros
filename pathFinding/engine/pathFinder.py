@@ -13,8 +13,8 @@ from vertex import Vertex
 class PathFinder:
 
     @profile.accumulate("setup")
-    def __init__(self, scenario, vehicle):
-
+    def __init__(self, params, scenario, vehicle):
+        self._params = params
         self._obstacleData = ArcObstacleData(vehicle.acceleration)
 #         self._obstacleData = LineSegmentObstacleData()
         self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
