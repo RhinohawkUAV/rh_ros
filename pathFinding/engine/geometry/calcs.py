@@ -79,35 +79,53 @@ class StraightPathSolution:
         self.endPoint = endPoint
 
 
-def hitTargetAtSpeed(projectileStart, projectileSpeed, targetStartPoint, targetVelocity):
+def hitTargetCircleAtSpeed(vehicleStart, vehicleSpeed, center, velocity, radius):
+    """
+    Solves the problem of hitting a target circle, given a starting position and speed.
+    This always results in a 2 element solution vector.  Either/both solutions may be None to signify they are not possible.
+    
+    """
+    toCenter = center - vehicleStart
+    toCenterUnit = unit(toCenter)
+    
+    toCenterRadiusPerp = radius * CCWNorm(toCenterUnit)
+    targetPoint1 = center + toCenterRadiusPerp
+    targetPoint2 = center - toCenterRadiusPerp
+    
+    solution1 = hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetPoint1, velocity)
+    solution2 = hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetPoint2, velocity)
+    return (solution1, solution2)
+
+    
+def hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetStartPoint, targetVelocity):
     """
     Solves the following problem:
-    A projectile starts at a position with a given speed.  A target starts at another position and has a given velocity.
+    A vehicle starts at a position with a given speed.  A target starts at another position and has a given velocity.
 
-    What is the velocity vector the projectile should follow to hit the moving target?
-    Where will the projectile collide with the target?
+    What is the velocity vector the vehicle should follow to hit the moving target?
+    Where will the vehicle collide with the target?
 
-    Note: We startPoint knowing the speed of the projectile, but not the velocity.
+    Again, we know the speed of the projectile, but not the velocity.
 
-    :param projectileStart: where craft starts
-    :param projectileSpeed: magnitude of craft's velocity
+    :param vehicleStart: where craft starts
+    :param vehicleSpeed: magnitude of craft's velocity
     :param targetStartPoint: the target's starting location
     :param targetVelocity: the velocity vector of the target
     :return: StraightPathSolution or None, if speed is insufficient given position
     """
 
     # Vector heading from startPoint towards point
-    towards = targetStartPoint - projectileStart
+    towards = targetStartPoint - vehicleStart
     towardsMagSquared = np.dot(towards, towards)
     velDotTowards = np.dot(towards, targetVelocity)
 
-    # We need a mixture of velocity and the towardsVector.  Its magnitude needs to be projectileSpeed.
+    # We need a mixture of velocity and the towardsVector.  Its magnitude needs to be vehicleSpeed.
     # heading = velocity + towardsFactor * towardsVector.
     # Solve for towardsFactor:
 
     a = -towardsMagSquared
     b = -2 * velDotTowards
-    c = projectileSpeed * projectileSpeed - np.dot(targetVelocity, targetVelocity)
+    c = vehicleSpeed * vehicleSpeed - np.dot(targetVelocity, targetVelocity)
 
     solutions = quadratic.solveQuad(a, b, c)
 
