@@ -1,4 +1,3 @@
-from pathfinding.msg._FlightControllerSolution import FlightControllerSolution
 from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSolution import PathSolution
 from pathfinding.msg._Scenario import Scenario
