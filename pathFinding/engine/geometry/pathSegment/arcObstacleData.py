@@ -1,6 +1,5 @@
 import math
 
-from constants import NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
 from engine.geometry.arc import Arc
 from engine.geometry.calcs import NoSolutionException
@@ -15,7 +14,7 @@ class ArcObstacleData(DefaultObstacleData):
     at a constant speed and that it is only limited by a maximum turning angle, which ignores speed.
     """
 
-    def __init__(self, acceleration, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
+    def __init__(self, acceleration, targetOffsetLength):
         DefaultObstacleData.__init__(self, targetOffsetLength)
         self.acceleration = acceleration
 

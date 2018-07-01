@@ -1,7 +1,6 @@
 import time
 
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
-from engine.geometry.pathSegment.lineSegmentObstacleData import LineSegmentObstacleData
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
 from geometry import calcs
@@ -15,8 +14,8 @@ class PathFinder:
     @profile.accumulate("setup")
     def __init__(self, params, scenario, vehicle):
         self._params = params
-        self._obstacleData = ArcObstacleData(vehicle.acceleration)
-#         self._obstacleData = LineSegmentObstacleData()
+        self._obstacleData = ArcObstacleData(vehicle.acceleration, params.nfzBufferSize)
+#         self._obstacleData = LineSegmentObstacleData(params.nfzBufferSize)
         self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue

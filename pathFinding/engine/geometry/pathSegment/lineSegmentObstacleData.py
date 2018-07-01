@@ -1,6 +1,5 @@
 import math
 
-from constants import NO_FLY_ZONE_POINT_OFFSET
 from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs
 from linePathSegment import LinePathSegment
@@ -18,7 +17,7 @@ class LineSegmentObstacleData(DefaultObstacleData):
     at a constant speed and that it is only limited by a maximum turning angle, which ignores speed.
     """
 
-    def __init__(self, targetOffsetLength=NO_FLY_ZONE_POINT_OFFSET):
+    def __init__(self, targetOffsetLength):
         DefaultObstacleData.__init__(self, targetOffsetLength)
 
     def createPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):

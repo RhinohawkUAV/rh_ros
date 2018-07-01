@@ -1,6 +1,7 @@
 import Tkinter as tk
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
+from engine.interface.paramsInput import DEFAULT_PARAMS
 from engine.interface.vehicleInput import DEFAULT_VEHICLE
 from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
@@ -40,7 +41,7 @@ class PathSegmentTester(Drawable, SubGUI):
 
     def onSwitch(self, inputDict):
         SubGUI.onSwitch(self, inputDict)
-        self._obstacleData = ArcObstacleData(DEFAULT_VEHICLE.acceleration)
+        self._obstacleData = ArcObstacleData(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
         self._obstacleData.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
         
@@ -69,7 +70,7 @@ class PathSegmentTester(Drawable, SubGUI):
 
             if self._pointOfInterest is not None:
                 (closestPoint, distance, pointTime) = goalSegment.calcPointDebug(self._pointOfInterest)
-                if distance < 2.0:
+                if distance < 50.0:
                     drawTime = pointTime
                     draw.drawPoint(canvas, closestPoint, radius=radius, color="orange")
                     self._obstacleDebug.draw(canvas, time=drawTime, boundaryColor="red", nfzColor="blue")
@@ -90,6 +91,4 @@ class PathSegmentTester(Drawable, SubGUI):
 
         targetPoint = self._inputDict[TEST_INPUT_KEY].targetPoint + self._inputDict[TEST_INPUT_KEY].velocityOfTarget * drawTime
         draw.drawPoint(canvas, targetPoint, radius=radius, color=color)
-        draw.drawLine(canvas, targetPoint,
-                      targetPoint + self._inputDict[TEST_INPUT_KEY].velocityOfTarget,
-                      arrow=tk.LAST)
+        draw.drawVelocity(canvas, targetPoint, self._inputDict[TEST_INPUT_KEY].velocityOfTarget)
