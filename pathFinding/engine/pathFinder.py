@@ -1,6 +1,7 @@
 import time
 
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
+from engine.interface.waypointOutput import WaypointOutput
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
 from geometry import calcs
@@ -125,12 +126,15 @@ class PathFinder:
 
     def hasSolution(self):
         return self._solution is not None
-
+    
     def getSolution(self):
         if self._solution is None:
-            return []
-        return self.getPathSegments(self._solution)
-        
+            return ([], [])
+        pathSegments = self.getPathSegments(self._solution)
+        wayPoints = self.calcSolutionWaypoints(pathSegments)
+
+        return (wayPoints, pathSegments)
+    
     def getDebugData(self):
         if self._currentVertex is None:
             return ([], [], [])
@@ -147,3 +151,11 @@ class PathFinder:
             currentVertex = previousVertex
             previousVertex = currentVertex.previousVertex
         return pathSegments        
+
+    def calcSolutionWaypoints(self, pathSegments):
+        solutionWaypoints = []
+        for pathSegment in pathSegments:
+            position = pathSegment.endPoint + pathSegment.endUnitVelocity * self._params.waypointAcceptanceRadii
+            solutionWaypoints.append(WaypointOutput(position, self._params.waypointAcceptanceRadii))
+            
+        return solutionWaypoints

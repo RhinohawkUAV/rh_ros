@@ -16,7 +16,7 @@ class PathFinderListener(object):
         """
         pass
 
-    def solution(self, solutionPathSegments, finished):
+    def solution(self, waypoints, solutionPathSegments, finished):
         """
         Called every time an improved solution is found.
         
@@ -29,8 +29,9 @@ class PathFinderListener(object):
         """
         gui.inGUIThread(self.debug, pastPathSegments, futurePathSegments, filteredPathSegments)
 
-    def fireSolutionInGuiThread(self, solutionPathSegments, finished):
+    def fireSolutionInGuiThread(self, solutionWaypoints, solutionPathSegments, finished):
         """
-        For convenience of the pathFinderInterface.  This will call debug() in the GUI thread with given arguments.
+        For convenience of the pathFinderInterface.  This will call solution() in the GUI thread with given arguments.
         """
-        gui.inGUIThread(self.solution, solutionPathSegments, finished)
+        gui.inGUIThread(self.solution, solutionWaypoints, solutionPathSegments, finished)
+

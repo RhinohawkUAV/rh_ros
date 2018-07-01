@@ -1,3 +1,4 @@
+from pathfinding.msg._FlightControllerSolution import FlightControllerSolution
 from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSolution import PathSolution
 from pathfinding.msg._Scenario import Scenario
@@ -10,7 +11,8 @@ from engine.pathFinderManager import PathFinderManager
 from messageConverter import MessageConverter
 from ros.rosConstants import PATHFINDER_NODE_ID, SUBMIT_PROBLEM_SERVICE, \
     STEP_PROBLEM_SERVICE, PATHFINDER_DEBUG_TOPIC, ROS_QUEUE_SIZE, \
-    PATHFINDER_SOLUTION_TOPIC, SOLVE_PROBLEM_SERVICE, PATHFINDER_INPUT_TOPIC
+    PATHFINDER_SOLUTION_TOPIC, SOLVE_PROBLEM_SERVICE, PATHFINDER_INPUT_TOPIC, \
+    FLIGHT_CONTROLLER_SOLUTION_TOPIC
 
 
 class ShutdownException(BaseException):
@@ -29,25 +31,16 @@ class RosPathFinder(PathFinderManager):
         self._pathInputPub = rospy.Publisher(PATHFINDER_INPUT_TOPIC, Scenario, queue_size=ROS_QUEUE_SIZE)
         self._pathDebugPub = rospy.Publisher(PATHFINDER_DEBUG_TOPIC, PathDebug, queue_size=ROS_QUEUE_SIZE)
         self._pathSolutionPub = rospy.Publisher(PATHFINDER_SOLUTION_TOPIC, PathSolution, queue_size=ROS_QUEUE_SIZE)
-        
-    def publishSolution(self, solutionPathSegments, finished, referenceGPS):
-        """
-        Override me.
-        Called whenever a step on the active path finder concludes with a solutionPathSegments.
-        This is called from within the path finder thread and should execute quickly.
-        """
+
+    def publishSolution(self, solutionWaypoints, solutionPathSegments, finished, referenceGPS):
         messageConverter = MessageConverter(referenceGPS)
         pathSolution = PathSolution()
+        pathSolution.solutionWaypoints = messageConverter.solutionWaypointListToMsg(solutionWaypoints)
         pathSolution.solutionPathSegments = messageConverter.pathSegmentListToMsg(solutionPathSegments)
         pathSolution.finished = finished
-        self._pathSolutionPub.publish(pathSolution)        
+        self._pathSolutionPub.publish(pathSolution)
         
     def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments, referenceGPS):
-        """
-        Override me.
-        Called whenever a step on the active path finder concludes with debug data.
-        This is called from within the path finder thread and should execute quickly.
-        """
         messageConverter = MessageConverter(referenceGPS)
         pathDebug = messageConverter.pathDebugToMsg(pastPathSegments, futurePathSegments, filteredPathSegments)
         self._pathDebugPub.publish(pathDebug)    

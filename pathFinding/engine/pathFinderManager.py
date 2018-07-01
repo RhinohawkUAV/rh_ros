@@ -1,5 +1,8 @@
 from threading import Thread, Condition, Lock
+
+from engine.interface.waypointOutput import WaypointOutput
 from engine.pathFinder import PathFinder
+import numpy as np
 
 
 class PathFinderManager:
@@ -20,10 +23,23 @@ class PathFinderManager:
         self._thread = Thread(target=self._run)
         self._thread.start()
 
+    def publishFlightControllerSolution(self, waypoints, finished, referenceGPS):
+        """
+        Override me.
+        Called whenever a step on the active path finder concludes with a solution.
+        This is called from within the path finder thread and should execute quickly.
+        This is intentionally behind a lock to guarantee order of operations.  
+        This will NOT publish results for an old problem.  Once a call to submitProblem()
+        concludes, no call to this method will be made for any previous problem being worked on.
+        
+        Arguments in local coordinates.  The given GPS reference can be used to convert to GPS.
+        """
+        pass
+
     def publishSolution(self, solutionPathSegments, finished, referenceGPS):
         """
         Override me.
-        Called whenever a step on the active path finder concludes with a solutionPathSegments.
+        Called whenever a step on the active path finder concludes with a solution.
         This is called from within the path finder thread and should execute quickly.
         This is intentionally behind a lock to guarantee order of operations.  
         This will NOT publish results for an old problem.  Once a call to submitProblem()
@@ -138,7 +154,9 @@ class PathFinderManager:
             
             # Publish and decrement number of steps
             if solutionFound:
-                self.publishSolution(pathFinder.getSolution(), pathFinder.isDone(), referenceGPS)
+                (solutionWaypoints, pathSolution) = pathFinder.getSolution()
+                finished = pathFinder.isDone()
+                self.publishSolution(solutionWaypoints, pathSolution, finished, referenceGPS)
             else:
                 (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
                 self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments, referenceGPS)

@@ -45,7 +45,11 @@ class PathFindViewer(Visualizer, PathFinderListener):
             
             if isinstance(fileName, basestring) and not fileName == '':
                 self._pathFindInput = interface.loadInput(fileName)
-                self.setScenario(self._pathFindInput[SCENARIO_KEY])
+                scenario = self._pathFindInput[SCENARIO_KEY]
+                # TODO: Decide how we want to handle saved scenario velocities.  
+                # For now we force it to match the vehicle's max velocity
+                scenario.startVelocity = calcs.unit(scenario.startVelocity) * self._vehicle.maxSpeed
+                self.setScenario(scenario)
         if key == "s":
             # Can always find the scenarios folder relative to this file regardless of how the program is started
             root = os.path.dirname(__file__)
@@ -60,23 +64,6 @@ class PathFindViewer(Visualizer, PathFinderListener):
             print profile.result()
             profile.printAggregate()
 
-#     def setStateRandom(self):
-#         startPoint = (90, 90)
-#         endPoint = (5, 5)
-#         maxSpeed = 1.0
-#         startVelocity = calcs.unit(np.array([-1.0, 0.0], np.double)) * maxSpeed
-#         startVelocity = (startVelocity[0], startVelocity[1])
-#         boundaryPoints = [(0, 0), (0, 100), (100, 100), (100, 0)]
-#         
-#         noFlyZones = engine.utils.genRandomNoFlyZoneInputsHard(50, 10, 10, 80, 80, 0.01, 0.1, minSpeed=0.0, maxSpeed=2.0,
-#                                                                     startPoint=startPoint, endPoint=endPoint, averageSpeed=maxSpeed)
-#         
-#         roads = []
-#         wayPoints = [endPoint]
-#         scenario = ScenarioInput(boundaryPoints, noFlyZones, roads, startPoint, startVelocity, wayPoints)
-#         vehicle = VehicleInput(maxSpeed=maxSpeed, acceleration=1.0)
-#         self.setScenario(scenario)
-        
     def setStateRandom(self):
         startPoint = np.array((-COURSE_DIM / 2.0 * 0.95, -COURSE_DIM / 2.0 * 0.95), np.double)
         endPoint = np.array((COURSE_DIM / 2.0 * 0.95, COURSE_DIM / 2.0 * 0.95), np.double)
@@ -86,10 +73,12 @@ class PathFindViewer(Visualizer, PathFinderListener):
                           (COURSE_DIM / 2.0, COURSE_DIM / 2.0), (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)]
          
         noFlyZones = engine.utils.genRandomNoFlyZoneInputsHard(50,
-                                                               - COURSE_DIM / 2.0 * 0.9,
-                                                               - COURSE_DIM / 2.0 * 0.9,
-                                                               COURSE_DIM * 0.9, COURSE_DIM * 0.9,
-                                                               0.01, 0.1, minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed * 2.0,
+                                                                    - COURSE_DIM / 2.0 * 0.9,
+                                                                    - COURSE_DIM / 2.0 * 0.9,
+                                                                    COURSE_DIM * 0.9,
+                                                                    COURSE_DIM * 0.9,
+                                                                    0.01, 0.1,
+                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
                                                                     startPoint=startPoint, endPoint=endPoint,
                                                                     averageSpeed=self._vehicle.maxSpeed)
          
@@ -108,7 +97,6 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self.setView(centerX, centerY, rangeX * 1.1, rangeY * 1.1)
         self._pathFindInput = {}
         self._pathFindInput[SCENARIO_KEY] = scenario
-        
         self._pathFinderInterface.submitProblem(self._params, scenario, self._vehicle)
         self._pathFindDrawable = PathFindDrawable(scenario)
         self.updateDisplay()
@@ -117,8 +105,8 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self._pathFindDrawable.updateDebug(pastPathSegments, futurePathSegments, filteredPathSegments)
         self.updateDisplay()
 
-    def solution(self, solutionPathSegments, finished):
-        self._pathFindDrawable.updateSolution(solutionPathSegments, finished)
+    def solution(self, solutionsWaypoints, solutionPathSegments, finished):
+        self._pathFindDrawable.updateSolution(solutionsWaypoints, solutionPathSegments, finished)
         self.updateDisplay()
 
     def onLeftClick(self, point, event):

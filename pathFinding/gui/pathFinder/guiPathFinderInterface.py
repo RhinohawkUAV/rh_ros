@@ -23,8 +23,8 @@ class LocalPathFinderInterface(PathFinderManager, PathFinderInterface):
     def solveProblem(self, timeout):
         pass
 
-    def publishSolution(self, solutionPathSegments, finished, referenceGPS):
-        Thread(target=self._doPublishSolution, args=(solutionPathSegments, finished)).start()
+    def publishSolution(self, solutionWaypoints, solutionPathSegments, finished, referenceGPS):
+        Thread(target=self._doPublishSolution, args=(solutionWaypoints, solutionPathSegments, finished)).start()
     
     def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments, referenceGPS):
         Thread(target=self._doPublishDebug, args=(pastPathSegments, futurePathSegments, filteredPathSegments)).start()
@@ -35,8 +35,8 @@ class LocalPathFinderInterface(PathFinderManager, PathFinderInterface):
 # these publishing methods bring another lock into play to guarantee order or events.  The result is we can't guarantee order of events,
 # thanks TK...
 
-    def _doPublishSolution(self, solutionPathSegments, finished):
-        self._listener.fireSolutionInGuiThread(solutionPathSegments, finished)
+    def _doPublishSolution(self, solutionWaypoints, solutionPathSegments, finished):
+        self._listener.fireSolutionInGuiThread(solutionWaypoints, solutionPathSegments, finished)
 
     def _doPublishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
         self._listener.fireDebugInGuiThread(pastPathSegments, futurePathSegments, filteredPathSegments)

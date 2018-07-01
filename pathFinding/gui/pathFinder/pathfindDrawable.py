@@ -16,6 +16,7 @@ class PathFindDrawable(Drawable):
         self._pastPathSegments = []
         self._futurePathSegments = []
         self._filteredPathSegments = []
+        self._solutionWaypoints = []
         self._solutionPathSegments = []
         self._finished = False
 
@@ -24,13 +25,14 @@ class PathFindDrawable(Drawable):
         self._futurePathSegments = futurePathSegments
         self._filteredPathSegments = filteredPathSegments
 
-    def updateSolution(self, solutionPathSegments, finished):
+    def updateSolution(self, solutionsWaypoints, solutionPathSegments, finished):
+        self._solutionWaypoints = solutionsWaypoints
         self._solutionPathSegments = solutionPathSegments
         self._finished = finished
         self._pastPathSegments = []
         self._futurePathSegments = []
         self._filteredPathSegments = []
-    
+        
     def findClosestPointOnPath(self, point, snapDistance):
         pathSegments = []
         pathSegments.extend(self._pastPathSegments)
@@ -76,3 +78,5 @@ class PathFindDrawable(Drawable):
         for pathSegment in self._solutionPathSegments:
             pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            
 
+        for solutionWaypoint in self._solutionWaypoints:
+            gui.draw.drawCircle(canvas, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)

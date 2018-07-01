@@ -9,6 +9,7 @@ from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSegment import PathSegment
 from pathfinding.msg._Road import Road
 from pathfinding.msg._Scenario import Scenario
+from pathfinding.msg._SolutionWaypoint import SolutionWaypoint
 from pathfinding.msg._Vehicle import Vehicle
 
 import engine
@@ -20,6 +21,7 @@ from engine.interface.paramsInput import ParamsInput
 from engine.interface.roadInput import RoadInput
 from engine.interface.scenarioInput import ScenarioInput
 from engine.interface.vehicleInput import VehicleInput
+from engine.interface.waypointOutput import WaypointOutput
 import numpy as np
 
 
@@ -68,6 +70,15 @@ class MessageConverter:
         futurePathSegments = self.msgToPathSegmentList(msg.futurePathSegments)
         filteredPathSegments = self.msgToPathSegmentList(msg.filteredPathSegments)
         return (pastPathSegments, futurePathSegments, filteredPathSegments)
+    
+    def msgToSolutionWaypointList(self, msg):
+        solutionWaypoints = []
+        for solutionWaypointMsg in msg:
+            solutionWaypoints.append(self.msgToSolutionWaypoint(solutionWaypointMsg))
+        return solutionWaypoints
+
+    def msgToSolutionWaypoint(self, msg):
+        return WaypointOutput(self.msgToPoint(msg.position), float(msg.radius))
     
     def msgToPathSegmentList(self, msg):
         pathSegments = []
@@ -156,6 +167,18 @@ class MessageConverter:
         msg.filteredPathSegments = self.pathSegmentListToMsg(filteredPathSegments)
         return msg
     
+    def solutionWaypointListToMsg(self, solutionWaypoints):
+        msg = []
+        for solutionWaypoint in solutionWaypoints:
+            msg.append(self.solutionWaypointToMsg(solutionWaypoint))
+        return msg
+
+    def solutionWaypointToMsg(self, solutionWaypoint):
+        msg = SolutionWaypoint() 
+        msg.position = self.pointToMsg(solutionWaypoint.position)
+        msg.radius = solutionWaypoint.radius
+        return msg
+        
     def pathSegmentListToMsg(self, pathSegments):
         msg = []
         for pathSegment in pathSegments:

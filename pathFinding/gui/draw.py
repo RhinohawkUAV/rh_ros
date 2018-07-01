@@ -1,5 +1,6 @@
 
 from Tkconstants import ARC
+from curses.ascii import CAN
 import math
 
 import Tkinter as tk
@@ -39,6 +40,10 @@ def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
                        fill=color, **kwargs)
 
 
+def drawCircle(canvas, center, radius, color=DEFAULT_COLOR, **kwargs):
+    canvas.create_oval(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, outline=color, **kwargs)
+
+    
 def drawArc(canvas, center, radius, startAngle, length, color=DEFAULT_COLOR, **kwargs):
     canvas.create_arc(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, start=startAngle,
                       extent=length, outline=color, **kwargs)

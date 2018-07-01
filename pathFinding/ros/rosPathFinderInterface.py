@@ -53,6 +53,7 @@ class RosPathFinderInterface(PathFinderInterface):
         
     def receiveSolution(self, pathSolution):
         messageConverter = MessageConverter(self._gpsReference)
+        solutionWaypoints = messageConverter.msgToSolutionWaypointList(pathSolution.solutionWaypoints)
         solutionPathSegments = messageConverter.msgToPathSegmentList(pathSolution.solutionPathSegments)
-        self._listener.fireSolutionInGuiThread(solutionPathSegments, pathSolution.finished)
+        self._listener.fireSolutionInGuiThread(solutionWaypoints, solutionPathSegments, pathSolution.finished)
         

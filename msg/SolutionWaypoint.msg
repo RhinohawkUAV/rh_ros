@@ -1,2 +1,2 @@
-GPSCoord location
+GPSCoord position
 float64 radius
