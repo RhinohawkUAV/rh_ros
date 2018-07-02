@@ -3,6 +3,7 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 """
 import math
 from pathfinding.msg._Arc import Arc
+from pathfinding.msg._DynamicNoFlyZone import DynamicNoFlyZone
 from pathfinding.msg._NoFlyZone import NoFlyZone
 from pathfinding.msg._Params import Params
 from pathfinding.msg._PathDebug import PathDebug
@@ -14,6 +15,7 @@ from pathfinding.msg._Vehicle import Vehicle
 
 import engine
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
+from engine.interface.dynamicNoFlyZone import DynamicNoFlyZoneInput
 from engine.interface.fileUtils import SCENARIO_KEY, INPUT_PARAMS_KEY
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
 from engine.interface.noFlyZoneInput import NoFlyZoneInput
@@ -42,12 +44,17 @@ class MessageConverter:
         noFlyZones = []
         for noFlyZone in msg.noFlyZones:
             noFlyZones.append(self.msgToNoFlyZone(noFlyZone)) 
+        dynamicNoFlyZones = []
+        for dNoFlyZone in msg.dynamicNoFlyZones:
+            dynamicNoFlyZones.append(self.msgToDynamicNoFlyZone(dNoFlyZone)) 
+            
         roads = []
         for road in msg.roads:
             roads.append(self.msgToRoad(road))
         
         return ScenarioInput(self.msgToPointList(msg.boundaryPoints),
                         noFlyZones,
+                        dynamicNoFlyZones,
                         roads,
                         self.msgToPoint(msg.startPoint),
                         self.msgToVector(msg.startVelocity),
@@ -57,7 +64,10 @@ class MessageConverter:
         return RoadInput(self.msgToPoint(msg.startPoint), self.msgToPoint(msg.startPoint), float(msg.width))
     
     def msgToNoFlyZone(self, msg):
-        return NoFlyZoneInput(self.msgToPointList(msg.points), self.msgToPoint(msg.velocity))
+        return NoFlyZoneInput(self.msgToPointList(msg.points), self.msgToVector(msg.velocity), int(msg.ID))
+
+    def msgToDynamicNoFlyZone(self, msg):
+        return DynamicNoFlyZoneInput(self.msgToPoint(msg.center), float(msg.radius), self.msgToVector(msg.velocity), str(msg.ID))
         
     def msgToPointList(self, msg):
         pointList = []
@@ -132,8 +142,13 @@ class MessageConverter:
         msg = Scenario()
         msg.boundaryPoints = self.pointListToMsg(scenario.boundaryPoints)
         msg.noFlyZones = []
+        msg.dynamicNoFlyZones = []
+        
         for noFlyZone in scenario.noFlyZones:
             msg.noFlyZones.append(self.nfzToMsg(noFlyZone))
+        for dNoFlyZone in scenario.dynamicNoFlyZones:
+            msg.dynamicNoFlyZones.append(self.dnfzToMsg(dNoFlyZone))
+            
         for road in scenario.roads:
             msg.roads.append(self.roadToMsg(road))
         msg.startPoint = self.pointToMsg(scenario.startPoint)
@@ -151,9 +166,18 @@ class MessageConverter:
     def nfzToMsg(self, noFlyZone):
         msg = NoFlyZone()
         msg.points = self.pointListToMsg(noFlyZone.points)
-        msg.velocity = self.pointToMsg(noFlyZone.velocity)
+        msg.velocity = self.vectorToMsg(noFlyZone.velocity)
+        msg.ID = noFlyZone.ID
         return msg
     
+    def dnfzToMsg(self, dNoFlyZone):
+        msg = DynamicNoFlyZone()
+        msg.center = self.pointToMsg(dNoFlyZone.center)
+        msg.radius = dNoFlyZone.radius
+        msg.velocity = self.vectorToMsg(dNoFlyZone.velocity)
+        msg.ID = dNoFlyZone.ID
+        return msg
+        
     def pointListToMsg(self, points):
         msg = []
         for point in points:
@@ -220,26 +244,3 @@ class MessageConverter:
          
     def vectorToMsg(self, vec):
         return self._gpsTransformer.localToGPSVelocity(vec)
-    
-    def printSegmentList(self, segList):
-        for segment in segList:
-            print "Segment:"
-            print "  startTime: " + str(segment.startTime) + ""
-            print "  elapsedTime: " + str(segment.elapsedTime) + ""
-            print "  speed: " + str(segment.speed) + ""
-            print "  lineStartPoint:"
-            print "    lat: " + str(segment.lineStartPoint.lat) + ""
-            print "    lon: " + str(segment.lineStartPoint.lon) + ""
-            print "  endPoint: "
-            print "    lat: " + str(segment.endPoint.lat) + ""
-            print "    lon: " + str(segment.endPoint.lon) + ""
-            print "  endVelocity:"
-            print "    heading: " + str(segment.endVelocity.heading) + ""
-            print "    speed: " + str(segment.endVelocity.speed) + ""
-            print "  arc:" 
-            print "    radius: " + str(segment.arc.radius) + ""
-            print "    center:"
-            print "      lat: " + str(segment.arc.center.lat) + ""
-            print "      lon: " + str(segment.arc.center.lon) + ""
-            print "    start: " + str(segment.arc.start) + ""
-            print "    length: " + str(segment.arc.length) + ""

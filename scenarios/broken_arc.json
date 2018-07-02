@@ -20,6 +20,7 @@
     "scenario": {
         "boundaryPoints": [], 
         "noFlyZones": [], 
+        "dynamicNoFlyZones": [], 
         "wayPoints": [], 
         "startVelocity": [
             1.0, 

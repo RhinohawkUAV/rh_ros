@@ -4,6 +4,7 @@ Utilities related to loading/saving/generating scenarios.
 import json
 
 from engine.interface import testInput
+from engine.interface.dynamicNoFlyZone import DynamicNoFlyZoneInput
 from engine.interface.noFlyZoneInput import NoFlyZoneInput
 from engine.interface.roadInput import RoadInput
 from engine.interface.scenarioInput import ScenarioInput
@@ -50,12 +51,17 @@ def loadInput(fileName):
     for noFlyDict in scenarioDict["noFlyZones"]:
         noFlyZones.append(NoFlyZoneInput(noFlyDict["points"], noFlyDict["velocity"], noFlyDict["ID"]))
 
+    dynamicNoFlyZones = []
+    for dNoFlyDict in scenarioDict["dynamicNoFlyZones"]:
+        dynamicNoFlyZones.append(DynamicNoFlyZoneInput(dNoFlyDict["center"], dNoFlyDict["radius"], dNoFlyDict["velocity"], dNoFlyDict["ID"]))
+
     roads = []
     for roadDict in scenarioDict["roads"]:
         roads.append(RoadInput(roadDict["startPoint"], roadDict["endPoint"], roadDict["width"]))
 
     scenarioInput = ScenarioInput(scenarioDict["boundaryPoints"],
                                   noFlyZones,
+                                  dynamicNoFlyZones,
                                   roads,
                                   scenarioDict["startPoint"],
                                   scenarioDict["startVelocity"],

@@ -51,19 +51,22 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
+    GPSCoord.msg
+    GPSVelocity.msg
+    Arc.msg
+
+    PathSegment.msg
+	SolutionWaypoint.msg
+    
     PathSolution.msg
     PathDebug.msg
-    PathSegment.msg
-    Arc.msg
-	SolutionWaypoint.msg
 
 	Params.msg
     Vehicle.msg
-    Scenario.msg
     Road.msg
     NoFlyZone.msg
-    GPSCoord.msg
-    GPSVelocity.msg
+    DynamicNoFlyZone.msg
+    Scenario.msg
  )
 
 ## Generate services in the 'srv' folder

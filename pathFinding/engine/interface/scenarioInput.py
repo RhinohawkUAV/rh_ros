@@ -4,7 +4,7 @@ import numpy as np
 
 class ScenarioInput:
 
-    def __init__(self, boundaryPoints=[], noFlyZones=[], roads=[], startPoint=(5.0, 5.0), startVelocity=(1.0, 1.0), wayPoints=[]):
+    def __init__(self, boundaryPoints=[], noFlyZones=[], dynamicNoFlyZones=[], roads=[], startPoint=(5.0, 5.0), startVelocity=(1.0, 1.0), wayPoints=[]):
         # Defines the boundary polygon (geo-fence) for the path-finding problem.  According to the rules this can be
         # max 18 sided, this will accept any number of sides.
         # Enforce CW winding (normals face inward)
@@ -14,9 +14,9 @@ class ScenarioInput:
             self.boundaryPoints = np.flipud(self.boundaryPoints)
             # TODO: Test that this really flips properly
 
-        # A sequence of NoFlyZoneInput objects.  Not clear if rules allow dynamic NFZs can be announced initially,
-        # but this allows for that case.
+        # A sequence of Dynamic/NoFlyZoneInput objects
         self.noFlyZones = noFlyZones[:]
+        self.dynamicNoFlyZones = dynamicNoFlyZones[:]
         
         self.roads = roads[:]
         

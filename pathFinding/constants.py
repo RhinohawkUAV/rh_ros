@@ -3,6 +3,16 @@
 # round-off error.  This small delta offset, outward along the vertices's normal prevents this.
 import math
 
+MAX_NFZ = 32
+MAX_DNFZ = 32
+MAX_TRANSIT_WAYPOINTS = 8
+
+# Meters to closest road or NFZ
+TRANSIT_WAYPOINT_BUFFER = 200
+
+# Closest distance (meters) an NFZ can appear relative to the aircraft
+MIN_DNFZ_SPAWN_DISTANCE = 500
+
 DEFAULT_MAX_VEHICLE_SPEED = 44.7
 DEFAULT_TURN_ACCELERATION = 8.0
 DEFAULT_WAYPOINT_ACCEPTANCE_RADII = 120.0

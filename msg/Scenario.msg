@@ -1,4 +1,5 @@
 GPSCoord[] boundaryPoints
+DynamicNoFlyZone[] dynamicNoFlyZones
 NoFlyZone[] noFlyZones
 Road[] roads
 GPSCoord startPoint
