@@ -2,9 +2,11 @@ import tkFileDialog
 
 from boundaryBuilder import BoundaryBuilder
 from engine import interface
+from engine.interface.fileUtils import TEST_INPUT_KEY
 from engine.interface.scenarioInput import ScenarioInput
 from engine.interface.testInput import TestInput
 from gui import draw
+from gui.editor.nfzEdit.dnfzBuilder import DNFZBuilder
 from gui.editor.pathSegmentTester.pathSegmentTester import PathSegmentTester
 from gui.editor.wayPointEditor import WayPointEditor
 from nfzEdit import NFZBuilder
@@ -26,12 +28,14 @@ class ScenarioEditor(Visualizer, Drawable):
                             interface.TEST_INPUT_KEY:TestInput()
                            }
         self._nfzBuilder = NFZBuilder()
+        self._dnfzBuilder = DNFZBuilder()
         self._nfzEditor = NFZEditor()
         self._boundaryBuilder = BoundaryBuilder()
         self._wayPointEditor = WayPointEditor()
         self._pathSegmentTester = PathSegmentTester()
 
         self._modeMap = {"i": self._nfzBuilder,
+                         "d": self._dnfzBuilder,
                          "e": self._nfzEditor,
                          "b": self._boundaryBuilder,
                          "w": self._wayPointEditor,
@@ -71,6 +75,8 @@ class ScenarioEditor(Visualizer, Drawable):
             fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir="scenarios")
             if not fileName == '':
                 self._inputDict = interface.loadInput(fileName)
+                if not TEST_INPUT_KEY in self._inputDict:
+                    self._inputDict[TEST_INPUT_KEY] = TestInput()
             self._mode.onSwitch(self._inputDict)
             self._mode.onMotion(point)
         else:

@@ -1,18 +1,12 @@
-from Tkinter import Canvas
-
 from engine.geometry.pathSegment.pathSegment import calcSegmentsPointDebug
 from gui import Drawable
 import gui
-from gui.editor.pathSegmentTester.obstacleDebug import ObstacleCourseDebug
 
 
 class PathFindDrawable(Drawable):
 
     def __init__(self, scenario):
-        self._startPoint = scenario.startPoint
-        self._startVelocity = scenario.startVelocity
-        self._wayPoints = scenario.wayPoints
-        self._obstacleCourseDebug = ObstacleCourseDebug(scenario.boundaryPoints, scenario.noFlyZones)
+        self.scenario = scenario
         self._pastPathSegments = []
         self._futurePathSegments = []
         self._filteredPathSegments = []
@@ -57,11 +51,7 @@ class PathFindDrawable(Drawable):
         else:
             (pointOfInterest, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance)
             
-        self._obstacleCourseDebug.draw(canvas, time=drawTime, boundaryColor="red", nfzColor="black")
-        gui.draw.drawPoint(canvas, self._startPoint, color="cyan", outline="black", width=1.5, radius=1.0)
-        gui.draw.drawVelocity(canvas, self._startPoint, self._startVelocity, color="black", width=2.0)
-        for wayPoint in self._wayPoints:
-            gui.draw.drawPoint(canvas, wayPoint, color="", outline="black", width=1.5, radius=1.0)
+        gui.draw.drawScenario(canvas, self.scenario, time=drawTime)
 
         if pointOfInterest is not None:
             gui.draw.drawPoint(canvas, pointOfInterest, color="cyan", outline="black", width=1.5, radius=1.0)

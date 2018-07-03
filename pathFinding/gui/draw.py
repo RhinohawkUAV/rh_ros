@@ -56,11 +56,25 @@ def drawArcObj(canvas, arc, **kwargs):
             style=ARC, **kwargs)
 
 
-def drawNoFlyZone(canvas, noFlyZone, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
+def drawDynamicNoFlyZone(canvas, dynamicNoFlyZone, color=DEFAULT_COLOR, time=0.0, **kwargs):
+    center = dynamicNoFlyZone.center + dynamicNoFlyZone.velocity * time
+    drawCircle(canvas, center, dynamicNoFlyZone.radius)
+    drawVelocity(canvas, center, dynamicNoFlyZone.velocity)
+
+
+def drawDynamicNoFlyZones(canvas, dynamicNoFlyZones, **kwargs):
+    for dnfz in dynamicNoFlyZones:
+        drawDynamicNoFlyZone(canvas, dnfz, **kwargs)
+
+
+def drawNoFlyZone(canvas, noFlyZone, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, time=0.0, **kwargs):
     for i in range(len(noFlyZone.points)):
-        drawLine(canvas, noFlyZone.points[i - 1], noFlyZone.points[i], color=color, width=width)
+        drawLine(canvas,
+                 noFlyZone.points[i - 1] + noFlyZone.velocity * time,
+                 noFlyZone.points[i] + noFlyZone.velocity * time,
+                 color=color, width=width)
     if np.linalg.norm(noFlyZone.velocity) > 0.0:
-        midPoint = noFlyZone.points.sum(axis=0) / len(noFlyZone.points)
+        midPoint = noFlyZone.points.sum(axis=0) / len(noFlyZone.points) + noFlyZone.velocity * time
         drawVelocity(canvas, midPoint, noFlyZone.velocity, **kwargs)
     
         
@@ -81,8 +95,9 @@ def drawWayPoints(canvas, startPoint, startVelocity, wayPoints, radius=DEFAULT_P
         drawText(canvas, point + TEXT_OFFSET, "Waypoint: " + str(i), color=color)
 
 
-def drawScenario(canvas, scenarioInput, **kwargs):
-    drawNoFlyZones(canvas, scenarioInput.noFlyZones, color="black", width=1.0, **kwargs)
+def drawScenario(canvas, scenarioInput, time=0.0, **kwargs):
+    drawNoFlyZones(canvas, scenarioInput.noFlyZones, color="black", width=1.0, time=time, **kwargs)
+    drawDynamicNoFlyZones(canvas, scenarioInput.dynamicNoFlyZones, color="black", time=time, **kwargs)
     if len(scenarioInput.boundaryPoints) > 2:
         drawPoly(canvas, scenarioInput.boundaryPoints, color="red")
     drawWayPoints(canvas, scenarioInput.startPoint, scenarioInput.startVelocity, scenarioInput.wayPoints)

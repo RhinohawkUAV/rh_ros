@@ -1,7 +1,7 @@
-import numpy as np
 from typing import Sequence
 
 from engine.geometry import calcs
+import numpy as np
 
 
 class NoFlyZoneInput:
@@ -23,7 +23,7 @@ class NoFlyZoneInput:
             self.points = np.flipud(self.points)
 
         # A vector describing the velocity of the no fly zone.
-        self.velocity = velocity
+        self.velocity = np.array(velocity, np.double)
 
         # TODO: Not clear if we will need this or not.  The purpose would be for tracking changes in DFNZs over time
         # for the

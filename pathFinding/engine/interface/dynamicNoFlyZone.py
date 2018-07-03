@@ -16,7 +16,7 @@ class DynamicNoFlyZoneInput:
         self.radius = radius
 
         # A vector describing the velocity of the no fly zone.
-        self.velocity = velocity
+        self.velocity = np.array(velocity, np.double)
 
         # TODO: Not clear if we will need this or not.  The purpose would be for tracking changes in DFNZs over time
         # for the

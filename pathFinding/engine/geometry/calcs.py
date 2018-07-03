@@ -22,6 +22,10 @@ def arePointsClose(p1, p2):
     return x * x + y * y < DISTANCE_TOLERANCE_SQUARED
 
 
+def isPointInCircle(center, radius, point):
+    return np.linalg.norm(center - point) <= radius
+
+
 def calcTravelTime(p1, p2, speed):
     """
     Calculate the time from p1 to p2 at speed.

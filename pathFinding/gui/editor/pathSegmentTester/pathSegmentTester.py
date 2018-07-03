@@ -1,4 +1,4 @@
-import Tkinter as tk
+from engine.geometry import calcs
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.paramsInput import DEFAULT_PARAMS
@@ -7,7 +7,6 @@ from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
 from gui.editor.subGUI import SubGUI
 import numpy as np
-from obstacleDebug import ObstacleCourseDebug
 
 
 class PathSegmentTester(Drawable, SubGUI):
@@ -15,7 +14,6 @@ class PathSegmentTester(Drawable, SubGUI):
     def __init__(self):
         self._obstacleData = None
         self._pointOfInterest = None
-        self._obstacleDebug = None
         self._showPathsToPoints = False
         self._pathSegments = []
         self._filteredPathSegments = []
@@ -44,17 +42,14 @@ class PathSegmentTester(Drawable, SubGUI):
         self._obstacleData = ArcObstacleData(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
         self._obstacleData.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
-        
-        self._obstacleDebug = ObstacleCourseDebug(self._inputDict[SCENARIO_KEY].boundaryPoints,
-                                                  self._inputDict[SCENARIO_KEY].noFlyZones)
 
     def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
         draw.drawPoint(canvas, self._inputDict[TEST_INPUT_KEY].startPoint, radius=radius, color=color)
-        draw.drawVelocity(canvas, self._inputDict[TEST_INPUT_KEY].startPoint,
-                      self._inputDict[TEST_INPUT_KEY].startVelocity)
+        draw.drawVelocity(canvas,
+                          self._inputDict[TEST_INPUT_KEY].startPoint,
+                          self._inputDict[TEST_INPUT_KEY].startVelocity)
         
-        startSpeed = np.linalg.norm(self._inputDict[TEST_INPUT_KEY].startVelocity)
-        startUnitVelocity = self._inputDict[TEST_INPUT_KEY].startVelocity / startSpeed
+        (startUnitVelocity, startSpeed) = calcs.unitAndLength(self._inputDict[TEST_INPUT_KEY].startVelocity)
                 
         goalSegment = self._obstacleData.findPathSegment(startTime=0.0,
                                                          startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
@@ -73,7 +68,8 @@ class PathSegmentTester(Drawable, SubGUI):
                 if distance < 50.0:
                     drawTime = pointTime
                     draw.drawPoint(canvas, closestPoint, radius=radius, color="orange")
-                    self._obstacleDebug.draw(canvas, time=drawTime, boundaryColor="red", nfzColor="blue")
+                    draw.drawDynamicNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].dynamicNoFlyZones, time=drawTime, color="blue")
+                    draw.drawNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].noFlyZones, time=drawTime, color="blue")
 
         if self._showPathsToPoints:
             (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(startTime=0.0,
