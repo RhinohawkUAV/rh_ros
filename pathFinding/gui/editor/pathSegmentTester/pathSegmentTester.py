@@ -1,8 +1,8 @@
 from engine.geometry import calcs
 from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
-from engine.interface.paramsInput import DEFAULT_PARAMS
-from engine.interface.vehicleInput import DEFAULT_VEHICLE
+from engine.interface.pathFindParams import DEFAULT_PARAMS
+from engine.interface.vehicle import DEFAULT_VEHICLE
 from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
 from gui.editor.subGUI import SubGUI

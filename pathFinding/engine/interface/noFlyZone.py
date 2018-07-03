@@ -1,10 +1,8 @@
-from typing import Sequence
-
 from engine.geometry import calcs
 import numpy as np
 
 
-class NoFlyZoneInput:
+class NoFlyZone:
     """
     Defines the an individual no fly zone which is input to the path-finder.  Velocity, should be set to 0 for static
     NFZs.
@@ -13,8 +11,6 @@ class NoFlyZoneInput:
     """
 
     def __init__(self, points, velocity, ID=0):
-        # type: ([Sequence],Sequence) -> None
-
         self.points = np.array(points, np.double)
 
         # A list of 2-d _points, defining the no fly zone _boundary, in counter-clockwise order.
@@ -33,4 +29,4 @@ class NoFlyZoneInput:
 
 
 def fromJSONDict(objDict):
-    return NoFlyZoneInput(objDict["points"], objDict["velocity"], objDict["ID"])
+    return NoFlyZone(objDict["points"], objDict["velocity"], objDict["ID"])

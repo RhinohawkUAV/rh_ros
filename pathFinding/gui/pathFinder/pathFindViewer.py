@@ -8,9 +8,9 @@ from engine import interface
 import engine
 from engine.geometry import calcs
 from engine.interface.fileUtils import SCENARIO_KEY
-from engine.interface.paramsInput import DEFAULT_PARAMS
-from engine.interface.scenarioInput import ScenarioInput
-from engine.interface.vehicleInput import VehicleInput, DEFAULT_VEHICLE
+from engine.interface.pathFindParams import DEFAULT_PARAMS
+from engine.interface.scenario import Scenario
+from engine.interface.vehicle import Vehicle, DEFAULT_VEHICLE
 from gui.pathFinder.pathFinderListener import PathFinderListener
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 from gui.visualizer import Visualizer
@@ -86,7 +86,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         dynamicNoFlyZones = []
         roads = []
         wayPoints = [endPoint]
-        scenario = ScenarioInput(boundaryPoints, noFlyZones, dynamicNoFlyZones, roads, startPoint, startVelocity, wayPoints)
+        scenario = Scenario(boundaryPoints, noFlyZones, dynamicNoFlyZones, roads, startPoint, startVelocity, wayPoints)
         self.setScenario(scenario)
          
     def setScenario(self, scenario):

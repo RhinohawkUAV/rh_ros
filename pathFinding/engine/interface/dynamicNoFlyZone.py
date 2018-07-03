@@ -4,7 +4,7 @@ from engine.geometry import calcs
 import numpy as np
 
 
-class DynamicNoFlyZoneInput:
+class DynamicNoFlyZone:
     """
     Defines the an individual dynamic no fly zone which is input to the path-finder.
 
@@ -26,4 +26,4 @@ class DynamicNoFlyZoneInput:
 
 
 def fromJSONDict(objDict):
-    return DynamicNoFlyZoneInput(objDict["center"], objDict["radius"], objDict["velocity"], objDict["ID"])
+    return DynamicNoFlyZone(objDict["center"], objDict["radius"], objDict["velocity"], objDict["ID"])

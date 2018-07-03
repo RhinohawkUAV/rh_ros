@@ -1,7 +1,7 @@
 from Tkinter import Canvas
 
 import Tkinter as tk
-from engine import NoFlyZoneInput
+from engine import NoFlyZone
 from engine.geometry import LineSegment, calcs
 from gui import Drawable
 import gui.draw
@@ -65,7 +65,7 @@ class EditableNoFlyZone(Drawable):
         return EditableNoFlyZone(points, self.velocity)
 
     def asInput(self, ID):
-        return NoFlyZoneInput(self.points, self.velocity, ID)
+        return NoFlyZone(self.points, self.velocity, ID)
 
 
 def fromInput(noFlyZoneInput):

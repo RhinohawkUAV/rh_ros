@@ -3,8 +3,8 @@ import tkFileDialog
 from boundaryBuilder import BoundaryBuilder
 from engine import interface
 from engine.interface.fileUtils import TEST_INPUT_KEY
-from engine.interface.scenarioInput import ScenarioInput
-from engine.interface.testInput import TestInput
+from engine.interface.scenario import Scenario
+from engine.interface.testScenario import TestScenario
 from gui import draw
 from gui.editor.nfzEdit.dnfzBuilder import DNFZBuilder
 from gui.editor.pathSegmentTester.pathSegmentTester import PathSegmentTester
@@ -24,8 +24,8 @@ class ScenarioEditor(Visualizer, Drawable):
     def __init__(self, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
         self._inputDict = {
-                            interface.SCENARIO_KEY:ScenarioInput(),
-                            interface.TEST_INPUT_KEY:TestInput()
+                            interface.SCENARIO_KEY:Scenario(),
+                            interface.TEST_INPUT_KEY:TestScenario()
                            }
         self._nfzBuilder = NFZBuilder()
         self._dnfzBuilder = DNFZBuilder()
@@ -76,7 +76,7 @@ class ScenarioEditor(Visualizer, Drawable):
             if not fileName == '':
                 self._inputDict = interface.loadInput(fileName)
                 if not TEST_INPUT_KEY in self._inputDict:
-                    self._inputDict[TEST_INPUT_KEY] = TestInput()
+                    self._inputDict[TEST_INPUT_KEY] = TestScenario()
             self._mode.onSwitch(self._inputDict)
             self._mode.onMotion(point)
         else:

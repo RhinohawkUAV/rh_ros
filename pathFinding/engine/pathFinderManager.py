@@ -1,6 +1,6 @@
 from threading import Thread, Condition, Lock
 
-from engine.interface.waypointOutput import WaypointOutput
+from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.pathFinder import PathFinder
 import numpy as np
 

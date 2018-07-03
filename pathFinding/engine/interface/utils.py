@@ -2,7 +2,7 @@ import math
 import random
 
 from engine.geometry import LineSegment
-from noFlyZoneInput import NoFlyZoneInput
+from engine.interface.noFlyZone import NoFlyZone
 import numpy as np
 
 
@@ -34,7 +34,7 @@ def genRandomNoFlyZoneInputs(numNoFlyZones, x, y, width, height, minFraction, ma
         angle = random.random() * 2 * math.pi
         velocity = (speed * math.cos(angle), speed * math.sin(angle))
 
-        zone = NoFlyZoneInput([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], velocity)
+        zone = NoFlyZone([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], velocity)
         noFlyZones.append(zone)
 
     return noFlyZones
@@ -83,7 +83,7 @@ def genRandomNoFlyZoneInputsHard(numNoFlyZones, x, y, width, height, minFraction
         y1 += offset[1]
         y2 += offset[1]
 
-        zone = NoFlyZoneInput([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], (velocity[0], velocity[1]))
+        zone = NoFlyZone([(x1, y1), (x1, y2), (x2, y2), (x2, y1)], (velocity[0], velocity[1]))
         noFlyZones.append(zone)
 
     return noFlyZones

@@ -3,27 +3,25 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 """
 import math
 from pathfinding.msg._Arc import Arc
-from pathfinding.msg._DynamicNoFlyZone import DynamicNoFlyZone
-from pathfinding.msg._NoFlyZone import NoFlyZone
-from pathfinding.msg._Params import Params
+import pathfinding.msg._DynamicNoFlyZone
+import pathfinding.msg._NoFlyZone 
+import pathfinding.msg._Params
 from pathfinding.msg._PathDebug import PathDebug
 from pathfinding.msg._PathSegment import PathSegment
-from pathfinding.msg._Road import Road
-from pathfinding.msg._Scenario import Scenario
-from pathfinding.msg._SolutionWaypoint import SolutionWaypoint
-from pathfinding.msg._Vehicle import Vehicle
+import pathfinding.msg._Road
+import pathfinding.msg._Scenario
+import pathfinding.msg._SolutionWaypoint
+import pathfinding.msg._Vehicle
 
-import engine
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
-from engine.interface.dynamicNoFlyZone import DynamicNoFlyZoneInput
-from engine.interface.fileUtils import SCENARIO_KEY, INPUT_PARAMS_KEY
+import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
-from engine.interface.noFlyZoneInput import NoFlyZoneInput
-from engine.interface.paramsInput import ParamsInput
-from engine.interface.roadInput import RoadInput
-from engine.interface.scenarioInput import ScenarioInput
-from engine.interface.vehicleInput import VehicleInput
-from engine.interface.waypointOutput import WaypointOutput
+import engine.interface.noFlyZone
+import engine.interface.pathFindParams
+import engine.interface.road
+import engine.interface.scenario
+import engine.interface.solutionWaypoint
+import engine.interface.vehicle
 import numpy as np
 
 
@@ -34,11 +32,11 @@ class MessageConverter:
         self._gpsTransformer = GPSTransformer(gpsRef)
 
     def msgToParams(self, inputParamsMsg):
-        return ParamsInput(float(inputParamsMsg.waypointAcceptanceRadii),
+        return engine.interface.pathFindParams.PathFindParams(float(inputParamsMsg.waypointAcceptanceRadii),
                                   float(inputParamsMsg.nfzBufferSize))
     
     def msgToVehicle(self, msg):
-        return VehicleInput(float(msg.maxSpeed), float(msg.acceleration))
+        return engine.interface.vehicle.Vehicle(float(msg.maxSpeed), float(msg.acceleration))
     
     def msgToScenario(self, msg):
         noFlyZones = []
@@ -52,7 +50,8 @@ class MessageConverter:
         for road in msg.roads:
             roads.append(self.msgToRoad(road))
         
-        return ScenarioInput(self.msgToPointList(msg.boundaryPoints),
+        return engine.interface.scenario.Scenario(
+                        self.msgToPointList(msg.boundaryPoints),
                         noFlyZones,
                         dynamicNoFlyZones,
                         roads,
@@ -61,13 +60,20 @@ class MessageConverter:
                         self.msgToPointList(msg.wayPoints))
     
     def msgToRoad(self, msg):
-        return RoadInput(self.msgToPoint(msg.startPoint), self.msgToPoint(msg.startPoint), float(msg.width))
+        return engine.interface.road.Road(self.msgToPoint(msg.startPoint), self.msgToPoint(msg.startPoint), float(msg.width))
     
     def msgToNoFlyZone(self, msg):
-        return NoFlyZoneInput(self.msgToPointList(msg.points), self.msgToVector(msg.velocity), int(msg.ID))
+        return engine.interface.noFlyZone.NoFlyZone(
+            self.msgToPointList(msg.points),
+            self.msgToVector(msg.velocity),
+            int(msg.ID))
 
     def msgToDynamicNoFlyZone(self, msg):
-        return DynamicNoFlyZoneInput(self.msgToPoint(msg.center), float(msg.radius), self.msgToVector(msg.velocity), str(msg.ID))
+        return engine.interface.dynamicNoFlyZone.DynamicNoFlyZone(
+            self.msgToPoint(msg.center),
+            float(msg.radius),
+            self.msgToVector(msg.velocity),
+            int(msg.ID))
         
     def msgToPointList(self, msg):
         pointList = []
@@ -88,7 +94,7 @@ class MessageConverter:
         return solutionWaypoints
 
     def msgToSolutionWaypoint(self, msg):
-        return WaypointOutput(self.msgToPoint(msg.position), float(msg.radius))
+        return engine.interface.solutionWaypoint.SolutionWaypoint(self.msgToPoint(msg.position), float(msg.radius))
     
     def msgToPathSegmentList(self, msg):
         pathSegments = []
@@ -127,19 +133,19 @@ class MessageConverter:
     
     #**********************Path finding objects to msg objects********************
     def paramsToMsg(self, inputParams):
-        msg = Params()
+        msg = pathfinding.msg._Params.Params()
         msg.waypointAcceptanceRadii = inputParams.waypointAcceptanceRadii
         msg.nfzBufferSize = inputParams.nfzBufferSize
         return msg
     
     def vehicleToMsg(self, vehicle):
-        msg = Vehicle()
+        msg = pathfinding.msg._Vehicle.Vehicle()
         msg.maxSpeed = vehicle.maxSpeed
         msg.acceleration = vehicle.acceleration
         return msg
     
     def scenarioToMsg(self, scenario):
-        msg = Scenario()
+        msg = pathfinding.msg._Scenario.Scenario()
         msg.boundaryPoints = self.pointListToMsg(scenario.boundaryPoints)
         msg.noFlyZones = []
         msg.dynamicNoFlyZones = []
@@ -157,21 +163,21 @@ class MessageConverter:
         return msg
     
     def roadToMsg(self, road):
-        msg = Road()
+        msg = pathfinding.msg._Road.Road()
         msg.startPoint = self.pointToMsg(road.startPoint)
         msg.endPoint = self.pointToMsg(road.endPoint)
         msg.width = road.width
         return msg
         
     def nfzToMsg(self, noFlyZone):
-        msg = NoFlyZone()
+        msg = pathfinding.msg._NoFlyZone.NoFlyZone()
         msg.points = self.pointListToMsg(noFlyZone.points)
         msg.velocity = self.vectorToMsg(noFlyZone.velocity)
         msg.ID = noFlyZone.ID
         return msg
     
     def dnfzToMsg(self, dNoFlyZone):
-        msg = DynamicNoFlyZone()
+        msg = pathfinding.msg._DynamicNoFlyZone.DynamicNoFlyZone()
         msg.center = self.pointToMsg(dNoFlyZone.center)
         msg.radius = dNoFlyZone.radius
         msg.velocity = self.vectorToMsg(dNoFlyZone.velocity)
@@ -198,7 +204,7 @@ class MessageConverter:
         return msg
 
     def solutionWaypointToMsg(self, solutionWaypoint):
-        msg = SolutionWaypoint() 
+        msg = pathfinding.msg._SolutionWaypoint.SolutionWaypoint() 
         msg.position = self.pointToMsg(solutionWaypoint.position)
         msg.radius = solutionWaypoint.radius
         return msg

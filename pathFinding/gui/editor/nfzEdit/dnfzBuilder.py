@@ -1,5 +1,5 @@
 from engine.geometry import  calcs
-from engine.interface.dynamicNoFlyZone import DynamicNoFlyZoneInput
+from engine.interface.dynamicNoFlyZone import DynamicNoFlyZone
 from engine.interface.fileUtils import SCENARIO_KEY
 from gui import Drawable
 import gui
@@ -23,7 +23,7 @@ class DNFZBuilder(Drawable, SubGUI):
             self._previewRadius = np.linalg.norm(point - self._previewCenter)
             self._inputMode += 1
         else:
-            dnfz = DynamicNoFlyZoneInput(self._previewCenter, self._previewRadius, self._previewVelocity)
+            dnfz = DynamicNoFlyZone(self._previewCenter, self._previewRadius, self._previewVelocity)
             self._inputDict[SCENARIO_KEY].dynamicNoFlyZones.append(dnfz)
             self._previewCenter = None
             self._previewRadius = 0.0

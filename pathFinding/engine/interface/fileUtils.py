@@ -3,18 +3,18 @@ Utilities related to loading/saving/generating scenarios.
 """
 import json
 
-from engine.interface import testInput
-from engine.interface.dynamicNoFlyZone import DynamicNoFlyZoneInput
-from engine.interface.noFlyZoneInput import NoFlyZoneInput
-from engine.interface.roadInput import RoadInput
-from engine.interface.scenarioInput import ScenarioInput
-from engine.interface.testInput import TestInput
-from engine.interface.vehicleInput import VehicleInput
+from engine.interface import testScenario
+from engine.interface.dynamicNoFlyZone import DynamicNoFlyZone
+from engine.interface.noFlyZone import NoFlyZone
+from engine.interface.road import Road
+from engine.interface.scenario import Scenario
+from engine.interface.testScenario import TestScenario
+from engine.interface.vehicle import Vehicle
 import numpy as np
 
 INPUT_PARAMS_KEY = "params"
 SCENARIO_KEY = "scenario"
-TEST_INPUT_KEY = "testInput"
+TEST_INPUT_KEY = "testScenario"
 
 
 class Encoder(json.JSONEncoder):
@@ -49,17 +49,17 @@ def loadInput(fileName):
     
     noFlyZones = []
     for noFlyDict in scenarioDict["noFlyZones"]:
-        noFlyZones.append(NoFlyZoneInput(noFlyDict["points"], noFlyDict["velocity"], noFlyDict["ID"]))
+        noFlyZones.append(NoFlyZone(noFlyDict["points"], noFlyDict["velocity"], noFlyDict["ID"]))
 
     dynamicNoFlyZones = []
     for dNoFlyDict in scenarioDict["dynamicNoFlyZones"]:
-        dynamicNoFlyZones.append(DynamicNoFlyZoneInput(dNoFlyDict["center"], dNoFlyDict["radius"], dNoFlyDict["velocity"], dNoFlyDict["ID"]))
+        dynamicNoFlyZones.append(DynamicNoFlyZone(dNoFlyDict["center"], dNoFlyDict["radius"], dNoFlyDict["velocity"], dNoFlyDict["ID"]))
 
     roads = []
     for roadDict in scenarioDict["roads"]:
-        roads.append(RoadInput(roadDict["startPoint"], roadDict["endPoint"], roadDict["width"]))
+        roads.append(Road(roadDict["startPoint"], roadDict["endPoint"], roadDict["width"]))
 
-    scenarioInput = ScenarioInput(scenarioDict["boundaryPoints"],
+    scenarioInput = Scenario(scenarioDict["boundaryPoints"],
                                   noFlyZones,
                                   dynamicNoFlyZones,
                                   roads,
@@ -71,10 +71,10 @@ def loadInput(fileName):
 
     if fileDict.has_key(TEST_INPUT_KEY):
         testDict = fileDict[TEST_INPUT_KEY]
-        testInput = TestInput(testDict["startPoint"],
+        testScenario = TestScenario(testDict["startPoint"],
                                      testDict["startVelocity"],
                                      testDict["targetPoint"],
                                      testDict["velocityOfTarget"])
-        inputDict[TEST_INPUT_KEY] = testInput
+        inputDict[TEST_INPUT_KEY] = testScenario
     return inputDict
     

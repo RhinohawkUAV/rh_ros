@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class RoadInput:
+class Road:
 
     def __init__(self, startPoint, endPoint, width):
         self.startPoint = np.array(startPoint, np.double)

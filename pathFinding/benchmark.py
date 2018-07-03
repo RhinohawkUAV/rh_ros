@@ -3,8 +3,8 @@ Benchmarks running the path-finder.
 """
 from engine import interface
 from engine.interface.fileUtils import SCENARIO_KEY
-from engine.interface.paramsInput import DEFAULT_PARAMS
-from engine.interface.vehicleInput import DEFAULT_VEHICLE
+from engine.interface.pathFindParams import DEFAULT_PARAMS
+from engine.interface.vehicle import DEFAULT_VEHICLE
 from engine.pathFinder import PathFinder
 from utils import profile
 

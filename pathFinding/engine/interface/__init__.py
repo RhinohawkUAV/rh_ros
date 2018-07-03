@@ -2,10 +2,10 @@ from engine.interface.fileUtils import SCENARIO_KEY
 from engine.interface.fileUtils import TEST_INPUT_KEY
 from engine.interface.fileUtils import loadInput
 from engine.interface.fileUtils import saveInput
-from noFlyZoneInput import NoFlyZoneInput
-from roadInput import RoadInput
-from scenarioInput import ScenarioInput
-from testInput import TestInput
+from engine.interface.noFlyZone import NoFlyZone
+from engine.interface.road import Road
+from engine.interface.scenario import Scenario
+from engine.interface.testScenario import TestScenario
 import utils
-from vehicleInput import VehicleInput
+from engine.interface.vehicle import Vehicle
 

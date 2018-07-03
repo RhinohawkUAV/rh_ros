@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class TestInput():
+class TestScenario():
     """
     Input used in testing.  Defines the problem of finding a PathSegment from 
     a starting point with an initial velocity to a moving target.
