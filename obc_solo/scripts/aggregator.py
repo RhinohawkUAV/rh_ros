@@ -54,34 +54,49 @@ def centroid(arr):
     return sum_x / length, sum_y / length
 
 class SpatialAggregation:
+    """ Re-cluster points using DBSCAN any time a new point is added
+    """
 
-    def __init__(self, values=np.array([])):
+    def __init__(self, values=[]):
         self.values = values
+        self.centroids = None
+        self.mean_dists = None
+        self.largest_size = None
+        self.largest_centroid = None
 
     def add_value(self, coord):
  
         # Add value
         self.values.append(coord)
+        if len(self.values) < 2: return
 
         # Rerun clustering
-        db = DBSCAN(eps=0.2, min_samples=3).fit(self.values)
+        values = np.array(self.values)
+        db = DBSCAN(eps=1, min_samples=3).fit(values)
         core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
         labels = db.labels_
+        self.labels = labels
 
         # Number of clusters in labels, ignoring noise if present.
         n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+        print("num clusters: %d" % n_clusters_)
 
         if n_clusters_>0:
             self.cluster_sizes = np.array([len(np.nonzero(labels == i)[0]) for i in range(n_clusters_)])
-            k = cluster_sizes.argmax(axis=0)
+            k = self.cluster_sizes.argmax(axis=0)
 
-            self.centroids = [centroid(X[(labels == i)]) for i in range(n_clusters_)]
-            self.mean_dists = [np.mean([np.sqrt((x-centroids[i][0])**2+(y-centroids[i][1])**2) for (x, y) in X[labels == i]]) for i in range(n_clusters_)]
+            self.centroids = [centroid(values[(labels == i)]) for i in range(n_clusters_)]
+            self.mean_dists = [np.mean([np.sqrt((x-self.centroids[i][0])**2+(y-self.centroids[i][1])**2) \
+                for (x, y) in values[labels == i]]) for i in range(n_clusters_)]
 
-            for i, c in enumerate(centroids):
-                print("Cluster %d - Centroid: (%2.4f,%2.4f) - Mean Distance: %2.4f" % (i,c[0],c[1],mean_dists[i]))   
-            self.marker = self.centroids[k] 
-        
+            for i, c in enumerate(self.centroids):
+                print("Cluster %d - Centroid: (%2.4f,%2.4f) - Mean Distance: %2.4f" \
+                        % (i,c[0],c[1],self.mean_dists[i]))
+            
+            self.largest_size = self.cluster_sizes[k]
+            self.largest_centroid = self.centroids[k]
+            print("Largest cluster is %d with centroid %s and %s points" \
+                    % (k, self.largest_centroid, self.largest_size))
 
-
+            self.points = values[labels.astype(bool)]
