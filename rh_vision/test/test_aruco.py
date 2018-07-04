@@ -3,7 +3,7 @@
 # Unit tests for aruco_detector.py
 #
 
-PKG = 'camera_driver'
+PKG = 'rh_vision'
 NAME = 'test_aruco'
 
 import sys
