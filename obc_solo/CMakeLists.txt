@@ -54,12 +54,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  TakeOff.srv
-  Land.srv
-  FlyTo.srv
-)
+#add_service_files(
+#  FILES
+#  FlyTo.srv
+#)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
