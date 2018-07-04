@@ -1,0 +1,8 @@
+<launch>
+
+  <node pkg="camera_driver" type="image_to_target.py"   name="image_to_target" ns="vision">
+    <remap from="image_location" to="/vision/aruco/location"/>
+    <remap from="camera_info" to="/gopro/camera_info"/>
+  </node>
+
+</launch>
