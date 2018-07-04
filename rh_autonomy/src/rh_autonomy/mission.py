@@ -16,10 +16,10 @@ from mavros_msgs.srv import SetMode, ParamSet
 from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
     WaypointPush, WaypointClear
 
-from obc_solo.srv import TakeOff, TakeOffResponse
-from obc_solo.srv import Land, LandResponse
-from obc_solo.srv import FlyTo, FlyToResponse
-from aggregator import LatchMap
+from rh_msgs.srv import TakeOff, TakeOffResponse
+from rh_msgs.srv import Land, LandResponse
+from rh_msgs.srv import FlyTo, FlyToResponse
+from rh_autonomy.aggregator import LatchMap
 
 isQuadPlane = True
 

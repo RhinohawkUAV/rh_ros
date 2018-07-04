@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rh_msgs</name>
+  <version>0.0.1</version>
+  <description>rh_msgs defines ROS messages for Rhinohawk UAV</description>
+  <maintainer email="krokicki@gmail.com">Konrad Rokicki</maintainer>
+  <author email="krokicki@gmail.com">Konrad Rokicki</author>
+  <license>TODO</license>
+
+  <url type="website">http://rhinohawk.com</url>
+  <url type="repository">https://gitlab.com/NL-outback-challenge-2016/obc-2016-ros</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geographic_msgs</depend>
+
+  <export>
+    <!-- This package only defined ROS messages -->
+    <architecture_independent/>
+  </export>
+</package>
