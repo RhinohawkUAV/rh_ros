@@ -7,8 +7,7 @@ import rospy
 import sys
 
 from sensor_msgs.msg import Image, CameraInfo
-from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import CameraInfo
+from cv_bridge import CvBridge
 from camera_info_manager import CameraInfoManager
 
 MAX_BAD_FRAMES = 100000
