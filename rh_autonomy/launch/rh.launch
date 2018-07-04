@@ -27,20 +27,19 @@
     <arg name="log_output" value="$(arg log_output)" />
   </include>
 
-  <arg name="cam_node_name" value="gopro"/>
   <arg name="cname" value="$(optenv CAMERA_NAME gopro)"/>
  
   <!-- GSCAM node for 3dr Solo Camera -->
   <group unless="$(eval cname == 'chameleon3')"> 
 
       <env name="GSCAM_CONFIG" value='udpsrc port=5600 caps="application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264" ! rtph264depay ! avdec_h264 ! videoconvert ! video/x-raw ' />
-      <node pkg="gscam" type="gscam" name="$(arg cam_node_name)">
-        <param name="camera_name" value="$(optenv CAMERA_NAME gopro)" />
+      <node pkg="gscam" type="gscam" name="camera">
+        <param name="camera_name" value="$(arg cname)" />
         <param name="camera_info_url" value="package://camera_driver/calibrations/${NAME}.yaml" />
-        <remap from="camera/image_raw" to="$(arg cam_node_name)/image_raw" />
+        <remap from="camera/image_raw" to="/camera/image_raw" />
       </node>
       
-      <node pkg="obc_solo" type="request-video-stream.py" name="solo_video_stream" ns="gopro"/>
+      <node pkg="obc_solo" type="request-video-stream.py" name="solo_video_stream" ns="camera"/>
       
   </group>
 
@@ -51,7 +50,7 @@
 
     <node pkg="nodelet" type="nodelet" name="camera_nodelet"
           args="load pointgrey_camera_driver/PointGreyCameraNodelet camera_nodelet_manager" >
-      <param name="camera_name" value="camera" />
+      <param name="camera_name" value="$(arg cname)" />
       <param name="frame_id" value="camera" />
       <param name="serial" value="$(arg camera_serial)" />
 
@@ -64,7 +63,7 @@
       <param name="camera_info_url"
              value="package://camera_driver/calibrations/chameleon3.yaml" />
 
-      <remap from="camera/image_raw" to="$(arg cam_node_name)/image_raw" />
+      <remap from="camera/image_raw" to="/camera/image_raw" />
     </node>
 
     <node pkg="nodelet" type="nodelet" name="image_proc_debayer"
@@ -72,17 +71,17 @@
     </node>
   </group>
 
-  <node pkg="image_proc" type="image_proc" name="image_proc" ns="gopro">
+  <node pkg="image_proc" type="image_proc" name="image_proc" ns="camera">
     <remap from="image" to="image_raw"/>
   </node>
 
-  <node pkg="camera_driver" type="aruco_detector.py" name="aruco_detector" ns="vision">
-	<remap from="image" to="/gopro/image_rect"/>
+  <node pkg="rh_vision" type="aruco_detector.py" name="aruco_detector" ns="/rh/vision">
+	<remap from="image" to="/camera/image_rect"/>
   </node>
 
-  <node pkg="camera_driver" type="image_to_target.py" name="image_to_target" ns="vision">
+  <node pkg="rh_vision" type="image_to_target.py" name="image_to_target" ns="/rh/vision">
     <remap from="image_location" to="/vision/aruco/location"/>
-    <remap from="camera_info" to="/gopro/camera_info"/>
+    <remap from="camera_info" to="/camera/camera_info"/>
   </node>
 
   <!-- Publish static frame translation from quad to camera -->
@@ -93,12 +92,12 @@
     (qx, qy, qz, qw) - quaterion for camera orientation
     frame_id, child_frame_id - names of coordinate frames
     period in ms -->
-  <node pkg="tf" type="static_transform_publisher" name="gopro_link_broadcaster"
+  <node pkg="tf" type="static_transform_publisher" name="gopro_link_broadcaster" ns="/camera"
       args="0.11 0 0.001     0.  0.70710678  0. 0.70710678    fcu gopro 200"/>
 
   <!-- rhinohawk mission nodes -->
 
-  <node pkg="rh_autonomy" type="mission.py" name="mission" ns="rhinohawk" output="screen"/>
-  <node pkg="rh_autonomy" type="state.py" name="state" ns="rhinohawk" output="screen"/>
+  <node pkg="rh_autonomy" type="mission.py" name="mission" ns="rh" output="screen"/>
+  <node pkg="rh_autonomy" type="state.py" name="state" ns="rh" output="screen"/>
 
 </launch>
