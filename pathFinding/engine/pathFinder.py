@@ -150,7 +150,11 @@ class PathFinder:
             pathSegments.append(currentVertex.pathSegment)
             currentVertex = previousVertex
             previousVertex = currentVertex.previousVertex
-        return pathSegments        
+        
+        # We traced the path backwards, so reverse
+        pathSegments.reverse()
+
+        return pathSegments
 
     def calcSolutionWaypoints(self, pathSegments):
         solutionWaypoints = []
