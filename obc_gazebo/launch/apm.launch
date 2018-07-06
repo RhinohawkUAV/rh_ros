@@ -20,15 +20,10 @@
 		<arg name="log_output" value="$(arg log_output)" />
 	</include>
     
-    <!-- rhinohawk mission controller -->
+    <!-- rhinohawk mission nodes -->
 
-    <node pkg="obc_solo" type="mission.py" name="mission" ns="rhinohawk" output="screen"/>
+    <node pkg="rh_autonomy" type="mission.py" name="mission" ns="rh" output="screen"/>
 
-    <!-- rhinohawk image pipeline -->
-
-    
-
-
-
+    <node pkg="rh_autonomy" type="state.py" name="state" ns="rh" output="screen"/>
 
 </launch>
