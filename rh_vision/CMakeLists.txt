@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rh_vision)
 
 find_package(catkin REQUIRED COMPONENTS
-  rospy std_msgs rh_msgs)
+  rospy rostest std_msgs rh_msgs)
 
 catkin_python_setup()
 
@@ -181,3 +181,11 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+if(CATKIN_ENABLE_TESTING)
+  foreach(T
+      test/test_aruco.launch)
+    add_rostest(${T})
+  endforeach()
+endif()
+

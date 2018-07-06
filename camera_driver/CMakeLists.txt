@@ -62,11 +62,3 @@ target_link_libraries(nikon_d5100 ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} gphoto
 target_link_libraries(people_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(to_stream ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
-
-if(CATKIN_ENABLE_TESTING)
-  foreach(T
-      test/test_aruco.launch)
-    add_rostest(${T})
-  endforeach()
-endif()
-
