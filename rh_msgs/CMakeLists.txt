@@ -9,6 +9,8 @@ add_message_files(
   FILES
   GPSCoord.msg
   GPSCoordList.msg
+  Mission.msg
+  State.msg
 )
 
 add_service_files(
@@ -17,6 +19,9 @@ add_service_files(
   Land.srv
   TakeOff.srv
   FlyTo.srv
+  SetMission.srv
+  SetNoFlyZones.srv
+  GetState.srv
 )
 
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs geographic_msgs std_msgs)

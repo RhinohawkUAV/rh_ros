@@ -4,14 +4,13 @@ ROS node implementing a higher level navigation controller via Mavros
 """
 
 import threading
-import traceback
 from functools import partial
 
 import rospy
 
 import mavros
 from sensor_msgs.msg import NavSatFix
-from mavros_msgs.msg import State, Waypoint, WaypointReached, ParamValue
+from mavros_msgs.msg import State, Waypoint, ParamValue
 from mavros_msgs.srv import SetMode, ParamSet
 from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
     WaypointPush, WaypointClear
@@ -57,8 +56,8 @@ def name():
 def arm(state):
     try:
         ret = arming(value=state)
-    except rospy.ServiceException:
-        rospy.logerr('Arming failed:\n' + ''.join(traceback.format_stack()))
+    except rospy.ServiceException as e:
+        rospy.logerr('Arming failed')
         return False
 
     if not ret.success:
@@ -76,8 +75,9 @@ def set_int_param(param, value):
         val.real = 0.0
         ret = set_param(param, val)
 
-    except rospy.ServiceException:
-        rospy.logerr('Set param failed:\n' + ''.join(traceback.format_stack()))
+    except rospy.ServiceException as e:
+        rospy.logerr('Set param failed')
+        return False
 
     if not ret.success:
         rospy.logerr("Set param failed: unknown")
@@ -111,21 +111,23 @@ def set_custom_mode(custom_mode):
             clean()
 
     mode_sub = rospy.Subscriber('/mavros/state', State, state_cb)
+    success = False
 
     try:
         ret = set_mode(base_mode=0, custom_mode=custom_mode)
-    except rospy.ServiceException:
-        rospy.logerr('Set mode failed:\n' + ''.join(traceback.format_stack()))
+        if not ret.mode_sent:
+            rospy.logerr("Set mode %s failed: unknown" % custom_mode)
+        elif not done_evt.wait(10):
+            rospy.logerr("Set mode %s failed: timed out" % custom_mode)
+        else:
+            success = True
+    except rospy.ServiceException as e:
+        rospy.logerr('Set mode failed')
+        return False
 
-    success = False
-    if not ret.mode_sent:
-        rospy.logerr("Set mode %s failed: unknown" % custom_mode)
-    elif not done_evt.wait(10):
-        rospy.logerr("Set mode %s failed: timed out" % custom_mode)
-    else:
-        success = True
+    if not success:
+        clean()
 
-    clean()
     return success
 
 
@@ -146,8 +148,8 @@ def do_takeoff_cur_gps(min_pitch, yaw, altitude):
                          latitude=fix.latitude, \
                          longitude=fix.longitude, \
                          altitude=altitude)
-    except rospy.ServiceException:
-        rospy.logerr('Error taking off:\n' + ''.join(traceback.format_stack()))
+    except rospy.ServiceException as e:
+        rospy.logerr('Error taking off')
         return False
 
     if not ret.success:
@@ -175,8 +177,8 @@ def do_land_cur_gps(yaw, altitude):
                       latitude=fix.latitude, \
                       longitude=fix.longitude, \
                       altitude=altitude)
-    except rospy.ServiceException:
-        rospy.logerr('Error landing:\n' + ''.join(traceback.format_stack()))
+    except rospy.ServiceException as e:
+        rospy.logerr('Error landing')
         return False
 
     if not ret.success:
@@ -222,8 +224,8 @@ def handle_land(req):
 def push_waypoints(waypoints):
     try:
         ret = wp_push(start_index=0, waypoints=waypoints)
-    except rospy.ServiceException:
-        rospy.logerr('Error setting waypoints:\n' + ''.join(traceback.format_stack()))
+    except rospy.ServiceException as e:
+        rospy.logerr('Error setting waypoints')
         return False
 
     if not ret.success:
@@ -341,9 +343,6 @@ def handle_flyto(req):
     return FlyToResponse(True)
 
 
-def waypoint_reached(state):
-    rospy.loginfo("We have reached waypoint %s!" % state.wp_seq)
-
 
 def get_proxy(topic, serviceType):
     rospy.loginfo("Waiting for service: %s", topic)
@@ -368,20 +367,14 @@ def start():
 
     global gps_topic 
     gps_topic = mavros.get_topic('global_position', 'global')
-    if gps_topic is None:
-        raise Exception("GPS topic not exist")
-
-    rospy.loginfo("GPS_TOPIC=%s"%gps_topic)
 
     rospy.Service('command/takeoff', TakeOff, handle_takeoff)
     rospy.Service('command/land', Land, handle_land)
-    rospy.Service('command/land2', Land, handle_land)
     rospy.Service('command/flyto', FlyTo, handle_flyto)
 
     rospy.Subscriber("/mavros/global_position/global", NavSatFix, partial(values.latch_value, gps_topic, max_age=10))
-    rospy.Subscriber("/mavros/mission/reached", WaypointReached, waypoint_reached)
 
-    wp_clear()
+    #wp_clear()
 
     rospy.loginfo("Mission controller ready...")
     rospy.spin()
