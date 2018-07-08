@@ -19,6 +19,12 @@ from rh_msgs.srv import SetNoFlyZones, SetNoFlyZonesResponse
 from rh_autonomy.aggregator import LatchMap
 
 
+class MissionStatus:
+    NOT_READY = 1
+    READY = 2
+    RUNNING = 3
+    ABORTING = 4
+
 gps_topic = "/mavros/global_position/global"
 
 def get_proxy(topic, serviceType):
@@ -45,6 +51,7 @@ class StateNode():
         self.target_mission_wp = 0
         self.landing_location = GPSCoord()
         self.reached_wp_index = -1
+        self.mission_status = MissionStatus.NotReady
 
         rospy.init_node("state")
 
@@ -57,7 +64,6 @@ class StateNode():
         rospy.Service('command/set_mission', SetMission, self.handle_set_mission)
         rospy.Service('command/set_dnfzs', SetNoFlyZones, self.handle_set_dnfzs)
         rospy.Service('command/get_state', GetState, self.handle_get_state)
-
        
     def waypoint_reached(self, msg):
 
@@ -110,6 +116,7 @@ class StateNode():
         state.gps_position = self.values.get_value(gps_topic)
         state.apm_wps = self.apm_wps
         state.landing_location = self.landing_location
+        state.mission_status = self.mission_status
         return GetStateResponse(state)
 
 

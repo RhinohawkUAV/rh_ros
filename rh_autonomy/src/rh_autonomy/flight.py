@@ -19,6 +19,7 @@ from rh_msgs.srv import TakeOff, TakeOffResponse
 from rh_msgs.srv import Land, LandResponse
 from rh_msgs.srv import FlyTo, FlyToResponse
 from rh_autonomy.aggregator import LatchMap
+from rh_autonomy.util import get_proxy
 
 isQuadPlane = True
 
@@ -343,13 +344,6 @@ def handle_flyto(req):
     return FlyToResponse(True)
 
 
-
-def get_proxy(topic, serviceType):
-    rospy.loginfo("Waiting for service: %s", topic)
-    rospy.wait_for_service(topic)
-    return rospy.ServiceProxy(topic, serviceType)
-
-
 def start():
 
     rospy.init_node(name())
@@ -376,7 +370,7 @@ def start():
 
     #wp_clear()
 
-    rospy.loginfo("Mission controller ready...")
+    rospy.loginfo("Flight controller ready.")
     rospy.spin()
 
 

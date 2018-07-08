@@ -22,6 +22,8 @@ add_service_files(
   SetMission.srv
   SetNoFlyZones.srv
   GetState.srv
+  StartMission.srv
+  AbortMission.srv
 )
 
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs geographic_msgs std_msgs mavros_msgs)
