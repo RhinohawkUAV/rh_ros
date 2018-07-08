@@ -1,7 +1,18 @@
 #!/usr/bin/env python
 """
-ROS node implementing Rhinohawk global mission state. See rh_msgs.msg.State
-for a full description.
+ROS node implementing Rhinohawk global mission state. See rh_msgs.msg.State for a full description of the state data.
+
+The state node aggregates state from many different sources and makes it available to other nodes in the Rhinohawk System, particularly the controller node which is responsible for autonomous mission control.
+
+Here it's important to make the distinction between two types of waypoints used in the Rhinohawk System:
+    Mission waypoints, sometimes called "transit waypoints", are the top-level waypoints which need to be reached in order to satisfy the mission. In the context of the MedExpress Challenge, the mission waypoints break down as follows:
+        1,2 - Must be traversed in this order
+        3,N - Can be traversed in any other
+        N+1 - Joe's reported location, area must be searched for a landing location
+        On the way back:
+        N,3 - Can be traversed in any order
+        2,1 - Must be traversed in this order
+    APM waypoints are the low-level waypoints used by the navigation system to navigate no-fly-zones and geofence restrictions and to (eventually) complete mission objectives. Typically, completing any of the above mission waypoints will require M number of APM waypoints. For performance purposes, only the waypoints necessary to complete the next mission objective are uploaded to the autopilot at any given time.
 """
 
 from functools import partial
@@ -15,7 +26,6 @@ from rh_msgs.msg import State, Mission, GPSCoord
 from rh_msgs.srv import GetState, GetStateResponse
 from rh_msgs.srv import SetMission, SetMissionResponse
 from rh_msgs.srv import SetNoFlyZones, SetNoFlyZonesResponse
-
 from rh_autonomy.aggregator import LatchMap
 
 
@@ -26,11 +36,6 @@ class MissionStatus:
     ABORTING = 4
 
 gps_topic = "/mavros/global_position/global"
-
-def get_proxy(topic, serviceType):
-    rospy.loginfo("Waiting for service: %s", topic)
-    rospy.wait_for_service(topic)
-    return rospy.ServiceProxy(topic, serviceType)
 
 
 def log(s):
@@ -51,7 +56,7 @@ class StateNode():
         self.target_mission_wp = 0
         self.landing_location = GPSCoord()
         self.reached_wp_index = -1
-        self.mission_status = MissionStatus.NotReady
+        self.mission_status = MissionStatus.NOT_READY
 
         rospy.init_node("state")
 
@@ -65,7 +70,10 @@ class StateNode():
         rospy.Service('command/set_dnfzs', SetNoFlyZones, self.handle_set_dnfzs)
         rospy.Service('command/get_state', GetState, self.handle_get_state)
        
+
     def waypoint_reached(self, msg):
+        """ Called whenever an APM waypoint is reached
+        """
 
         if self.reached_wp_index < msg.wp_seq:
             log("We have reached waypoint %s" % msg.wp_seq)
@@ -113,7 +121,11 @@ class StateNode():
         state.mission = self.mission
         state.dynamic_nfzs = self.dynamic_nfzs
         state.target_mission_wp = self.target_mission_wp
-        state.gps_position = self.values.get_value(gps_topic)
+        gps_position = self.values.get_value(gps_topic)
+        if gps_position:
+            state.gps_position = gps_position
+        else:
+            state.gps_position = NavSatFix()
         state.apm_wps = self.apm_wps
         state.landing_location = self.landing_location
         state.mission_status = self.mission_status

@@ -29,7 +29,7 @@ def handle_abort_mission(msg):
 
 def control():
 
-    state = get_state()
+    state = get_state().state
     status = state.mission_status
 
     if status == MissionStatus.ABORTING:

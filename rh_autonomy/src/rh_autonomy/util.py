@@ -1,4 +1,5 @@
 # Utility functions
+import rospy
 
 def get_proxy(topic, serviceType):
     rospy.loginfo("Waiting for service: %s", topic)
