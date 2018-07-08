@@ -47,13 +47,23 @@ rosservice call /rh/command/flyto "{target_lat: 38.977610, target_long: -77.3390
 
 ## Code Organization
 
-The code is organized into several ROS packages:
+The code is organized into several ROS packages, each containing one or more ROS nodes:
 
 * Core Rhinohawk System
   * **camera_driver** - all camera-related code and configurations
+    * /camera
+    * /camera/image_raw
+    * /camera/image_rect
+    * /camera/image_mono
   * **rh_msgs** - shared ROS message/service definition, modeled after mavros_msgs package
   * **rh_autonomy** - rhinohawk master controller and centralized state
+    * /rh/state
+    * /rh/flight
+    * /rh/controller
+    * /rh/command
   * **rh_vision** - all machine vision code, currently aruco + image2target. Includes unit tests. 
+    * /rh/vision/aruco_detector
+    * /rh/vision/image_to_target
 * 3dr Solo 
   * **obc_solo** - code and configuration for running the Rhinohawk System on a 3dr Solo quadcopter
   * **gscam** - GStreamer node used for interfacting with the 3dr Solo GoPro camera stream
@@ -62,5 +72,4 @@ The code is organized into several ROS packages:
 * Legacy & example code, currently not used
   * **obc_pilot**
   * **depth_vision**
-
 
