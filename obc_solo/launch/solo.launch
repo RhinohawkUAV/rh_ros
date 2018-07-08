@@ -98,7 +98,7 @@ capable of
 
   <!-- rhinohawk mission nodes -->
 
-  <node pkg="obc_solo" type="mission.py" name="mission" ns="rhinohawk" output="screen"/>
+  <node pkg="obc_solo" type="flight.py" name="flight" ns="rhinohawk" output="screen"/>
 
 
 </launch>

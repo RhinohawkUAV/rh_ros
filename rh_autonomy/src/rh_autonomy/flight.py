@@ -50,7 +50,7 @@ values = LatchMap()
 
 
 def name():
-    return "mission"
+    return "flight"
 
 
 def arm(state):

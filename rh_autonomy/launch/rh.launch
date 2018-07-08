@@ -97,7 +97,7 @@
 
   <!-- rhinohawk mission nodes -->
 
-  <node pkg="rh_autonomy" type="mission.py" name="mission" ns="rh" output="screen"/>
+  <node pkg="rh_autonomy" type="flight.py" name="flight" ns="rh" output="screen"/>
   <node pkg="rh_autonomy" type="state.py" name="state" ns="rh" output="screen"/>
 
 </launch>
