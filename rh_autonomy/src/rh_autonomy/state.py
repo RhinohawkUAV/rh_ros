@@ -134,6 +134,6 @@ class StateNode():
 
 if __name__ == "__main__":
     node = StateNode()
-    rospy.loginfo("Mission state ready...")
+    rospy.loginfo("Mission state ready.")
     rospy.spin()
 
