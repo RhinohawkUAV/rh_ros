@@ -10,7 +10,7 @@ catkin_init_workspace
 ```
 
 ## Build
-To build, run ```catkin_make``` in the parent directory:
+To build, run `catkin_make` in the parent directory:
 ```
 cd ~/catkin_ws
 catkin_make
@@ -53,7 +53,7 @@ The code is organized into several ROS packages:
   * **camera_driver** - all camera-related code and configurations
   * **rh_msgs** - shared ROS message/service definition, modeled after mavros_msgs package
   * **rh_autonomy** - rhinohawk master controller and centralized state
-  * **rh_vision - all machine vision code, currently aruco + image2target. Includes unit tests. 
+  * **rh_vision** - all machine vision code, currently aruco + image2target. Includes unit tests. 
 * 3dr Solo 
   * **obc_solo** - code and configuration for running the Rhinohawk System on a 3dr Solo quadcopter
   * **gscam** - GStreamer node used for interfacting with the 3dr Solo GoPro camera stream
