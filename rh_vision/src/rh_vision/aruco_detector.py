@@ -16,10 +16,12 @@ from sensor_msgs.msg import Image,CompressedImage
 from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import Point
 from std_msgs.msg import Header
+from rh_msgs.msg import Point2D, PointList
 
 global aruco_raw_publisher
 global aruco_cmp_publisher
 global aruco_loc_publisher
+global aruco_box_publisher
 global bridge
 
 # ArUco dictionary
@@ -40,13 +42,21 @@ params.minMarkerDistanceRate = 0.10
 def name():
     return "aruco_detector"
 
-def publish_marker_loc(markerId, marker, src_image, c1, c2, c3):
 
-    topLeft = tuple(marker[0][0])
-    bottomRight = tuple(marker[0][2])
+def publish_marker_loc(markerId, marker, src_image, c1, c2, c3, c4):
 
-    if c3>0 or c2>0:
+    header = Header(frame_id="camera", \
+            seq=src_image.header.seq, stamp=src_image.header.stamp)
+
+    if c4>0:
+        points = [Point2D(corner[0], corner[1]) for corner in marker]
+        point_list = PointList(points=points, header=header)
+        aruco_box_publisher.publish(point_list)
+
+    if c2>0 or c3>0:
         # find center location for chosen marker
+        topLeft = tuple(marker[0])
+        bottomRight = tuple(marker[2])
         x,y = topLeft
         w = bottomRight[0] - topLeft[0]
         h = bottomRight[1] - topLeft[1]
@@ -54,8 +64,6 @@ def publish_marker_loc(markerId, marker, src_image, c1, c2, c3):
         cy = int(round(y + h/2.))
 
         # publish bounding box center
-        header = Header(frame_id="landing_box", \
-                seq=src_image.header.seq, stamp=src_image.header.stamp)
         point = Point(x=cx, y=cy, z=1.)
         pointStamped = PointStamped(point=point, header=header)
         aruco_loc_publisher.publish(pointStamped)
@@ -75,10 +83,11 @@ def process_image(image):
     c1 = aruco_raw_publisher.get_num_connections()
     c2 = aruco_cmp_publisher.get_num_connections()
     c3 = aruco_loc_publisher.get_num_connections()
+    c4 = aruco_box_publisher.get_num_connections()
 
-    rospy.logdebug("num connections: aruco:%d, aruco_compressed:%d, arucobox_location:%d" % (c1, c2, c3))
+    rospy.logdebug("num connections: aruco:%d, aruco_compressed:%d, location:%d, box:%d" % (c1, c2, c3, c4))
 
-    if c1>0 or c2>0 or c3>0:
+    if c1>0 or c2>0 or c3>0 or c4>0:
 
         # Find markers
         res = cv2.aruco.detectMarkers(cv_image, dictionary, parameters=params)
@@ -87,12 +96,13 @@ def process_image(image):
 
         if markerIds is None or len(markerIds)==0:
             rospy.logdebug("No aruco markers detected")
+
         else:
             rospy.logdebug("Found %d aruco markers" % len(markerIds))
             
             for i, markerId in enumerate(markerIds):
-                marker = markerCorners[i]
-                publish_marker_loc(markerId, marker, image, c1, c2, c3)
+                marker = markerCorners[i][0]
+                publish_marker_loc(markerId, marker, image, c1, c2, c3, c4)
 
             if c1>0 or c2>0:
                 # draw all marker annotations
@@ -117,12 +127,14 @@ def detect_aruco():
     global aruco_raw_publisher
     global aruco_cmp_publisher
     global aruco_loc_publisher
+    global aruco_box_publisher
     global bridge
 
     rospy.init_node(name(), log_level=rospy.INFO)
     aruco_raw_publisher = rospy.Publisher("aruco/image", Image, queue_size = 5)
     aruco_cmp_publisher = rospy.Publisher("aruco/image/compressed", CompressedImage, queue_size = 5)
     aruco_loc_publisher = rospy.Publisher("aruco/location", PointStamped, queue_size = 5)
+    aruco_box_publisher = rospy.Publisher("aruco/box", PointList, queue_size = 5)
     
     rospy.Subscriber("image", Image, process_image)
     

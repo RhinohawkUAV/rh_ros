@@ -7,6 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   DIRECTORY msg
   FILES
+  Point2D.msg
+  PointList.msg
   GPSCoord.msg
   GPSCoordList.msg
   Mission.msg
@@ -24,6 +26,7 @@ add_service_files(
   GetState.srv
   StartMission.srv
   AbortMission.srv
+  FlyWaypoints.srv
 )
 
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs geographic_msgs std_msgs mavros_msgs)
