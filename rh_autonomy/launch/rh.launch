@@ -80,7 +80,7 @@
   </node>
 
   <node pkg="rh_vision" type="image_to_target.py" name="image_to_target" ns="/rh/vision">
-    <remap from="image_location" to="/vision/aruco/location"/>
+    <remap from="image_location" to="/rh/vision/aruco/location"/>
     <remap from="camera_info" to="/camera/camera_info"/>
   </node>
 
