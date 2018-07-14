@@ -18,6 +18,7 @@ from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
 from rh_msgs.srv import TakeOff, TakeOffResponse
 from rh_msgs.srv import Land, LandResponse
 from rh_msgs.srv import FlyTo, FlyToResponse
+from rh_msgs.srv import FlyWaypoints, FlyWaypointsResponse
 from rh_autonomy.aggregator import LatchMap
 from rh_autonomy.util import get_proxy
 
@@ -344,6 +345,25 @@ def handle_flyto(req):
     return FlyToResponse(True)
 
 
+def handle_flywaypoints(msg):
+
+    cruise_alt = 10
+    wp_radius = 10
+
+    wps = []
+    for gps_coord in msg.waypoints:
+        wp = wp_fly(gps_coord.lat, gps_coord.lon, cruise_alt, radius=wp_radius)
+        wps.append(wp)
+    
+    if not push_waypoints(wps):
+        rospy.logerr('Error pushing waypoints')
+        return FlyWaypointsResponse(False)
+
+    rospy.loginfo("Successfully pushed %d waypoints", len(wps))
+
+    return FlyWaypointsResponse(True)
+
+
 def start():
 
     rospy.init_node(name())
@@ -365,6 +385,7 @@ def start():
     rospy.Service('command/takeoff', TakeOff, handle_takeoff)
     rospy.Service('command/land', Land, handle_land)
     rospy.Service('command/flyto', FlyTo, handle_flyto)
+    rospy.Service('command/fly_waypoints', FlyWaypoints, handle_flywaypoints)
 
     rospy.Subscriber("/mavros/global_position/global", NavSatFix, partial(values.latch_value, gps_topic, max_age=10))
 

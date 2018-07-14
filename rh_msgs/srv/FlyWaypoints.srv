@@ -1,0 +1,3 @@
+rh_msgs/GPSCoordList waypoints
+---
+bool success

@@ -25,6 +25,8 @@ from mavros_msgs.msg import WaypointList, WaypointReached, StatusText
 from rh_msgs.msg import State, Mission, GPSCoord
 from rh_msgs.srv import GetState, GetStateResponse
 from rh_msgs.srv import SetMission, SetMissionResponse
+from rh_msgs.srv import StartMission, StartMissionResponse
+from rh_msgs.srv import AbortMission, AbortMissionResponse
 from rh_msgs.srv import SetNoFlyZones, SetNoFlyZonesResponse
 from rh_autonomy.aggregator import LatchMap
 
@@ -63,10 +65,11 @@ class StateNode():
         rospy.Subscriber(gps_topic, NavSatFix, partial(self.values.latch_value, gps_topic, max_age=10))
         rospy.Subscriber("/mavros/mission/reached", WaypointReached, self.waypoint_reached)
         rospy.Subscriber("/mavros/mission/waypoints", WaypointList, self.waypoints_changed)
-
         rospy.Subscriber("/mavros/statustext/recv", StatusText, self.mavlink_statustext)
 
         rospy.Service('command/set_mission', SetMission, self.handle_set_mission)
+        rospy.Service('command/start_mission', StartMission, self.handle_start_mission)
+        rospy.Service('command/abort_mission', AbortMission, self.handle_abort_mission)
         rospy.Service('command/set_dnfzs', SetNoFlyZones, self.handle_set_dnfzs)
         rospy.Service('command/get_state', GetState, self.handle_get_state)
        
@@ -107,6 +110,20 @@ class StateNode():
         self.mission = msg.mission
         log("New mission parameters have been set")
         return SetMissionResponse(True)
+
+
+    def handle_start_mission(self, msg):
+        """ Start mission
+        """
+        self.mission_status = MissionStatus.RUNNING
+        return StartMissionResponse(True)
+
+
+    def handle_abort_mission(self, msg):
+        """ Abort mission with extreme prejudice
+        """
+        self.mission_status = MissionStatus.ABORTING
+        return AbortMissionResponse(True)
 
 
     def handle_set_dnfzs(self, msg):
