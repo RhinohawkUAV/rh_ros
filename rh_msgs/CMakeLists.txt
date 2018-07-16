@@ -13,6 +13,7 @@ add_message_files(
   GPSCoordList.msg
   Mission.msg
   State.msg
+  VehicleState.msg
 )
 
 add_service_files(

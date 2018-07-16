@@ -13,8 +13,8 @@ rh_msgs/Mission mission
 # List of last known dynamic no fly zones
 rh_msgs/GPSCoordList[] dynamic_nfzs
 
-# Last known GPS position
-sensor_msgs/NavSatFix gps_position
+# Last known vehicle state
+rh_msgs/VehicleState vehicle_state
 
 # List of waypoints currently uploaded to the autopilot
 mavros_msgs/Waypoint[] apm_wps

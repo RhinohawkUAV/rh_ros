@@ -31,7 +31,6 @@ def control():
 
     state = get_state().state
     status = state.mission_status
-    fix = state.gps_position
 
     if status == MissionStatus.ABORTING:
         rospy.loginfo("Aborting mission")
@@ -40,10 +39,18 @@ def control():
     elif status == MissionStatus.RUNNING:
         rospy.loginfo("Autonomous navigation")
 
-        #TODO
-        heading = None
-        speed = None
+        # defined mission
+        mission = state.mission
+        geofence = mission.geofence
+        mission_wps = mission.mission_wps
+        static_nfzs = mission.static_nfzs
+        roads = mission.roads
+
+	# current goal
         target = None
+
+	# vehicle state
+        vs = mission.vehicle_state
 
         # call path planner
         params = Params()
@@ -54,8 +61,8 @@ def control():
         scenario.boundaryPoints = []
         scenario.noFlyZones = []
         scenario.roads = []
-        scenario.startPoint = GPSCoord(fix.latitude, fix.longitude)
-        scenario.startVelocity = GPSVelocity(heading, speed)
+        scenario.startPoint = GPSCoord(vs.lat, vs.lon)
+        scenario.startVelocity = GPSVelocity(vs.heading, vs.airspeed)
         scenario.wayPoints = GPSCoord(target.lat, target.long)
 
         vehicle = Vehicle()

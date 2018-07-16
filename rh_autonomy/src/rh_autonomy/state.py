@@ -19,10 +19,11 @@ from functools import partial
 
 import rospy
 
+from std_msgs.msg import Float64
 from sensor_msgs.msg import NavSatFix
-from mavros_msgs.msg import WaypointList, WaypointReached, StatusText
+from mavros_msgs.msg import WaypointList, WaypointReached, StatusText, VFR_HUD
 
-from rh_msgs.msg import State, Mission, GPSCoord
+from rh_msgs.msg import State, Mission, GPSCoord, VehicleState
 from rh_msgs.srv import GetState, GetStateResponse
 from rh_msgs.srv import SetMission, SetMissionResponse
 from rh_msgs.srv import StartMission, StartMissionResponse
@@ -38,14 +39,12 @@ class MissionStatus:
     ABORTING = 4
 
 gps_topic = "/mavros/global_position/global"
+compass_topic = "/mavros/global_position/compass_hdg"
+vfr_topic = "/mavros/vfr_hud"
+wp_change_topic = "/mavros/mission/waypoints"
 
-
-def log(s):
-    rospy.loginfo("STATE: %s" % s)
-
-
-def warn(s):
-    rospy.logwarn("STATE: %s" % s)
+def log(s): rospy.loginfo("STATE: %s" % s)
+def warn(s): rospy.logwarn("STATE: %s" % s)
 
 
 class StateNode():
@@ -54,17 +53,18 @@ class StateNode():
         self.values = LatchMap()
         self.mission = Mission()
         self.dynamic_nfzs = []
-        self.apm_wps = []
         self.target_mission_wp = 0
         self.landing_location = GPSCoord()
         self.reached_wp_index = -1
         self.mission_status = MissionStatus.NOT_READY
-
         rospy.init_node("state")
 
-        rospy.Subscriber(gps_topic, NavSatFix, partial(self.values.latch_value, gps_topic, max_age=10))
+        self.sub(gps_topic, NavSatFix)
+        self.sub(compass_topic, Float64)
+        self.sub(vfr_topic, VFR_HUD)
+        self.sub(wp_change_topic, WaypointList, max_age=None)
+
         rospy.Subscriber("/mavros/mission/reached", WaypointReached, self.waypoint_reached)
-        rospy.Subscriber("/mavros/mission/waypoints", WaypointList, self.waypoints_changed)
         rospy.Subscriber("/mavros/statustext/recv", StatusText, self.mavlink_statustext)
 
         rospy.Service('command/set_mission', SetMission, self.handle_set_mission)
@@ -72,7 +72,11 @@ class StateNode():
         rospy.Service('command/abort_mission', AbortMission, self.handle_abort_mission)
         rospy.Service('command/set_dnfzs', SetNoFlyZones, self.handle_set_dnfzs)
         rospy.Service('command/get_state', GetState, self.handle_get_state)
-       
+ 
+
+    def sub(self, topic, data_type, max_age=10):
+        rospy.Subscriber(topic, data_type, partial(self.values.latch_value, topic, max_age=max_age))
+
 
     def waypoint_reached(self, msg):
         """ Called whenever an APM waypoint is reached
@@ -82,20 +86,16 @@ class StateNode():
             log("We have reached waypoint %s" % msg.wp_seq)
             self.reached_wp_index = msg.wp_seq
 
-            if not self.apm_wps:
+            apm_wps = self.values.get_value(wp_change_topic)
+            if not apm_wps:
                 warn("Waypoint reached, but no APM waypoints")
                 return
 
             try:
-                waypoint = self.apm_wps[msg.wp_seq]
+                waypoint = apm_wps[msg.wp_seq]
 
             except:
                 warn("Waypoint reached, but not in APM waypoints")
-
-
-    def waypoints_changed(self, msg):
-        self.apm_wps = msg.waypoints
-        log("Waypoints list has changed (%d waypoints)" % len(self.apm_wps))
 
 
     def mavlink_statustext(self, msg):
@@ -115,6 +115,10 @@ class StateNode():
     def handle_start_mission(self, msg):
         """ Start mission
         """
+        if not self.mission.mission_wps.points:
+            rospy.loginfo("No mission waypoints defined")
+            return StartMissionResponse(False)
+
         self.mission_status = MissionStatus.RUNNING
         return StartMissionResponse(True)
 
@@ -133,17 +137,33 @@ class StateNode():
 
     
     def handle_get_state(self, msg):
-
+    
         state = State()
         state.mission = self.mission
         state.dynamic_nfzs = self.dynamic_nfzs
         state.target_mission_wp = self.target_mission_wp
+        vehicle_state = VehicleState()
+        state.vehicle_state = vehicle_state
+
         gps_position = self.values.get_value(gps_topic)
         if gps_position:
-            state.gps_position = gps_position
-        else:
-            state.gps_position = NavSatFix()
-        state.apm_wps = self.apm_wps
+            vehicle_state.position.lat = gps_position.latitude
+            vehicle_state.position.lon = gps_position.longitude
+            vehicle_state.position.alt = gps_position.altitude
+
+        compass = self.values.get_value(compass_topic)
+        if compass:
+            vehicle_state.heading = compass.data
+
+        vfr = self.values.get_value(vfr_topic)
+        if vfr:
+            vehicle_state.position.alt = vfr.altitude
+            vehicle_state.airspeed = vfr.airspeed
+
+        apm_wps = self.values.get_value(wp_change_topic)
+        if apm_wps:
+            state.apm_wps = apm_wps
+
         state.landing_location = self.landing_location
         state.mission_status = self.mission_status
         return GetStateResponse(state)
