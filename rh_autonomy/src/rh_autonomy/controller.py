@@ -18,110 +18,104 @@ from pathfinding.msg import Params, Scenario, Vehicle, GPSCoord, GPSVelocity
 # check state and adjust control every second
 CONTROL_RATE_HZ = 1 
 
-get_state = None
-fly_waypoints = None
-submit_problem = None
-step_problem = None
 
-def name():
-    return "controller"
+class ControllerNode():
+
+    def __init__(self):
+        rospy.init_node("controller")
+        self.get_state = get_proxy('/rh/command/get_state', GetState)
+        self.fly_waypoints = get_proxy('/rh/command/fly_waypoints', FlyWaypoints)
+        self.submit_problem = get_proxy('/rh/pathfinder/submitProblem', SubmitProblem)
+        self.step_problem = get_proxy('/rh/pathfinder/stepProblem', StepProblem)
 
 
-def control():
+    def run_forever(self):
+        rate = rospy.Rate(CONTROL_RATE_HZ)
+        while True:
+            self.control()
+            rate.sleep()
 
-    state = get_state().state
-    status = state.mission_status
 
-    if status == MissionStatus.ABORTING:
-        rospy.loginfo("Aborting mission")
-        # TODO: implement abort logic
-    
-    elif status == MissionStatus.RUNNING:
-        rospy.loginfo("Autonomous navigation")
+    def control(self):
 
-        # defined mission
-        mission = state.mission
-        geofence = mission.geofence
-        mission_wps = mission.mission_wps
-        static_nfzs = mission.static_nfzs
-        roads = mission.roads
+        state = self.get_state().state
+        status = state.mission_status
 
-	# current goal
-        target = None
+        if status == MissionStatus.ABORTING:
+            rospy.loginfo("Aborting mission")
+            # TODO: implement abort logic
+        
+        elif status == MissionStatus.RUNNING:
+            rospy.loginfo("Autonomous navigation")
 
-	# vehicle state
-        vs = mission.vehicle_state
+            # defined mission
+            mission = state.mission
+            geofence = mission.geofence
+            mission_wps = mission.mission_wps
+            static_nfzs = mission.static_nfzs
+            roads = mission.roads
 
-        # call path planner
-        params = Params()
-        params.waypointAcceptanceRadii = 5.0
-        params.nfzBufferSize = 10.0
+            # current goal
+            target = None
 
-        scenario = Scenario()
-        scenario.boundaryPoints = []
-        scenario.noFlyZones = []
-        scenario.roads = []
-        scenario.startPoint = GPSCoord(vs.lat, vs.lon)
-        scenario.startVelocity = GPSVelocity(vs.heading, vs.airspeed)
-        scenario.wayPoints = GPSCoord(target.lat, target.long)
+            # vehicle state
+            vs = mission.vehicle_state
 
-        vehicle = Vehicle()
-        vehicle.maxSpeed = 10.0
-        vehicle.acceleration = 2.0
+            # call path planner
+            params = Params()
+            params.waypointAcceptanceRadii = 5.0
+            params.nfzBufferSize = 10.0
 
-        refgps = GPSCoord()
+            scenario = Scenario()
+            scenario.boundaryPoints = []
+            scenario.noFlyZones = []
+            scenario.roads = []
+            scenario.startPoint = GPSCoord(vs.lat, vs.lon)
+            scenario.startVelocity = GPSVelocity(vs.heading, vs.airspeed)
+            scenario.wayPoints = GPSCoord(target.lat, target.long)
 
-        submit_problem(params, scenario, vehicle, refgps)
+            vehicle = Vehicle()
+            vehicle.maxSpeed = 10.0
+            vehicle.acceleration = 2.0
 
-        done_evt = threading.Event()
+            refgps = GPSCoord()
 
-        def receive_solution(msg):
-            rospy.loginfo("Got path solution")
+            self.submit_problem(params, scenario, vehicle, refgps)
+
+            done_evt = threading.Event()
+
+            def receive_solution(msg):
+                rospy.loginfo("Got path solution")
+                global solution_sub
+                done_evt.set()
+                solution_sub.unregister()
+                solution_sub = None
+
+                wps = [] 
+                for wp in msg.solutionWaypoints:
+                    rospy.loginfo("Solution waypoint: (%s,%s) (radius=%s)" % (wp.position.lat, wp.position.lon, wp.radius))
+                    wps.append(GPSCoord(wp.lat, wp.lon))
+                 
+                if not self.fly_waypoints(wps):
+                    rospy.logerr("Could not fly waypoints")
+
+
             global solution_sub
-            done_evt.set()
-            solution_sub.unregister()
-            solution_sub = None
+            solution_sub = rospy.Subscriber('/rh/pathfinder/pathFinderSolution', PathSolution, receive_solution)
 
-            wps = [] 
-            for wp in msg.solutionWaypoints:
-                rospy.loginfo("Solution waypoint: (%s,%s) (radius=%s)" % (wp.position.lat, wp.position.lon, wp.radius))
-                wps.append(GPSCoord(wp.lat, wp.lon))
-             
-            if not fly_waypoints(wps):
-                rospy.logerr("Could not fly waypoints")
+            if not done_evt.wait(2):
+                rospy.logerr("Path finder did not return solution in time")
+
+            #solution = rospy.wait_for_message('/rh/pathfinder/pathFinderSolution', PathSolution)
 
 
-        global solution_sub
-        solution_sub = rospy.Subscriber('/rh/pathfinder/pathFinderSolution', PathSolution, receive_solution)
-
-        if not done_evt.wait(2):
-            rospy.logerr("Path finder did not return solution in time")
-
-        #solution = rospy.wait_for_message('/rh/pathfinder/pathFinderSolution', PathSolution)
-
-
-    else:
-        # Nothing for us to do
-        pass
-
-
-
-def start():
-    global get_state, fly_waypoints, submit_problem, step_problem
-    get_state = get_proxy('/rh/command/get_state', GetState)
-    fly_waypoints = get_proxy('/rh/command/fly_waypoints', FlyWaypoints)
-    submit_problem = get_proxy('/rh/pathfinder/submitProblem', SubmitProblem)
-    step_problem = get_proxy('/rh/pathfinder/stepProblem', StepProblem)
-
-    rospy.init_node(name())
-    rate = rospy.Rate(CONTROL_RATE_HZ)
-
-    rospy.loginfo("Mission controller spinning.")
-    while True:
-        control()
-        rate.sleep()
+        else:
+            # Nothing for us to do
+            pass
 
 
 if __name__ == "__main__":
-    start()
+    node = ControllerNode()
+    rospy.loginfo("Mission controller spinning.")
+    node.run_forever()
 
