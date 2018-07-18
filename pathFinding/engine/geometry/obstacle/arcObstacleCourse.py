@@ -1,21 +1,21 @@
 import math
 
-from defaultObstacleData import DefaultObstacleData
+from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
 from engine.geometry.arc import Arc
 from engine.geometry.calcs import NoSolutionException
-from engine.geometry.pathSegment.arcFinder import ArcFinder
+from engine.geometry.obstacle.arcFinder import ArcFinder
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 from utils import profile
 
 
-class ArcObstacleData(DefaultObstacleData):
+class ArcObstacleCourse(DefaultObstacleCourse):
     """
     Basic implementation of ObstacleData which produces simple line segments.  This assumes that the vehicle travels
     at a constant speed and that it is only limited by a maximum turning angle, which ignores speed.
     """
 
     def __init__(self, acceleration, targetOffsetLength):
-        DefaultObstacleData.__init__(self, targetOffsetLength)
+        DefaultObstacleCourse.__init__(self, targetOffsetLength)
         self.acceleration = acceleration
 
     @profile.accumulate("Find Arc")

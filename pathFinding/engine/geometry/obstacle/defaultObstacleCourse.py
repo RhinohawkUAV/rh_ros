@@ -1,17 +1,17 @@
 import math
 
 from engine.geometry import calcs
+from engine.geometry.obstacle.obstacleCourse import ObstacleCourse 
 from engine.geometry.pathSegment.defaultPathSegment import DefaultPathSegment
 from engine.geometry.pathSegment.obstacleLineSegment import ObstacleLineSegment
 from engine.interface import dynamicNoFlyZone
 import numpy as np
-from obstacleData import ObstacleData
 from utils import profile
 
 
-class DefaultObstacleData(ObstacleData):
+class DefaultObstacleCourse(ObstacleCourse):
     """
-    A base class for Python implementations of ObstacleData.  Sub-classes should implement the following:
+    A base class for Python implementations of ObstacleCourse.  Sub-classes should implement the following:
     createPathSegment() -- Create path segments from starting position to ending position
     filterImpossiblePathSegments() -- Filter out path segments which intersect the boundary or NoFlyZones.
     """

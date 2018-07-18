@@ -23,9 +23,10 @@ class ObstacleLineSegment(LineSegment):
         """
         Does a path from startPoint to endPoint, at the given speed intersect?
         """
-        # TODO: How are float64s getting in here?!?!
-        result = testmod.intersectPathAndLine(self, float(startTime), startPoint, endPoint, float(speed))
-        return result == 1
+        # TODO: How are float64s getting in here?!?!  Uncomment to activate C calculations.
+#         result = testmod.intersectPathAndLine(self, float(startTime), startPoint, endPoint, float(speed))
+#         return result == 1
+        return False
     
     def checkPathIntersectsLinePy(self, startTime, startPoint, endPoint, speed):
         """

@@ -1,4 +1,4 @@
-class ObstacleData:
+class ObstacleCourse:
 
     def setInitialState(self, boundaryPoints, noFlyZones):
         """

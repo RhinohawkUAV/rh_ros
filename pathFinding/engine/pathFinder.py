@@ -1,6 +1,6 @@
 import time
 
-from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
+from engine.geometry.obstacle.arcObstacleCourse import ArcObstacleCourse
 from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
@@ -15,7 +15,7 @@ class PathFinder:
     @profile.accumulate("setup")
     def __init__(self, params, scenario, vehicle):
         self._params = params
-        self._obstacleData = ArcObstacleData(vehicle.acceleration, params.nfzBufferSize)
+        self._obstacleData = ArcObstacleCourse(vehicle.acceleration, params.nfzBufferSize)
 #         self._obstacleData = LineSegmentObstacleData(params.nfzBufferSize)
         self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
 

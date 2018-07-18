@@ -1,5 +1,5 @@
 from engine.geometry import calcs
-from engine.geometry.pathSegment.arcObstacleData import ArcObstacleData
+from engine.geometry.obstacle.arcObstacleCourse import ArcObstacleCourse
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.vehicle import DEFAULT_VEHICLE
@@ -38,7 +38,7 @@ class PathSegmentTester(Drawable, SubGUI):
 
     def onSwitch(self, inputDict):
         SubGUI.onSwitch(self, inputDict)
-        self._obstacleData = ArcObstacleData(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
+        self._obstacleData = ArcObstacleCourse(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
         self._obstacleData.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
 

@@ -1,12 +1,11 @@
 import Tkinter as tk
+from constants import MAX_ARC_INTERPOLATION_ERROR
 from defaultPathSegment import DefaultPathSegment
 from engine.geometry import LineSegment
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
 import numpy as np
 from pathSegment import PathSegment
-
-MAX_ARC_INTERPOLATION_ERROR = 4.0
 
 
 class ArcPathSegment(DefaultPathSegment):

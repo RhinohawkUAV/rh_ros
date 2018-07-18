@@ -1,8 +1,8 @@
 import math
 
-from defaultObstacleData import DefaultObstacleData
 from engine.geometry import calcs
-from linePathSegment import LinePathSegment
+from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
+from engine.geometry.pathSegment.linePathSegment import LinePathSegment
 import numpy as np
 
 MAX_TURN_ANGLE = 60
@@ -11,14 +11,14 @@ MAX_TURN_ANGLE = 60
 MAX_TURN_ANGLE_COS = math.cos(math.radians(MAX_TURN_ANGLE))
 
 
-class LineSegmentObstacleData(DefaultObstacleData):
+class LineSegmentObstacleCourse(DefaultObstacleCourse):
     """
     Basic implementation of ObstacleData which produces simple line segments.  This assumes that the vehicle travels
     at a constant speed and that it is only limited by a maximum turning angle, which ignores speed.
     """
 
     def __init__(self, targetOffsetLength):
-        DefaultObstacleData.__init__(self, targetOffsetLength)
+        DefaultObstacleCourse.__init__(self, targetOffsetLength)
 
     def createPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
