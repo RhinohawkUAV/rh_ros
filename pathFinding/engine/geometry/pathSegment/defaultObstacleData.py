@@ -1,10 +1,9 @@
 import math
 
-from typing import Sequence, List
-
-from engine.geometry import calcs, PathSegment
+from engine.geometry import calcs
 from engine.geometry.pathSegment.defaultPathSegment import DefaultPathSegment
 from engine.geometry.pathSegment.obstacleLineSegment import ObstacleLineSegment
+from engine.interface import dynamicNoFlyZone
 import numpy as np
 from obstacleData import ObstacleData
 from utils import profile
@@ -30,20 +29,6 @@ class DefaultObstacleData(ObstacleData):
 
         # When finding paths to no fly zone vertices, this applies an "outward" offset to each vertex of this length
         self.targetOffsetLength = targetOffsetLength
-
-    def createPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
-        """
-        Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
-        at a given velocity.
-        :param startTime: absolute time at start of segment
-        :param startPoint:
-        :param startSpeed: the speed of the vehicle at the start of the path
-        :param startUnitVelocity: the direction of the vehicle at the start of the path
-        :param targetPoint:
-        :param velocityOfTarget:
-        :return:
-        """
-        pass
 
     def setInitialState(self, boundaryPoints, noFlyZones):
         del self.targetPoints[:]
@@ -85,20 +70,65 @@ class DefaultObstacleData(ObstacleData):
         self.targetPointsAtTime = self.targetPoints[:]
         self.obstacleLinesAtTime = self.obstacleLines[:]
 
-    def findPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def setDynamicNoFlyZones(self, dynamicNoFlyZones):
+        self.dynamicNoFlyZones = dynamicNoFlyZones
+
+    def createPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+        """
+        Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
+        at a given velocity.
+        :param startTime: absolute time at start of segment
+        :param startPoint:
+        :param startSpeed: the speed of the vehicle at the start of the path
+        :param startUnitVelocity: the direction of the vehicle at the start of the path
+        :param targetPoint:
+        :param velocityOfTarget:
+        :return:
+        """
+        pass
+
+    def createPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
+        """
+        Creates a list of PathSegment objects from the given start point and velocity, which will skirt the edge of a dynamic no fly zone.
+        at a given velocity.
+        :param startTime: absolute time at start of segment
+        :param startPoint:
+        :param startSpeed: the speed of the vehicle at the start of the path
+        :param startUnitVelocity: the direction of the vehicle at the start of the path
+        :param dynamicNoFlyZone:
+        :return:
+        """
+        pass
+
+    def findPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment or None
-        pathSegment = self.createPathSegment(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
+        pathSegment = self.createPathSegmentToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
 
         if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
             return pathSegment
         else:
             return None
 
+    def findPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
+        pathSegments = self.createPathSegmentsToDynamicNoFlyZone(startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone)
+        filteredPathSegments = []
+        for pathSegment in pathSegments:
+            if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
+                filteredPathSegments.append(pathSegment)
+        return filteredPathSegments
+
     @profile.accumulate("Find Path Segments")
     def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
-        # type: (float,Sequence,Sequence) -> ([PathSegment],[PathSegment])
-        unfilteredPathSegments = []  # type: List[DefaultPathSegment]
-        filteredPathSegments = []  # type: List[DefaultPathSegment]
+        staticPathSegments = self._findStaticPathSegments(startTime, startPoint, startSpeed, startUnitVelocity)
+        dynamicPathSegments = self._findDynamicPathSegments(startTime, startPoint, startSpeed, startUnitVelocity)
+        
+        unfilteredPathSegments = []
+        unfilteredPathSegments.extend(staticPathSegments)
+        unfilteredPathSegments.extend(dynamicPathSegments)
+        return self._filterPathSegments(unfilteredPathSegments, self.obstacleLinesAtTime)
+        
+    def _findStaticPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
+        pathSegments = []
         for i in range(len(self.targetPoints)):
             velocityOfTarget = self.targetVelocities[i]
             targetPoint = self.targetPoints[i] + self.targetVelocities[i] * startTime
@@ -106,7 +136,7 @@ class DefaultObstacleData(ObstacleData):
             # TODO: Use a target indexing scheme
             # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
             if not calcs.arePointsClose(startPoint, targetPoint):
-                pathSegment = self.createPathSegment(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
+                pathSegment = self.createPathSegmentToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
                 if pathSegment is not None:
                     # Filter path segment based on incoming angle and known geometry around point.
                     pointNormal = self.targetPointNormals[i]
@@ -114,24 +144,30 @@ class DefaultObstacleData(ObstacleData):
                     relativeVelocity = pathSegment.endSpeed * pathSegment.endUnitVelocity - velocityOfTarget
                     relativeVelocity /= np.linalg.norm((relativeVelocity))
                     if np.dot(relativeVelocity, pointNormal) >= cosLimit:
-                        unfilteredPathSegments.append(pathSegment)
-                    else:
-                        filteredPathSegments.append(pathSegment)
-        return self._filterPathSegments(unfilteredPathSegments, filteredPathSegments, self.obstacleLinesAtTime)
+                        pathSegments.append(pathSegment)
+        return pathSegments
 
-    @profile.accumulate("Collision Detection")
-    def _filterPathSegments(self, unfilteredPathSegments, filteredPathSegments, obstacleLines):
+    # TODO: Use the "buffer" constant to increase circle radius when skirting dnfzs
+    def _findDynamicPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
+        
         pathSegments = []
-        for pathSegment in unfilteredPathSegments:
-            if self._filterPathSegment(pathSegment, obstacleLines):
-                pathSegments.append(pathSegment)
-            else:
-                filteredPathSegments.append(pathSegment)
-        return (pathSegments, filteredPathSegments)
+        return pathSegments
 
+    # TODO: Filtering should include dnfzs at some point
     def _filterPathSegment(self, pathSegment, obstacleLines):
         for i in range(len(obstacleLines)):
             obstacleLine = obstacleLines[i]
-            if pathSegment.intersectsObstacleLine(pathSegment.startTime, obstacleLine):
+            if pathSegment.intersectsObstacleLine(obstacleLine):
                 return False
         return True
+
+    @profile.accumulate("Collision Detection")
+    def _filterPathSegments(self, pathSegments, obstacleLines):
+        unfilteredPathSegments = []
+        filteredPathSegments = []
+        for pathSegment in pathSegments:
+            if self._filterPathSegment(pathSegment, obstacleLines):
+                unfilteredPathSegments.append(pathSegment)
+            else:
+                filteredPathSegments.append(pathSegment)
+        return (unfilteredPathSegments, filteredPathSegments)

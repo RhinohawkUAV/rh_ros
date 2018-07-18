@@ -19,7 +19,7 @@ class ArcObstacleData(DefaultObstacleData):
         self.acceleration = acceleration
 
     @profile.accumulate("Find Arc")
-    def createPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def createPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         try:
             arcFinderCCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)
             arcFinderCCW.solve(targetPoint, velocityOfTarget)

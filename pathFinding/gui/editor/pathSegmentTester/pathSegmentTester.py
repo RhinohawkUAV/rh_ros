@@ -6,7 +6,6 @@ from engine.interface.vehicle import DEFAULT_VEHICLE
 from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
 from gui.editor.subGUI import SubGUI
-import numpy as np
 
 
 class PathSegmentTester(Drawable, SubGUI):
@@ -51,7 +50,7 @@ class PathSegmentTester(Drawable, SubGUI):
         
         (startUnitVelocity, startSpeed) = calcs.unitAndLength(self._inputDict[TEST_INPUT_KEY].startVelocity)
                 
-        goalSegment = self._obstacleData.findPathSegment(startTime=0.0,
+        goalSegment = self._obstacleData.findPathSegmentToPoint(startTime=0.0,
                                                          startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                          startSpeed=startSpeed,
                                                          startUnitVelocity=startUnitVelocity,

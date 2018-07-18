@@ -6,5 +6,5 @@ class DefaultPathSegment(PathSegment):
     def __init__(self, startTime, elapsedTime, endPoint, endVelocity):
         PathSegment.__init__(self, startTime, elapsedTime, endPoint, endVelocity)
 
-    def intersectsObstacleLine(self, startTime, obstacleLine):
+    def intersectsObstacleLine(self, obstacleLine):
         return False

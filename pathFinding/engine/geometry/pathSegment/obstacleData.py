@@ -1,21 +1,23 @@
-from collections import Sequence
-
-from pathSegment import PathSegment
-
-
 class ObstacleData:
 
     def setInitialState(self, boundaryPoints, noFlyZones):
         """
-        Set the initial state of the obstacle data at time=0.0.
+        Set the state of the static obstacle data.
         :param boundaryPoints:
         :param noFlyZones:
         :return:
         """
         pass
 
-    def findPathSegment(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
-        # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment
+    def setDynamicNoFlyZones(self, dynamicNoFlyZones):
+        """
+        Set the state of the dynamic obstacle data at time=0.0.
+        :param dynamicNoFlyZones:
+        :return:
+        """
+        pass
+    
+    def findPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         """
         Find legal path segments from a given starting point and velocity to the moving target, ending at finalSpeed.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
@@ -28,9 +30,20 @@ class ObstacleData:
         :param velocityOfTarget: the velocity of the destination (this is usually a point on a NFZ, which may be moving)
         :return:
         """
+        pass
+
+    def findPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
+        """
+        For use during testing to find potential paths that skirt the edge of a DNFZ from a starting condition.
+        :param startTime: the time at which the path starts
+        :param startPoint: where the path starts
+        :param startSpeed: the speed of the vehicle at the start of the path
+        :param startUnitVelocity: the direction of the vehicle at the start of the path
+        :param dynamicNoFlyZone: the no fly zone to skirt around
+        :return:
+        """
 
     def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
-        # type: (float,Sequence,Sequence) -> ([PathSegment],[PathSegment])
         """
         Find legal path segments from a given starting point and velocity to vertices of no fly zones.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.

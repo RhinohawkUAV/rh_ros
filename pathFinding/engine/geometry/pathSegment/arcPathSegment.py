@@ -69,9 +69,9 @@ class ArcPathSegment(DefaultPathSegment):
         distance = np.linalg.norm(point - closestPoint)
         return (closestPoint, distance, timeInterp)
 
-    def intersectsObstacleLine(self, startTime, obstacleLine):
+    def intersectsObstacleLine(self, obstacleLine):
         for i in range(0, len(self.linearPathPoints) - 1):
-            if obstacleLine.checkPathIntersectsLine(startTime + self.linearPathStartTimes[i],
+            if obstacleLine.checkPathIntersectsLine(self.startTime + self.linearPathStartTimes[i],
                                                     startPoint=self.linearPathPoints[i],
                                                     endPoint=self.linearPathPoints[i + 1],
                                                     speed=self.speed):
