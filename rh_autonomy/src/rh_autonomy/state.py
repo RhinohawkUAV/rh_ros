@@ -21,7 +21,7 @@ import rospy
 
 from std_msgs.msg import Float64
 from sensor_msgs.msg import NavSatFix
-from mavros_msgs.msg import WaypointList, WaypointReached, StatusText, VFR_HUD
+import mavros_msgs.msg as mrm
 
 from rh_msgs.msg import State, Mission, GPSCoord, VehicleState
 from rh_msgs.srv import GetState, GetStateResponse
@@ -37,6 +37,11 @@ class MissionStatus:
     READY = 2
     RUNNING = 3
     ABORTING = 4
+
+class VehicleStatus:
+    GROUNDED = 1
+    FLYING = 2
+
 
 gps_topic = "/mavros/global_position/global"
 compass_topic = "/mavros/global_position/compass_hdg"
@@ -57,15 +62,17 @@ class StateNode():
         self.landing_location = GPSCoord()
         self.reached_wp_index = -1
         self.mission_status = MissionStatus.NOT_READY
+        self.vehicle_status = VehicleStatus.GROUNDED
         rospy.init_node("state")
 
         self.sub(gps_topic, NavSatFix)
         self.sub(compass_topic, Float64)
-        self.sub(vfr_topic, VFR_HUD)
-        self.sub(wp_change_topic, WaypointList, max_age=None)
+        self.sub(vfr_topic, mrm.VFR_HUD)
+        self.sub(wp_change_topic, mrm.WaypointList, max_age=None)
 
-        rospy.Subscriber("/mavros/mission/reached", WaypointReached, self.waypoint_reached)
-        rospy.Subscriber("/mavros/statustext/recv", StatusText, self.mavlink_statustext)
+        rospy.Subscriber("/mavros/state", mrm.State, self.mavros_state_change)
+        rospy.Subscriber("/mavros/mission/reached", mrm.WaypointReached, self.waypoint_reached)
+        rospy.Subscriber("/mavros/statustext/recv", mrm.StatusText, self.mavlink_statustext)
 
         rospy.Service('command/set_mission', SetMission, self.handle_set_mission)
         rospy.Service('command/start_mission', StartMission, self.handle_start_mission)
@@ -76,6 +83,18 @@ class StateNode():
 
     def sub(self, topic, data_type, max_age=10):
         rospy.Subscriber(topic, data_type, partial(self.values.latch_value, topic, max_age=max_age))
+
+
+    def mavros_state_change(self, msg):
+
+        if msg.system_status==4:
+            if self.vehicle_status != VehicleStatus.FLYING:
+                self.vehicle_status = VehicleStatus.FLYING
+                log("Flying")
+        else:
+            if self.vehicle_status != VehicleStatus.GROUNDED:
+                self.vehicle_status = VehicleStatus.GROUNDED
+                log("Landed")
 
 
     def waypoint_reached(self, msg):
@@ -100,8 +119,9 @@ class StateNode():
 
     def mavlink_statustext(self, msg):
         #log("Got Mavlink msg: %s " % msg.text)
-        if msg == 'Land complete':
-            log("On the ground")
+        #if msg == 'Land complete':
+        #    log("On the ground")
+        pass 
 
 
     def handle_set_mission(self, msg):
@@ -118,6 +138,10 @@ class StateNode():
         if not self.mission.mission_wps.points:
             rospy.loginfo("No mission waypoints defined")
             return StartMissionResponse(False)
+
+        # TODO: elsewhere, set status=READY once we're ready to fly
+
+        # TODO: check for status==READY
 
         self.mission_status = MissionStatus.RUNNING
         return StartMissionResponse(True)
@@ -143,6 +167,7 @@ class StateNode():
         state.dynamic_nfzs = self.dynamic_nfzs
         state.target_mission_wp = self.target_mission_wp
         vehicle_state = VehicleState()
+        vehicle_state.status = self.vehicle_status
         state.vehicle_state = vehicle_state
 
         gps_position = self.values.get_value(gps_topic)
@@ -162,7 +187,7 @@ class StateNode():
 
         apm_wps = self.values.get_value(wp_change_topic)
         if apm_wps:
-            state.apm_wps = apm_wps
+            state.apm_wps = apm_wps.waypoints
 
         state.landing_location = self.landing_location
         state.mission_status = self.mission_status

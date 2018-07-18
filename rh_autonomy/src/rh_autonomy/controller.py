@@ -7,10 +7,10 @@ This is the central integration node for the Rhinohawk System. It polls the glob
 
 import rospy
 import threading
-from rh_msgs.msg import GPSCoord
+from rh_msgs.msg import GPSCoord, GPSCoordList
 from rh_msgs.srv import GetState, FlyWaypoints
 from rh_autonomy.util import get_proxy
-from rh_autonomy.state import MissionStatus
+from rh_autonomy.state import MissionStatus, VehicleStatus
 
 from pathfinding.msg._PathSolution import PathSolution
 import pathfinding.srv as pps
@@ -28,6 +28,9 @@ class ControllerNode():
         self.fly_waypoints = get_proxy('/rh/command/fly_waypoints', FlyWaypoints)
         self.submit_problem = get_proxy('/rh/pathfinder/submitProblem', pps.SubmitProblem)
         self.step_problem = get_proxy('/rh/pathfinder/stepProblem', pps.StepProblem)
+        self.cruise_alt = 20
+        self.wp_radius = 20
+        self.nfz_buffer_size = 10
 
 
     def run_forever(self):
@@ -43,30 +46,41 @@ class ControllerNode():
 
 
     def control_running(self, state):
+
         # defined mission
         mission = state.mission
-        geofence = mission.geofence
-        mission_wps = mission.mission_wps
-        static_nfzs = mission.static_nfzs
-        roads = mission.roads
-        dynamic_nfzs = state.dynamic_nfzs
+        mission_wps = mission.mission_wps.points
 
         # current goal
         tmi = state.target_mission_wp
-        target = mission.mission_wps[tmi]
 
-        # TODO: figure out what we want to do
-        
+        if tmi == len(mission_wps)-1:
+            # last mission waypoint
+            # TODO: perform search and precision landing
+            target = mission_wps[tmi]
+            self.control_waypoint(state, target)
+        else:
+            target = mission_wps[tmi]
+            next_target = mission_wps[tmi+1]
+            self.control_waypoint(state, target, next_target)
 
-        after_target = mission.mission_wps[tmi+1]
 
-        # vehicle state
-        vs = mission.vehicle_state
+    def control_waypoint(self, state, target, next_target=None): 
+
+         # defined mission
+        mission = state.mission
+        geofence = mission.geofence
+        static_nfzs = mission.static_nfzs
+        roads = mission.roads
+
+        # current state
+        dynamic_nfzs = state.dynamic_nfzs
+        vs = state.vehicle_state
 
         # set up path planner parameters
         params = ppm.Params()
-        params.waypointAcceptanceRadii = 5.0
-        params.nfzBufferSize = 10.0
+        params.waypointAcceptanceRadii = self.wp_radius
+        params.nfzBufferSize = self.nfz_buffer_size
 
         # convert to path planner messages
         pp_geofence = [ppm.GPSCoord(p.lat, p.lon) for p in geofence.points]
@@ -75,16 +89,18 @@ class ControllerNode():
                 endPoint=ppm.GPSCoord(road.points[1].lat, road.points[1].lon)) \
                 for road in roads]
         pp_static_nfzs = [ppm.NoFlyZone(points=[ppm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in static_nfzs]
-        pp_dynamic_nfzs = [ppm.NoFlyZone(points=[ppm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in dynamic_nfzs]
-        pp_waypoints = [ppm.GPSCoord(target.lat, target.lon),\
-                ppm.GPSCoord(after_target.lat, after_target.lon)]
+        pp_dynamic_nfzs = []#[ppm.DynamicNoFlyZone(points=[ppm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in dynamic_nfzs]
+        pp_waypoints = [ppm.GPSCoord(target.lat, target.lon)]
+        if next_target:
+            pp_waypoints.append(ppm.GPSCoord(next_target.lat, next_target.lon))
 
         # create path planner scenario
         scenario = ppm.Scenario()
         scenario.boundaryPoints = pp_geofence
-        scenario.noFlyZones = pp_static_nfzs + pp_dynamic_nfzs
+        scenario.dynamicNoFlyZones = pp_dynamic_nfzs
+        scenario.noFlyZones = pp_static_nfzs
         scenario.roads = pp_roads
-        scenario.startPoint = ppm.GPSCoord(vs.lat, vs.lon)
+        scenario.startPoint = ppm.GPSCoord(vs.position.lat, vs.position.lon)
         scenario.startVelocity = ppm.GPSVelocity(vs.heading, vs.airspeed)
         scenario.wayPoints = pp_waypoints
 
@@ -99,25 +115,35 @@ class ControllerNode():
         def receive_solution(msg):
             rospy.loginfo("Got path solution")
             global solution_sub
+            if not solution_sub: return
+
             done_evt.set()
             solution_sub.unregister()
             solution_sub = None
 
             wps = [] 
-            for wp in msg.solutionWaypoints:
-                rospy.loginfo("Solution waypoint: (%s,%s) (radius=%s)" % (wp.position.lat, wp.position.lon, wp.radius))
-                wps.append(GPSCoord(wp.lat, wp.lon))
-             
-            if not self.fly_waypoints(wps):
+            for swp in msg.solutionWaypoints:
+                wp = swp.position
+                rospy.loginfo("Solution waypoint: (%s,%s)" % (wp.lat, wp.lon))
+                wps.append(GPSCoord(wp.lat, wp.lon, 1))
+
+            if not self.fly_waypoints(self.cruise_alt, self.wp_radius, \
+                    GPSCoordList(wps), \
+                    vs.status == VehicleStatus.GROUNDED, \
+                    next_target==None):
                 rospy.logerr("Could not fly waypoints")
+
 
         global solution_sub
         solution_sub = rospy.Subscriber('/rh/pathfinder/pathFinderSolution', PathSolution, receive_solution)
 
         self.submit_problem(params, scenario, vehicle, refgps)
+        self.step_problem(1)
 
-        if not done_evt.wait(2):
+        if not done_evt.wait(20):
             rospy.logerr("Path finder did not return solution in time")
+            solution_sub.unregister()
+            solution_sub = None
 
 
     def control(self):

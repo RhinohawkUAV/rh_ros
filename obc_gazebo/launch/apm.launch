@@ -23,7 +23,8 @@
     <!-- rhinohawk mission nodes -->
 
     <node pkg="rh_autonomy" type="flight.py" name="flight" ns="rh" output="screen"/>
-
     <node pkg="rh_autonomy" type="state.py" name="state" ns="rh" output="screen"/>
+    <node pkg="rh_autonomy" type="controller.py" name="controller" ns="rh" output="screen"/>
+    <node pkg="pathfinding" type="pathfindernode.py" name="pathfinder" ns="rh" output="screen"/>
 
 </launch>

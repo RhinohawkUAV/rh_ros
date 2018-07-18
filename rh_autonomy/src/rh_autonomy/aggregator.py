@@ -35,8 +35,8 @@ class LatchMap:
                 return lvalue.value
             
             d = lvalue.time_acquired - rospy.Time.now()
-            if d.secs > lvalue.max_age:
-                rospy.loginfo("Latched value too old (%d secs)", d.secs)
+            if lvalue.max_age and d.secs > lvalue.max_age:
+                rospy.loginfo("Latched value for %s is too old (%d secs)", topic, d.secs)
                 return None
             
             return lvalue.value

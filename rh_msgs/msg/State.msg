@@ -6,7 +6,6 @@ uint8 FRAME_MISSION = 2
 uint8 FRAME_GLOBAL_REL_ALT = 3
 uint8 FRAME_LOCAL_ENU = 4
 
-
 # The mission definition
 rh_msgs/Mission mission
 
@@ -27,8 +26,8 @@ rh_msgs/GPSCoord landing_location
 
 # See rh_autonomy.state.MissionStatus
 uint8 mission_status
-uint8 STATUS_NOTREADY = 1
-uint8 STATUS_READY = 2
-uint8 STATUS_RUNNING = 3
-uint8 STATUS_ABORTING = 4
+uint8 MISSION_STATUS_NOT_READY = 1
+uint8 MISSION_STATUS_READY = 2
+uint8 MISSION_STATUS_RUNNING = 3
+uint8 MISSION_STATUS_ABORTING = 4
 

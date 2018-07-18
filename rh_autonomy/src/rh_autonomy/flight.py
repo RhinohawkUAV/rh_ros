@@ -347,19 +347,46 @@ def handle_flyto(req):
 
 def handle_flywaypoints(msg):
 
-    cruise_alt = 10
-    wp_radius = 10
+    cruise_alt = msg.cruise_alt
+    wp_radius = msg.wp_radius
 
     wps = []
     for gps_coord in msg.waypoints:
         wp = wp_fly(gps_coord.lat, gps_coord.lon, cruise_alt, radius=wp_radius)
         wps.append(wp)
     
+    if msg.land:
+        last = wps[-1]
+        last.z_alt = 0
+        last.command = MAV_CMD_LAND
+
     if not push_waypoints(wps):
         rospy.logerr('Error pushing waypoints')
         return FlyWaypointsResponse(False)
 
     rospy.loginfo("Successfully pushed %d waypoints", len(wps))
+
+    # wait for waypoints to be accepted
+    # TODO: this should be event driven
+    rospy.sleep(2.)
+    
+    if msg.takeoff:
+
+        # try arming a few times
+        c = 0
+        while not arm(True):
+            rospy.sleep(0.5)
+            c += 1
+            if c>10: break
+
+        set_custom_mode(MODE_GUIDED)
+        do_takeoff_cur_gps(0, 0, cruise_alt)
+         
+        # wait a second
+        rospy.sleep(0.2)
+    
+    # now execute mission waypoints
+    set_custom_mode(MODE_AUTO)
 
     return FlyWaypointsResponse(True)
 
