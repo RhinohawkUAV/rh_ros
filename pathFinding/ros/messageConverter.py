@@ -2,16 +2,7 @@
 Utilities for converting ROS messages to/from inputs to the path-finder.
 """
 import math
-from pathfinding.msg._Arc import Arc
-import pathfinding.msg._DynamicNoFlyZone
-import pathfinding.msg._NoFlyZone 
-import pathfinding.msg._Params
-from pathfinding.msg._PathDebug import PathDebug
-from pathfinding.msg._PathSegment import PathSegment
-import pathfinding.msg._Road
-import pathfinding.msg._Scenario
-import pathfinding.msg._SolutionWaypoint
-import pathfinding.msg._Vehicle
+import pathfinding.msg as pfm
 
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 import engine.interface.dynamicNoFlyZone
@@ -133,19 +124,19 @@ class MessageConverter:
     
     #**********************Path finding objects to msg objects********************
     def paramsToMsg(self, inputParams):
-        msg = pathfinding.msg._Params.Params()
+        msg = pfm.Params()
         msg.waypointAcceptanceRadii = inputParams.waypointAcceptanceRadii
         msg.nfzBufferSize = inputParams.nfzBufferSize
         return msg
     
     def vehicleToMsg(self, vehicle):
-        msg = pathfinding.msg._Vehicle.Vehicle()
+        msg = pfm.Vehicle()
         msg.maxSpeed = vehicle.maxSpeed
         msg.acceleration = vehicle.acceleration
         return msg
     
     def scenarioToMsg(self, scenario):
-        msg = pathfinding.msg._Scenario.Scenario()
+        msg = pfm.Scenario()
         msg.boundaryPoints = self.pointListToMsg(scenario.boundaryPoints)
         msg.noFlyZones = []
         msg.dynamicNoFlyZones = []
@@ -163,21 +154,21 @@ class MessageConverter:
         return msg
     
     def roadToMsg(self, road):
-        msg = pathfinding.msg._Road.Road()
+        msg = pfm.Road()
         msg.startPoint = self.pointToMsg(road.startPoint)
         msg.endPoint = self.pointToMsg(road.endPoint)
         msg.width = road.width
         return msg
         
     def nfzToMsg(self, noFlyZone):
-        msg = pathfinding.msg._NoFlyZone.NoFlyZone()
+        msg = pfm.NoFlyZone()
         msg.points = self.pointListToMsg(noFlyZone.points)
         msg.velocity = self.vectorToMsg(noFlyZone.velocity)
         msg.ID = noFlyZone.ID
         return msg
     
     def dnfzToMsg(self, dNoFlyZone):
-        msg = pathfinding.msg._DynamicNoFlyZone.DynamicNoFlyZone()
+        msg = pfm.DynamicNoFlyZone()
         msg.center = self.pointToMsg(dNoFlyZone.center)
         msg.radius = dNoFlyZone.radius
         msg.velocity = self.vectorToMsg(dNoFlyZone.velocity)
@@ -191,7 +182,7 @@ class MessageConverter:
         return msg
     
     def pathDebugToMsg(self, pastPathSegments, futurePathSegments, filteredPathSegments):
-        msg = PathDebug()
+        msg = pfm.PathDebug()
         msg.pastPathSegments = self.pathSegmentListToMsg(pastPathSegments)
         msg.futurePathSegments = self.pathSegmentListToMsg(futurePathSegments)
         msg.filteredPathSegments = self.pathSegmentListToMsg(filteredPathSegments)
@@ -204,7 +195,7 @@ class MessageConverter:
         return msg
 
     def solutionWaypointToMsg(self, solutionWaypoint):
-        msg = pathfinding.msg._SolutionWaypoint.SolutionWaypoint() 
+        msg = pfm.SolutionWaypoint() 
         msg.position = self.pointToMsg(solutionWaypoint.position)
         msg.radius = solutionWaypoint.radius
         return msg
@@ -217,7 +208,7 @@ class MessageConverter:
     
     def pathSegmentToMsg(self, pathSegment):
         if isinstance(pathSegment, ArcPathSegment):
-            msg = PathSegment()
+            msg = pfm.PathSegment()
             msg.startTime = pathSegment.startTime
             msg.elapsedTime = pathSegment.elapsedTime
             msg.speed = pathSegment.speed
@@ -230,7 +221,7 @@ class MessageConverter:
             raise "Path segment type not suppored by messages"
                 
     def arcToMsg(self, arc):
-        msg = Arc()
+        msg = pfm.Arc()
         msg.radius = arc.radius
         msg.center = self.pointToMsg(arc.center)
         msg.start = self._gpsTransformer.localAngleToGPS(arc.start, arc.rotDirection)
