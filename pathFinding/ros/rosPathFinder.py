@@ -1,9 +1,5 @@
-from pathfinding.msg._PathDebug import PathDebug
-from pathfinding.msg._PathSolution import PathSolution
-from pathfinding.msg._Scenario import Scenario
-from pathfinding.srv._SolveProblem import SolveProblem, SolveProblemResponse
-from pathfinding.srv._StepProblem import StepProblem, StepProblemResponse
-from pathfinding.srv._SubmitProblem import SubmitProblem, SubmitProblemResponse
+import pathfinding.msg as pfm
+import pathfinding.srv as pfs
 import rospy
 
 from engine.pathFinderManager import PathFinderManager
@@ -23,16 +19,16 @@ class RosPathFinder(PathFinderManager):
         PathFinderManager.__init__(self)
         rospy.init_node(PATHFINDER_NODE_ID, anonymous=True)
         rospy.core.add_shutdown_hook(self._rosShutdown)
-        rospy.Service(SUBMIT_PROBLEM_SERVICE, SubmitProblem, self._submitProblem)
-        rospy.Service(STEP_PROBLEM_SERVICE, StepProblem, self._stepProblem)
-        rospy.Service(SOLVE_PROBLEM_SERVICE, SolveProblem, self._solveProblem)
-        self._pathInputPub = rospy.Publisher(PATHFINDER_INPUT_TOPIC, Scenario, queue_size=ROS_QUEUE_SIZE)
-        self._pathDebugPub = rospy.Publisher(PATHFINDER_DEBUG_TOPIC, PathDebug, queue_size=ROS_QUEUE_SIZE)
-        self._pathSolutionPub = rospy.Publisher(PATHFINDER_SOLUTION_TOPIC, PathSolution, queue_size=ROS_QUEUE_SIZE)
+        rospy.Service(SUBMIT_PROBLEM_SERVICE, pfs.SubmitProblem, self._submitProblem)
+        rospy.Service(STEP_PROBLEM_SERVICE, pfs.StepProblem, self._stepProblem)
+        rospy.Service(SOLVE_PROBLEM_SERVICE, pfs.SolveProblem, self._solveProblem)
+        self._pathInputPub = rospy.Publisher(PATHFINDER_INPUT_TOPIC, pfm.Scenario, queue_size=ROS_QUEUE_SIZE)
+        self._pathDebugPub = rospy.Publisher(PATHFINDER_DEBUG_TOPIC, pfm.PathDebug, queue_size=ROS_QUEUE_SIZE)
+        self._pathSolutionPub = rospy.Publisher(PATHFINDER_SOLUTION_TOPIC, pfm.PathSolution, queue_size=ROS_QUEUE_SIZE)
 
     def publishSolution(self, solutionWaypoints, solutionPathSegments, finished, referenceGPS):
         messageConverter = MessageConverter(referenceGPS)
-        pathSolution = PathSolution()
+        pathSolution = pfm.PathSolution()
         pathSolution.solutionWaypoints = messageConverter.solutionWaypointListToMsg(solutionWaypoints)
         pathSolution.solutionPathSegments = messageConverter.pathSegmentListToMsg(solutionPathSegments)
         pathSolution.finished = finished
@@ -51,7 +47,7 @@ class RosPathFinder(PathFinderManager):
         self._pathInputPub.publish(scenarioMsg)
         
     def _rosShutdown(self, shutdownMessage):
-        print "ROS is shutting down pathfinder cause: " + shutdownMessage
+        rospy.loginfo("ROS is shutting down pathfinder cause: " + shutdownMessage)
         self.shutdown()
 
     def _submitProblem(self, request):
@@ -61,11 +57,11 @@ class RosPathFinder(PathFinderManager):
         scenario = messageConverter.msgToScenario(request.scenario)
         vehicle = messageConverter.msgToVehicle(request.vehicle)
         self.submitProblem(params, scenario, vehicle, request.referenceGPS)
-        return SubmitProblemResponse()
+        return pfs.SubmitProblemResponse()
 
     def _stepProblem(self, request):
         self.stepProblem(request.numSteps)
-        return StepProblemResponse()
+        return pfs.StepProblemResponse()
     
     def _solveProblem(self, request):
-        return SolveProblemResponse()
+        return pfs.SolveProblemResponse()
