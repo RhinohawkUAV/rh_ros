@@ -15,7 +15,7 @@ from rh_autonomy.state import MissionStatus, VehicleStatus
 import pathfinding.msg as pfm
 
 # check state and adjust control every other second
-CONTROL_RATE_HZ = 0.25
+CONTROL_RATE_HZ = 0.5
 CRUISE_ALTITUDE = 20
 WAYPOINT_ACCEPTANCE_RADIUS = 10
 NOFLYZONE_BUFFER_SIZE = 10
@@ -145,8 +145,8 @@ class ControllerNode():
                 rospy.logwarn("Path finder solution is not complete")
 
         if wps:
-            if next_target:
-                wps.append(next_target)
+            #if next_target:
+            #    wps.append(next_target)
             rospy.logdebug("Will submit %d waypoints", len(wps))
             if not self.fly_waypoints(mission_goal_id, \
                     self.cruise_alt, self.wp_radius, \

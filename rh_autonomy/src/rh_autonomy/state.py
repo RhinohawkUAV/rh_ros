@@ -30,7 +30,8 @@ from rh_msgs.srv import StartMission, StartMissionResponse
 from rh_msgs.srv import AbortMission, AbortMissionResponse
 from rh_msgs.srv import SetNoFlyZones, SetNoFlyZonesResponse
 from rh_autonomy.aggregator import LatchMap
-
+from rh_autonomy.util import waypoints_to_str, gps_dist, coords_equal
+from rh_autonomy import constants as rhc
 
 class MissionStatus:
     NOT_READY = 1
@@ -101,6 +102,17 @@ class StateNode():
                 log("Landed")
 
 
+    def waypoints_changed(self, msg):
+        self.apm_wps = msg.waypoints
+        if self.apm_wps:
+
+            rospy.loginfo("Received waypoints from FCU (curr=%d):\n%s" % \
+                    (msg.current_seq, waypoints_to_str(self.apm_wps)))
+
+            #mission_goal_id = int(self.apm_wps[0].param1) - rhc.GOAL_ID_START
+            #rospy.logdebug("Got waypoint list for goal %d"%mission_goal_id)
+
+
     def waypoint_reached(self, msg):
         """ Called whenever an APM waypoint is reached
         """
@@ -109,10 +121,14 @@ class StateNode():
             return
 
         apm_wps = self.apm_wps
-        mission_goal_id = int(apm_wps[0].param1)
+        mission_goal_id = int(apm_wps[0].param1) - rhc.GOAL_ID_START
+
+        if mission_goal_id<0:
+            rospy.logwarn("Got waypoint list with no goal id")
+            return
 
         if mission_goal_id == self.target_mission_wp:
-            # These is the waypoint list for the current mission objective
+            # This is the waypoint list for the current mission objective
                 
             if self.reached_apm_wp < msg.wp_seq:
                 log("Reached APM waypoint %s" % msg.wp_seq)
@@ -125,29 +141,35 @@ class StateNode():
 
                 target = self.mission.mission_wps.points[self.target_mission_wp]
 
+                gps_position = self.values.get_value(gps_topic)
+                pos = GPSCoord(gps_position.latitude, gps_position.longitude, 1)
+
+                for i, point in enumerate(self.mission.mission_wps.points):
+                    d = gps_dist(pos, point)
+                    rospy.loginfo("Goal %d - distance %f"%(i,d))
+                
                 # the second to last waypoint is our current goal
-                if msg.wp_seq >= len(apm_wps)-2:
-                    log("Reached goal %d" % self.target_mission_wp)
+                #if msg.wp_seq >= len(apm_wps)-2:
+                # are we close to the goal?
+                d = gps_dist(pos, target)
+                log("Distance from goal: %2.6fm" % d)
+
+                if coords_equal(pos, target):
                     self.goal_reached(self.target_mission_wp)
                     self.target_mission_wp += 1
                     self.reached_apm_wp = 0
+
             else:
                 log("Already reached APM waypoint %s" % msg.wp_seq)
         else:
             log("Received waypoints for goal %d, but looking for goal %d" % (mission_goal_id, self.target_mission_wp))
 
-
-    def waypoints_changed(self, msg):
-        self.apm_wps = msg.waypoints
-        if self.apm_wps:
-            mission_goal_id = int(self.apm_wps[0].param1)
-            rospy.logdebug("Got waypoint list for goal %d"%mission_goal_id)
-
     
     def goal_reached(self, index):
+        log("Reached goal %d" % self.target_mission_wp)
         if index == len(self.mission.mission_wps.points)-1:
-            rospy.loginfo("MISSION COMPLETE")
-
+            rospy.loginfo("Landing at remote location")
+        log("----------------------------------------------------")
 
     def mavlink_statustext(self, msg):
         #log("Got Mavlink msg: %s " % msg.text)
