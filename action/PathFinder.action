@@ -1,0 +1,10 @@
+# Goal
+Params params
+Scenario scenario
+Vehicle vehicle
+---
+# Final result
+PathSolution solution
+---
+# Intermediate result
+PathSolution solution

@@ -1,6 +1,7 @@
 ROS_QUEUE_SIZE = 10
 
 PATHFINDER_NODE_ID = "pathfinder"
+PATHFINDER_SERVER = "path_finder_server"
 
 PATHFINDER_INPUT_TOPIC = "%s/pathFinderInput" % PATHFINDER_NODE_ID
 PATHFINDER_SOLUTION_TOPIC = "%s/pathFinderSolution" % PATHFINDER_NODE_ID
