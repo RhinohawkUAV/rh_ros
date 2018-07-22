@@ -12,13 +12,11 @@ from rh_msgs.msg import GPSCoord, GPSCoordList
 from rh_msgs.srv import GetState, FlyWaypoints
 from rh_autonomy.util import get_proxy
 from rh_autonomy.state import MissionStatus, VehicleStatus
+import rh_autonomy.constants as rhc
 import pathfinding.msg as pfm
 
 # check state and adjust control every other second
 CONTROL_RATE_HZ = 0.5
-CRUISE_ALTITUDE = 20
-WAYPOINT_ACCEPTANCE_RADIUS = 10
-NOFLYZONE_BUFFER_SIZE = 10
 
 
 class ControllerNode():
@@ -27,9 +25,9 @@ class ControllerNode():
         rospy.init_node("controller")
         self.get_state = get_proxy('/rh/command/get_state', GetState)
         self.fly_waypoints = get_proxy('/rh/command/fly_waypoints', FlyWaypoints)
-        self.cruise_alt = CRUISE_ALTITUDE
-        self.wp_radius = WAYPOINT_ACCEPTANCE_RADIUS
-        self.nfz_buffer_size = NOFLYZONE_BUFFER_SIZE
+        self.cruise_alt = rhc.CRUISE_ALTITUDE
+        self.wp_radius = rhc.WAYPOINT_ACCEPTANCE_RADIUS
+        self.nfz_buffer_size = rhc.NOFLYZONE_BUFFER_SIZE
         self.pfclient = actionlib.SimpleActionClient("path_finder_server", pfm.PathFinderAction)
         rospy.logdebug("Waiting for path finder server...")
         self.pfclient.wait_for_server()
@@ -93,7 +91,7 @@ class ControllerNode():
                 endPoint=pfm.GPSCoord(road.points[1].lat, road.points[1].lon)) \
                 for road in roads]
         pp_static_nfzs = [pfm.NoFlyZone(points=[pfm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in static_nfzs]
-        pp_dynamic_nfzs = []#[pfm.DynamicNoFlyZone(points=[pfm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in dynamic_nfzs]
+        pp_dynamic_nfzs = [pfm.DynamicNoFlyZone(points=[pfm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in dynamic_nfzs]
         pp_waypoints = [pfm.GPSCoord(target.lat, target.lon)]
         if next_target:
             pp_waypoints.append(pfm.GPSCoord(next_target.lat, next_target.lon))
@@ -143,6 +141,8 @@ class ControllerNode():
                     wps.append(GPSCoord(wp.lat, wp.lon, 1))
             else:
                 rospy.logwarn("Path finder solution is not complete")
+
+        rospy.loginfo("Pathfinder returned %d waypoints until goal" % len(wps))
 
         if wps:
             #if next_target:

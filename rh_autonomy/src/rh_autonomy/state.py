@@ -30,7 +30,7 @@ from rh_msgs.srv import StartMission, StartMissionResponse
 from rh_msgs.srv import AbortMission, AbortMissionResponse
 from rh_msgs.srv import SetNoFlyZones, SetNoFlyZonesResponse
 from rh_autonomy.aggregator import LatchMap
-from rh_autonomy.util import waypoints_to_str, gps_dist, coords_equal
+from rh_autonomy.util import waypoints_to_str, gps_dist
 from rh_autonomy import constants as rhc
 
 class MissionStatus:
@@ -43,7 +43,7 @@ class VehicleStatus:
     GROUNDED = 1
     FLYING = 2
 
-
+CONTROL_RATE_HZ = 1
 gps_topic = "/mavros/global_position/global"
 compass_topic = "/mavros/global_position/compass_hdg"
 vfr_topic = "/mavros/vfr_hud"
@@ -86,8 +86,51 @@ class StateNode():
         rospy.Service('command/get_state', GetState, self.handle_get_state)
  
 
+    def run_forever(self):
+        rate = rospy.Rate(CONTROL_RATE_HZ)
+        while True:
+            self.check_goal()
+            rate.sleep()
+
+
+    def check_goal(self):
+
+        if self.mission_status != MissionStatus.RUNNING:
+            return
+
+        if self.target_mission_wp > len(self.mission.mission_wps.points)-1:
+            return
+
+        target = self.mission.mission_wps.points[self.target_mission_wp]
+        gps_position = self.values.get_value(gps_topic)
+        curr_pos = GPSCoord(gps_position.latitude, gps_position.longitude, 1)
+
+        #for i, point in enumerate(self.mission.mission_wps.points):
+        #    d = gps_dist(curr_pos, point)
+        #    rospy.loginfo("Goal %d - distance %f"%(i,d))
+        
+        # are we close to the goal?
+        d = gps_dist(curr_pos, target)
+        log("Distance from goal: %2.6fm" % d)
+
+        #if d_in_meters < rhc.WAYPOINT_ACCEPTANCE_RADIUS:
+        if d < 0.0002:
+            self.goal_reached(self.target_mission_wp)
+            self.reached_apm_wp = 0
+
+
+    def goal_reached(self, index):
+        log("Reached goal %d" % self.target_mission_wp)
+        log("----------------------------------------------------")
+        if index == len(self.mission.mission_wps.points)-1:
+            rospy.loginfo("Landing at remote location")
+        # get next goal
+        self.target_mission_wp += 1
+
+
     def sub(self, topic, data_type, max_age=10):
-        rospy.Subscriber(topic, data_type, partial(self.values.latch_value, topic, max_age=max_age))
+        rospy.Subscriber(topic, data_type, \
+                partial(self.values.latch_value, topic, max_age=max_age))
 
 
     def mavros_state_change(self, msg):
@@ -106,11 +149,16 @@ class StateNode():
         self.apm_wps = msg.waypoints
         if self.apm_wps:
 
-            rospy.loginfo("Received waypoints from FCU (curr=%d):\n%s" % \
-                    (msg.current_seq, waypoints_to_str(self.apm_wps)))
+            gs = ""
+            mission_goal_id = int(self.apm_wps[0].param1) - rhc.GOAL_ID_START
+            if mission_goal_id<0:
+                gs = " goal %d" % mission_goal_id
+            rospy.loginfo("Received%s waypoints (curr=%d):\n%s" % \
+                    (gs,msg.current_seq, waypoints_to_str(self.apm_wps)))
 
-            #mission_goal_id = int(self.apm_wps[0].param1) - rhc.GOAL_ID_START
-            #rospy.logdebug("Got waypoint list for goal %d"%mission_goal_id)
+                
+
+            rospy.logdebug("Got waypoint list for goal %d"%mission_goal_id)
 
 
     def waypoint_reached(self, msg):
@@ -139,37 +187,14 @@ class StateNode():
                 #else:
                 #    warn("Waypoint %d not in APM waypoints" % msg.wp_seq)
 
-                target = self.mission.mission_wps.points[self.target_mission_wp]
-
-                gps_position = self.values.get_value(gps_topic)
-                pos = GPSCoord(gps_position.latitude, gps_position.longitude, 1)
-
-                for i, point in enumerate(self.mission.mission_wps.points):
-                    d = gps_dist(pos, point)
-                    rospy.loginfo("Goal %d - distance %f"%(i,d))
-                
                 # the second to last waypoint is our current goal
                 #if msg.wp_seq >= len(apm_wps)-2:
-                # are we close to the goal?
-                d = gps_dist(pos, target)
-                log("Distance from goal: %2.6fm" % d)
-
-                if coords_equal(pos, target):
-                    self.goal_reached(self.target_mission_wp)
-                    self.target_mission_wp += 1
-                    self.reached_apm_wp = 0
 
             else:
                 log("Already reached APM waypoint %s" % msg.wp_seq)
         else:
             log("Received waypoints for goal %d, but looking for goal %d" % (mission_goal_id, self.target_mission_wp))
-
-    
-    def goal_reached(self, index):
-        log("Reached goal %d" % self.target_mission_wp)
-        if index == len(self.mission.mission_wps.points)-1:
-            rospy.loginfo("Landing at remote location")
-        log("----------------------------------------------------")
+ 
 
     def mavlink_statustext(self, msg):
         #log("Got Mavlink msg: %s " % msg.text)
@@ -210,7 +235,7 @@ class StateNode():
 
     def handle_set_dnfzs(self, msg):
         self.dynamic_nfzs = msg.dynamic_nfzs
-        log("New dynamic no fly zones have been set")
+        log("New dynamic no-fly-zones have been set")
         return SetNoFlyZonesResponse(True)
 
     
@@ -251,5 +276,5 @@ class StateNode():
 if __name__ == "__main__":
     node = StateNode()
     rospy.loginfo("Mission state ready.")
-    rospy.spin()
+    node.run_forever()
 

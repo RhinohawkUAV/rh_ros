@@ -5,6 +5,8 @@ import traceback
 from rh_autonomy import constants as rhc
 from rh_msgs.msg import GPSCoord
 
+GPS_ERROR = 0.0002
+
 def logexc(msg):
     rospy.logerr('%s:\n%s' % (msg, ''.join(traceback.format_stack())))
 
@@ -62,14 +64,32 @@ def gps_dist(g1, g2):
     return math.sqrt(pow(g2.lat-g1.lat,2) + pow(g2.lon-g1.lon,2))
 
 
+def get_current(wps):
+    """ Returns only waypoints after and including the current waypoint
+    """
+    cwps = []
+    include = False
+    for wp in wps:
+        if wp.is_current:
+            include = True
+        if include:
+            cwps.append(wp)
+    return cwps
+
+
 def wp2coord(wp):
     return GPSCoord(wp.x_lat, wp.y_long, wp.z_alt)
+
 
 def wplist2coords(wplist):
     return [wp2coord(wp) for wp in wplist]
 
+
 def wp_lists_equal(wps1, wps2, approx=True):
-    return coord_lists_equal(wplist2coords(wps1), wplist2coords(wps2), approx=approx)
+    cwps1 = get_current(wps1)
+    cwps2 = get_current(wps2)
+    return coord_lists_equal(wplist2coords(cwps1), \
+            wplist2coords(cwps2), approx=approx)
 
 
 def coord_lists_equal(wps1, wps2, approx=True):
@@ -93,9 +113,9 @@ def coords_equal(wp1, wp2, approx=True):
     """
     if approx:
         d = gps_dist(wp1, wp2)
-        if d >= 0.0001:
+        if d >= GPS_ERROR:
             rospy.loginfo("Lists are not the same because WPs are %2.6f apart"%d)
-        return d < 0.0001
+        return d < GPS_ERROR
     else:
         return wp1.lat==wp2.lat and wp1.lon==wp2.lon and wp1.alt==wp2.alt
 

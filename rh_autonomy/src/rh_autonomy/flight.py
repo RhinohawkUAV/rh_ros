@@ -361,23 +361,23 @@ def handle_flywaypoints(msg):
     wps = []
     for i, gps_coord in enumerate(msg.waypoints.points):
         
-        if i==0 and msg.takeoff:
-            wp = wp_takeoff(gps_coord.lat, gps_coord.lon, cruise_alt)
-        else:
-            wp = wp_fly(gps_coord.lat, gps_coord.lon, cruise_alt, radius=wp_radius)
-
         if i==0:
             # due to a bug in Ardupilot, we need a dummy waypoint first
-            #dummy = wp_copy(wp)
             dummy = wp_home(gps_coord.lat, gps_coord.lon)
             wps.append(dummy)
             # we also abuse this to encode the mission goal
             dummy.param1 = float(mission_goal_id + rhc.GOAL_ID_START)
-      	    
-            # activate the first waypoint
-            wp.is_current = True
-        
+      	
+        if i==0 and msg.takeoff:
+            wp = wp_takeoff(gps_coord.lat, gps_coord.lon, cruise_alt)
+            wps.append(wp)
+            
+        wp = wp_fly(gps_coord.lat, gps_coord.lon, cruise_alt, radius=wp_radius)
         wps.append(wp)
+
+    first = wps[1]
+    # activate the first waypoint
+    first.is_current = True
 
     if msg.land:
         last = wps[-1]
