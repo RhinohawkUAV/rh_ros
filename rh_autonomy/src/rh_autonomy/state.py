@@ -55,24 +55,28 @@ def warn(s): rospy.logwarn("STATE: %s" % s)
 class StateNode():
 
     def __init__(self):
+        
         self.values = LatchMap()
         self.mission = Mission()
         self.dynamic_nfzs = []
         self.target_mission_wp = 0
-        self.landing_location = GPSCoord()
-        self.reached_wp_index = -1
+        self.apm_wps = None
+        self.reached_apm_wp = -1
         self.mission_status = MissionStatus.NOT_READY
         self.vehicle_status = VehicleStatus.GROUNDED
+        self.landing_location = GPSCoord()
+
         rospy.init_node("state")
 
         self.sub(gps_topic, NavSatFix)
         self.sub(compass_topic, Float64)
         self.sub(vfr_topic, mrm.VFR_HUD)
-        self.sub(wp_change_topic, mrm.WaypointList, max_age=None)
+        #self.sub(wp_change_topic, mrm.WaypointList, max_age=None)
 
         rospy.Subscriber("/mavros/state", mrm.State, self.mavros_state_change)
         rospy.Subscriber("/mavros/mission/reached", mrm.WaypointReached, self.waypoint_reached)
         rospy.Subscriber("/mavros/statustext/recv", mrm.StatusText, self.mavlink_statustext)
+        rospy.Subscriber(wp_change_topic, mrm.WaypointList, self.waypoints_changed)
 
         rospy.Service('command/set_mission', SetMission, self.handle_set_mission)
         rospy.Service('command/start_mission', StartMission, self.handle_start_mission)
@@ -100,21 +104,49 @@ class StateNode():
     def waypoint_reached(self, msg):
         """ Called whenever an APM waypoint is reached
         """
+        if not self.apm_wps:
+            warn("Reached waypoint, but no waypoints known")
+            return
 
-        if self.reached_wp_index < msg.wp_seq:
-            log("We have reached waypoint %s" % msg.wp_seq)
-            self.reached_wp_index = msg.wp_seq
+        apm_wps = self.apm_wps
+        mission_goal_id = int(apm_wps[0].param1)
 
-            apm_wps = self.values.get_value(wp_change_topic)
-            if not apm_wps:
-                warn("Waypoint reached, but no APM waypoints")
-                return
+        if mission_goal_id == self.target_mission_wp:
+            # These is the waypoint list for the current mission objective
+                
+            if self.reached_apm_wp < msg.wp_seq:
+                log("Reached APM waypoint %s" % msg.wp_seq)
+                self.reached_apm_wp = msg.wp_seq
 
-            try:
-                waypoint = apm_wps[msg.wp_seq]
+                #if msg.wp_seq in apm_wps:
+                #    waypoint = apm_wps[msg.wp_seq]
+                #else:
+                #    warn("Waypoint %d not in APM waypoints" % msg.wp_seq)
 
-            except:
-                warn("Waypoint reached, but not in APM waypoints")
+                target = self.mission.mission_wps.points[self.target_mission_wp]
+
+                # the second to last waypoint is our current goal
+                if msg.wp_seq >= len(apm_wps)-2:
+                    log("Reached goal %d" % self.target_mission_wp)
+                    self.goal_reached(self.target_mission_wp)
+                    self.target_mission_wp += 1
+                    self.reached_apm_wp = 0
+            else:
+                log("Already reached APM waypoint %s" % msg.wp_seq)
+        else:
+            log("Received waypoints for goal %d, but looking for goal %d" % (mission_goal_id, self.target_mission_wp))
+
+
+    def waypoints_changed(self, msg):
+        self.apm_wps = msg.waypoints
+        if self.apm_wps:
+            mission_goal_id = int(self.apm_wps[0].param1)
+            rospy.logdebug("Got waypoint list for goal %d"%mission_goal_id)
+
+    
+    def goal_reached(self, index):
+        if index == len(self.mission.mission_wps.points)-1:
+            rospy.loginfo("MISSION COMPLETE")
 
 
     def mavlink_statustext(self, msg):

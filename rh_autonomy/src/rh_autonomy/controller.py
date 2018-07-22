@@ -6,18 +6,19 @@ This is the central integration node for the Rhinohawk System. It polls the glob
 """
 
 import rospy
-import threading
+import actionlib
+
 from rh_msgs.msg import GPSCoord, GPSCoordList
 from rh_msgs.srv import GetState, FlyWaypoints
 from rh_autonomy.util import get_proxy
 from rh_autonomy.state import MissionStatus, VehicleStatus
+import pathfinding.msg as pfm
 
-from pathfinding.msg._PathSolution import PathSolution
-import pathfinding.srv as pps
-import pathfinding.msg as ppm
-
-# check state and adjust control every second
-CONTROL_RATE_HZ = 1 
+# check state and adjust control every other second
+CONTROL_RATE_HZ = 0.25
+CRUISE_ALTITUDE = 20
+WAYPOINT_ACCEPTANCE_RADIUS = 10
+NOFLYZONE_BUFFER_SIZE = 10
 
 
 class ControllerNode():
@@ -26,11 +27,13 @@ class ControllerNode():
         rospy.init_node("controller")
         self.get_state = get_proxy('/rh/command/get_state', GetState)
         self.fly_waypoints = get_proxy('/rh/command/fly_waypoints', FlyWaypoints)
-        self.submit_problem = get_proxy('/rh/pathfinder/submitProblem', pps.SubmitProblem)
-        self.step_problem = get_proxy('/rh/pathfinder/stepProblem', pps.StepProblem)
-        self.cruise_alt = 20
-        self.wp_radius = 20
-        self.nfz_buffer_size = 10
+        self.cruise_alt = CRUISE_ALTITUDE
+        self.wp_radius = WAYPOINT_ACCEPTANCE_RADIUS
+        self.nfz_buffer_size = NOFLYZONE_BUFFER_SIZE
+        self.pfclient = actionlib.SimpleActionClient("path_finder_server", pfm.PathFinderAction)
+        rospy.logdebug("Waiting for path finder server...")
+        self.pfclient.wait_for_server()
+        rospy.logdebug("Connection to path finder established.")
 
 
     def run_forever(self):
@@ -59,7 +62,7 @@ class ControllerNode():
             # TODO: perform search and precision landing
             target = mission_wps[tmi]
             self.control_waypoint(state, target)
-        else:
+        elif tmi < len(mission_wps):
             target = mission_wps[tmi]
             next_target = mission_wps[tmi+1]
             self.control_waypoint(state, target, next_target)
@@ -72,78 +75,87 @@ class ControllerNode():
         geofence = mission.geofence
         static_nfzs = mission.static_nfzs
         roads = mission.roads
-
+        
         # current state
         dynamic_nfzs = state.dynamic_nfzs
         vs = state.vehicle_state
+        mission_goal_id = state.target_mission_wp
 
         # set up path planner parameters
-        params = ppm.Params()
+        params = pfm.Params()
         params.waypointAcceptanceRadii = self.wp_radius
         params.nfzBufferSize = self.nfz_buffer_size
 
         # convert to path planner messages
-        pp_geofence = [ppm.GPSCoord(p.lat, p.lon) for p in geofence.points]
-        pp_roads = [ppm.Road( \
-                startPoint=ppm.GPSCoord(road.points[0].lat, road.points[0].lon), \
-                endPoint=ppm.GPSCoord(road.points[1].lat, road.points[1].lon)) \
+        pp_geofence = [pfm.GPSCoord(p.lat, p.lon) for p in geofence.points]
+        pp_roads = [pfm.Road( \
+                startPoint=pfm.GPSCoord(road.points[0].lat, road.points[0].lon), \
+                endPoint=pfm.GPSCoord(road.points[1].lat, road.points[1].lon)) \
                 for road in roads]
-        pp_static_nfzs = [ppm.NoFlyZone(points=[ppm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in static_nfzs]
-        pp_dynamic_nfzs = []#[ppm.DynamicNoFlyZone(points=[ppm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in dynamic_nfzs]
-        pp_waypoints = [ppm.GPSCoord(target.lat, target.lon)]
+        pp_static_nfzs = [pfm.NoFlyZone(points=[pfm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in static_nfzs]
+        pp_dynamic_nfzs = []#[pfm.DynamicNoFlyZone(points=[pfm.GPSCoord(p.lat, p.lon) for p in nfz.points]) for nfz in dynamic_nfzs]
+        pp_waypoints = [pfm.GPSCoord(target.lat, target.lon)]
         if next_target:
-            pp_waypoints.append(ppm.GPSCoord(next_target.lat, next_target.lon))
+            pp_waypoints.append(pfm.GPSCoord(next_target.lat, next_target.lon))
 
+        
         # create path planner scenario
-        scenario = ppm.Scenario()
+        scenario = pfm.Scenario()
         scenario.boundaryPoints = pp_geofence
         scenario.dynamicNoFlyZones = pp_dynamic_nfzs
         scenario.noFlyZones = pp_static_nfzs
         scenario.roads = pp_roads
-        scenario.startPoint = ppm.GPSCoord(vs.position.lat, vs.position.lon)
-        scenario.startVelocity = ppm.GPSVelocity(vs.heading, vs.airspeed)
+        scenario.startPoint = pfm.GPSCoord(vs.position.lat, vs.position.lon)
+        # path finder throws divide by zero if speed is zero
+        speed = vs.airspeed if vs.airspeed > 0 else 0.1 
+        scenario.startVelocity = pfm.GPSVelocity(vs.heading, speed)
         scenario.wayPoints = pp_waypoints
 
-        vehicle = ppm.Vehicle()
+        vehicle = pfm.Vehicle()
         vehicle.maxSpeed = 10.0
         vehicle.acceleration = 2.0
 
-        refgps = ppm.GPSCoord()
+        goal = pfm.PathFinderGoal()
+        goal.params = params
+        goal.scenario = scenario
+        goal.vehicle = vehicle
 
-        done_evt = threading.Event()
+        #rospy.loginfo("Submitting goal:\n%s", goal)
 
-        def receive_solution(msg):
-            rospy.loginfo("Got path solution")
-            global solution_sub
-            if not solution_sub: return
+        self.pfclient.send_goal(goal)
+        result = self.pfclient.wait_for_result(rospy.Duration.from_sec(5.0))
 
-            done_evt.set()
-            solution_sub.unregister()
-            solution_sub = None
+        wps = [] 
 
-            wps = [] 
-            for swp in msg.solutionWaypoints:
-                wp = swp.position
-                rospy.loginfo("Solution waypoint: (%s,%s)" % (wp.lat, wp.lon))
-                wps.append(GPSCoord(wp.lat, wp.lon, 1))
+        if not result:
+            rospy.logerr("Path finder did not return solution in time")
+        else:
+            solution = self.pfclient.get_result().solution
+            if solution.finished:
+                c = len(solution.solutionWaypoints)
+                if c==0:
+                    rospy.logwarn("Path finder returned no waypoints")
+                else:
+                    rospy.logdebug("Path finder returned %d solution waypoints" % c)
+                for swp in solution.solutionWaypoints:
+                    wp = swp.position
+                    rospy.logdebug("Solution waypoint: (%s,%s)" % (wp.lat, wp.lon))
+                    wps.append(GPSCoord(wp.lat, wp.lon, 1))
+            else:
+                rospy.logwarn("Path finder solution is not complete")
 
-            if not self.fly_waypoints(self.cruise_alt, self.wp_radius, \
+        if wps:
+            if next_target:
+                wps.append(next_target)
+            rospy.logdebug("Will submit %d waypoints", len(wps))
+            if not self.fly_waypoints(mission_goal_id, \
+                    self.cruise_alt, self.wp_radius, \
                     GPSCoordList(wps), \
                     vs.status == VehicleStatus.GROUNDED, \
                     next_target==None):
                 rospy.logerr("Could not fly waypoints")
-
-
-        global solution_sub
-        solution_sub = rospy.Subscriber('/rh/pathfinder/pathFinderSolution', PathSolution, receive_solution)
-
-        self.submit_problem(params, scenario, vehicle, refgps)
-        self.step_problem(1)
-
-        if not done_evt.wait(20):
-            rospy.logerr("Path finder did not return solution in time")
-            solution_sub.unregister()
-            solution_sub = None
+        else:
+            rospy.logdebug("No solution waypoints!")
 
 
     def control(self):
@@ -152,11 +164,11 @@ class ControllerNode():
         status = state.mission_status
 
         if status == MissionStatus.ABORTING:
-            rospy.loginfo("Aborting mission")
+            rospy.logwarn("Aborting mission")
             self.control_aborting(state)
 
         elif status == MissionStatus.RUNNING:
-            rospy.loginfo("Autonomous navigation")
+            rospy.logdebug("Autonomous navigation")
             self.control_running(state)
 
         else:

@@ -22,7 +22,7 @@ from rh_msgs.srv import FlyWaypoints, FlyWaypointsResponse
 from rh_autonomy.aggregator import LatchMap
 from rh_autonomy.util import get_proxy
 
-isQuadPlane = True
+isQuadPlane = False
 
 MODE_AUTO = 'AUTO'
 MODE_GUIDED = 'GUIDED'
@@ -49,7 +49,7 @@ wp_push = None
 wp_clear = None
 
 values = LatchMap()
-
+current_mode = None
 
 def name():
     return "flight"
@@ -90,8 +90,11 @@ def set_int_param(param, value):
 
 def set_custom_mode(custom_mode):
 
+    global current_mode, mode_sub
+    if current_mode == custom_mode:
+        return
+
     rospy.loginfo("Mode requested: %s", custom_mode)
-    global mode_sub
 
     if mode_sub and mode_sub.type:
         rospy.logerr("Mode change is already in progress")
@@ -100,7 +103,7 @@ def set_custom_mode(custom_mode):
     def clean():
         global mode_sub
         if mode_sub and mode_sub.type:
-            rospy.loginfo("Clearing mode sub")
+            rospy.logdebug("Clearing mode sub")
             mode_sub.unregister()
             mode_sub = None
 
@@ -108,6 +111,8 @@ def set_custom_mode(custom_mode):
     def state_cb(state):
         global mode_sub
         if state.mode == custom_mode:
+            global current_mode
+            current_mode = state.mode
             rospy.loginfo("Mode changed to %s", state.mode)
             done_evt.set()
             clean()
@@ -206,9 +211,9 @@ def handle_takeoff(req):
 
     # `rosrun mavros mavcmd takeoffcur 0 0 5.0`
     #cmd('takeoffcur', 0, 0, req.altitude)
-    do_takeoff_cur_gps(0, 0, req.altitude)
+    ret = do_takeoff_cur_gps(0, 0, req.altitude)
 
-    return TakeOffResponse(True)
+    return TakeOffResponse(ret)
 
 
 def handle_land(req):
@@ -217,10 +222,8 @@ def handle_land(req):
 
     rospy.loginfo("Landing...")
 
-    if not do_land_cur_gps(0, 0):
-        return LandResponse(False)
-
-    return LandResponse(True)
+    ret = do_land_cur_gps(0, 0)
+    return LandResponse(ret)
 
 
 def push_waypoints(waypoints):
@@ -249,6 +252,21 @@ def waypoint(lat, lon, alt):
     w.x_lat = lat
     w.y_long = lon
     w.z_alt = alt
+    return w
+
+def wp_copy(wp):
+    w = Waypoint()
+    w.command = wp.command
+    w.frame = wp.frame
+    w.is_current = wp.is_current
+    w.autocontinue = wp.autocontinue
+    w.x_lat = wp.x_lat
+    w.y_long = wp.y_long
+    w.z_alt = wp.z_alt
+    w.param1 = wp.param1
+    w.param2 = wp.param2
+    w.param3 = wp.param3
+    w.param4 = wp.param4
     return w
 
 def wp_home(lat, lon):
@@ -347,30 +365,52 @@ def handle_flyto(req):
 
 def handle_flywaypoints(msg):
 
+    mission_goal_id = msg.mission_goal_id
     cruise_alt = msg.cruise_alt
     wp_radius = msg.wp_radius
-
     wps = []
-    for gps_coord in msg.waypoints:
-        wp = wp_fly(gps_coord.lat, gps_coord.lon, cruise_alt, radius=wp_radius)
+
+    for i, gps_coord in enumerate(msg.waypoints.points):
+        
+        if i==0 and msg.takeoff:
+            wp = wp_takeoff(gps_coord.lat, gps_coord.lon, cruise_alt)
+        else:
+            wp = wp_fly(gps_coord.lat, gps_coord.lon, cruise_alt, radius=wp_radius)
+
+        if i==0:
+            # due to a bug in Ardupilot, we need a dummy waypoint first
+            dummy = wp_copy(wp)
+            wps.append(dummy)
+            # we also abuse this to encode the mission goal
+            dummy.param1 = float(mission_goal_id)
+      	    
+            # activate the first waypoint
+            wp.is_current = True
+        
         wps.append(wp)
-    
+
     if msg.land:
         last = wps[-1]
-        last.z_alt = 0
-        last.command = MAV_CMD_LAND
+        # replicate last waypoint on the ground
+        wps.append(wp_land(last.x_lat, last.y_long))
 
     if not push_waypoints(wps):
         rospy.logerr('Error pushing waypoints')
         return FlyWaypointsResponse(False)
 
-    rospy.loginfo("Successfully pushed %d waypoints", len(wps))
+    rospy.loginfo("Pushed %d waypoints for goal %d %s" \
+            % (len(wps), mission_goal_id, waypoints_to_str(wps)))
 
     # wait for waypoints to be accepted
     # TODO: this should be event driven
     rospy.sleep(2.)
     
     if msg.takeoff:
+        # because take off waypoints do not work, 
+        # we have to do a manual take off
+
+        # cannot arm in AUTO mode
+        set_custom_mode(MODE_GUIDED)
 
         # try arming a few times
         c = 0
@@ -379,17 +419,36 @@ def handle_flywaypoints(msg):
             c += 1
             if c>10: break
 
-        set_custom_mode(MODE_GUIDED)
-        do_takeoff_cur_gps(0, 0, cruise_alt)
+        if not do_takeoff_cur_gps(0, 0, cruise_alt):
+            return FlyWaypointsResponse(False)
          
         # wait a second
-        rospy.sleep(0.2)
+        rospy.sleep(0.5)
     
     # now execute mission waypoints
+    set_custom_mode(MODE_GUIDED)
     set_custom_mode(MODE_AUTO)
 
     return FlyWaypointsResponse(True)
 
+
+def waypoints_to_str(wps):
+    i = 0
+    s = ""
+    for wp in wps:
+    #for wp in wps[1:]:
+        if wp.command == MAV_CMD_LAND:
+            cmd = "land"
+        elif wp.command == MAV_CMD_TAKEOFF:
+            cmd = "takeoff"
+        elif wp.command == MAV_CMD_RTL:
+            cmd = "RTL"
+        else:
+            cmd = "waypoint"
+        msg = " - dummy" if i==0 else ""
+        s += "\n%d - %s(%f,%f,%f) - (%f,%f)%s"%(i,cmd,wp.x_lat,wp.y_long,wp.z_alt,wp.param1,wp.param2,msg)
+        i += 1
+    return s
 
 def start():
 
