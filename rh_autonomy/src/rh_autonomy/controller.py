@@ -28,7 +28,7 @@ class ControllerNode():
         self.cruise_alt = rhc.CRUISE_ALTITUDE
         self.wp_radius = rhc.WAYPOINT_ACCEPTANCE_RADIUS
         self.nfz_buffer_size = rhc.NOFLYZONE_BUFFER_SIZE
-        self.pfclient = actionlib.SimpleActionClient("path_finder_server", pfm.PathFinderAction)
+        self.pfclient = actionlib.SimpleActionClient("/rh/pathfinder/action", pfm.PathFinderAction)
         rospy.logdebug("Waiting for path finder server...")
         self.pfclient.wait_for_server()
         rospy.logdebug("Connection to path finder established.")

@@ -78,6 +78,8 @@ class StateNode():
         rospy.Subscriber("/mavros/mission/reached", mrm.WaypointReached, self.waypoint_reached)
         rospy.Subscriber("/mavros/statustext/recv", mrm.StatusText, self.mavlink_statustext)
         rospy.Subscriber(wp_change_topic, mrm.WaypointList, self.waypoints_changed)
+    
+        self.state_pub = rospy.Publisher("state", State, queue_size = 5)
 
         rospy.Service('command/set_mission', SetMission, self.handle_set_mission)
         rospy.Service('command/start_mission', StartMission, self.handle_start_mission)
@@ -89,7 +91,12 @@ class StateNode():
     def run_forever(self):
         rate = rospy.Rate(CONTROL_RATE_HZ)
         while True:
+
             self.check_goal()
+            
+            if self.state_pub.get_num_connections() > 0:
+                self.state_pub.publish(self.get_state())
+            
             rate.sleep()
 
 
@@ -240,7 +247,10 @@ class StateNode():
 
     
     def handle_get_state(self, msg):
-    
+        return GetStateResponse(self.get_state())
+ 
+
+    def get_state(self):
         state = State()
         state.mission = self.mission
         state.dynamic_nfzs = self.dynamic_nfzs
@@ -264,14 +274,12 @@ class StateNode():
             vehicle_state.position.alt = vfr.altitude
             vehicle_state.airspeed = vfr.airspeed
 
-        apm_wps = self.values.get_value(wp_change_topic)
-        if apm_wps:
-            state.apm_wps = apm_wps.waypoints
+        if self.apm_wps:
+            state.apm_wps = self.apm_wps
 
         state.landing_location = self.landing_location
         state.mission_status = self.mission_status
-        return GetStateResponse(state)
-
+        return state
 
 if __name__ == "__main__":
     node = StateNode()
