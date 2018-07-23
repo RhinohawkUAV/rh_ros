@@ -1,3 +1,4 @@
+from bzrlib import inter
 import math
 
 from engine.geometry import calcs
@@ -15,6 +16,41 @@ MAX_ANGLE_ERROR = 0.001
 MIN_ANGLE_ERROR_COS = math.cos(MAX_ANGLE_ERROR)
 
 
+class ArcIntersection:
+    """
+    Represents the point at which a target completely descends inside an arc's circle OR first emerges.
+    """
+
+    def __init__(self, arcTime, targetTime):
+        self.arcTime = arcTime
+        self.targetTime = targetTime
+    
+
+class PointTarget:
+
+    def __init__(self, position, direction, speed):
+        self.startPosition = position
+        self.direction = direction
+        self.speed = speed
+
+    def insideArc(self, center, radius):
+        toCenter = self.startPosition - center
+        return np.dot(toCenter, toCenter) < radius * radius
+    
+    def calcIntersections(self, center, radius, startAngle, rotDirection, vehicleSpeed):
+        distances = calcs.rayIntersectCircle(self.startPosition, self.direction, center, radius)
+        intersections = []
+        for distance in distances:
+            if distance >= 0.0:
+                intersectionPoint = self.startPosition + distance * self.direction
+                intersectionTime = distance / self.speed
+                intersectionAngle = calcs.angleOfVector(intersectionPoint - center, rotDirection)
+                arcLengthToIntersection = calcs.modAngle(intersectionAngle, startAngle) - startAngle
+                arcTime = arcLengthToIntersection * radius / vehicleSpeed
+                intersections.append(ArcIntersection(arcTime, intersectionTime))
+        return intersections
+
+    
 class ArcFinder:
 
     def __init__(self, startPoint, startSpeed, unitVelocity, rotDirection, acceleration):
@@ -22,7 +58,6 @@ class ArcFinder:
         if startSpeed == 0.0 or acceleration == 0.0:
             raise NoSolutionException
 
-        self.startPoint = startPoint
         self.lineStartPoint = startPoint
         self.endUnitVelocity = unitVelocity
         self.speed = startSpeed
@@ -40,50 +75,55 @@ class ArcFinder:
         self.lineEndPoint = None
         self.finalVelocity = None
 
-    def findArcIntersectionInfo(self, targetStartPoint, distance, targetUnitVelocity, speedOfTarget):
-        intersectionPoint = targetStartPoint + distance * targetUnitVelocity
-        intersectionTime = distance / speedOfTarget
-        intersectionAngle = calcs.angleOfVector(intersectionPoint - self.center, self.rotDirection)
-        arcLengthToIntersection = calcs.modAngle(intersectionAngle, self.arcStart) - self.arcStart
-        arcTime = arcLengthToIntersection * self.arcRadius / self.speed
-        return (intersectionTime, arcTime)
-
-    def calcInitialGuess(self, targetStartPoint, targetUnitVelocity, speedOfTarget):
-        if speedOfTarget == 0.0:
-            toCenter = targetStartPoint - self.center
-            if np.dot(toCenter, toCenter) < self.arcRadius * self.arcRadius:
+    def calcInitialGuess(self, target):
+        if target.insideArc(self.center, self.arcRadius):
+            if target.speed == 0.0:
                 # Target is unmoving and contained within the the vehicle's arc's circle.
                 # It is impossible to reach this target.
                 raise NoSolutionException
+            intersections = target.calcIntersections(self.center, self.arcRadius, self.arcStart, self.rotDirection, self.speed)
+            
+            # Should be exactly 1 intersection
+            if len(intersections) != 1:
+                raise NoSolutionException
+            
+            if intersections[0].arcTime < intersections[0].targetTime:
+                # Vehicle reaches vehicle's arc's circle faster than target
+                # Solution would require making another full loop (or multiple loops).  This is not a worthwhile target!
+                raise NoSolutionException
+            
+            return intersections[0].arcTime * self.speed / self.arcRadius
+            
         else:
-            distances = calcs.rayIntersectCircle(targetStartPoint, targetUnitVelocity, self.center, self.arcRadius)
-            if len(distances) > 0:
+            intersections = target.calcIntersections(self.center, self.arcRadius, self.arcStart, self.rotDirection, self.speed)
+            if len(intersections) > 1:
                 # Path of target intersects the vehicle's arc's circle.  This requires special care in order to solve.
-                (intersectionTime, arcTime) = self.findArcIntersectionInfo(targetStartPoint, distances[0], targetUnitVelocity, speedOfTarget)
-                if intersectionTime < arcTime and len(distances) > 1:
-                    # Either target reaches vehicle's arc's circle faster than vheicle could get there OR
-                    # intersectionTime is negative, meaning target is already within/past circle.
-                    (intersectionTime, arcTime) = self.findArcIntersectionInfo(targetStartPoint, distances[1], targetUnitVelocity, speedOfTarget)
-                    if arcTime < intersectionTime :
+                if intersections[0].targetTime < intersections[0].arcTime:
+                    # target falls inside vehicle's arc's circle faster than vehicle could arc there
+                    
+                    if intersections[1].targetTime > intersections[1].arcTime:
                         # Vehicle reaches vehicle's arc's circle faster than target
                         # Solution would require making another full loop (or multiple loops).  This is not a worthwhile target!
                         raise NoSolutionException
-                    if intersectionTime > 0.0:
-                        # Target is exiting the vehicle's arc's circle before the vehicle can get there.
-                        # This allows us to iterate to a solution
-                        return intersectionTime * self.speed / self.arcRadius
-        return 0.0
+                    
+                    return intersections[1].arcTime * self.speed / self.arcRadius
+ 
+        (angleDiff, solution) = self.getSolution(target.startPosition, target.direction * target.speed)
+        return calcs.modAngle(angleDiff, 0.0)
 
     def solve(self, targetStartPoint, velocityOfTarget):
         (targetUnitVelocity, speedOfTarget) = calcs.unitAndLength(velocityOfTarget)
-        self.arcLength = self.calcInitialGuess(targetStartPoint, targetUnitVelocity, speedOfTarget)
+        
+        target = PointTarget(targetStartPoint, targetUnitVelocity, speedOfTarget)
+        
+        self.arcLength = self.calcInitialGuess(target)
         self.updateArcParameters()
         
         iteration = 0
         while iteration < MAX_ITERATIONS:
             (angleDiff, solution) = self.getSolution(targetStartPoint, velocityOfTarget)
             if math.fabs(angleDiff) <= MAX_ANGLE_ERROR:
-                self.totalTime = solution.time + self.arcTime
+                self.totalTime = solution.time + self.arcTime 
                 self.lineEndPoint = solution.endPoint
                 self.finalVelocity = solution.velocity
                 return

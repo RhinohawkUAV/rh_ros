@@ -25,6 +25,9 @@ CANBERRA_GPS = (-35.2809, 149.1300)
 # this square, then the diagonal would be ~11km (6 nautical miles).  The edges of the square would be 11km/sqrt(2)
 COURSE_DIM = 11000.0 / math.sqrt(2.0)
 
+# Don't consider arcs which seem too counter productive
+MAX_ARC_LENGTH = math.radians(210.0)
+
 IDENTICAL_POINT_TOLERANCE = 0.1
 
 # This is used to determine if 2 points are identical (is the distance squared between them less than this)

@@ -20,13 +20,13 @@ class LineSegmentObstacleCourse(DefaultObstacleCourse):
     def __init__(self, targetOffsetLength):
         DefaultObstacleCourse.__init__(self, targetOffsetLength)
 
-    def createPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def createPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
         if solution is not None and turnIsLegal(startSpeed, startUnitVelocity, solution.velocity):
             endPoint = solution.endPoint
             
-            return LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, startSpeed, solution.velocity / startSpeed)
-        return None
+            return [LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, startSpeed, solution.velocity / startSpeed)]
+        return []
 
 
 def turnIsLegal(speed, unitVelocity, velocity2):

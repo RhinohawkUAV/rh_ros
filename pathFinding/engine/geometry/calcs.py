@@ -356,7 +356,9 @@ def rayIntersectCircle(startPoint, direction, center, radius):
     """
     Calculate distances, from start, where a ray intersects a circle.  
     Returns a list of distances of length 0, 1 or 2.  
-    The smallest distance always appears 1st.
+    The smallest distance always appears 1st and can be negative to represent the case of the intersection being "behind" the source.
+    
+    direction must not be (0,0)!
     """
     fromCenter = startPoint - center
     return quadratic.solveQuad(1.0,

@@ -73,7 +73,7 @@ class DefaultObstacleCourse(ObstacleCourse):
     def setDynamicNoFlyZones(self, dynamicNoFlyZones):
         self.dynamicNoFlyZones = dynamicNoFlyZones
 
-    def createPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def createPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         """
         Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
         at a given velocity.
@@ -100,14 +100,15 @@ class DefaultObstacleCourse(ObstacleCourse):
         """
         pass
 
-    def findPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         # type: (float,Sequence,Sequence,Sequence,Sequence) -> PathSegment or None
-        pathSegment = self.createPathSegmentToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
+        pathSegments = self.createPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
 
-        if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
-            return pathSegment
-        else:
-            return None
+        filteredPathSegments = []
+        for pathSegment in pathSegments:
+            if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
+                filteredPathSegments.append(pathSegment)
+        return filteredPathSegments
 
     def findPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
         pathSegments = self.createPathSegmentsToDynamicNoFlyZone(startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone)
@@ -136,8 +137,8 @@ class DefaultObstacleCourse(ObstacleCourse):
             # TODO: Use a target indexing scheme
             # startPosition will typically be a NFZ vertex.  We want to eliminate search from a start position to itself.
             if not calcs.arePointsClose(startPoint, targetPoint):
-                pathSegment = self.createPathSegmentToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
-                if pathSegment is not None:
+                pathSegmentsToPoint = self.createPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
+                for pathSegment in pathSegmentsToPoint:
                     # Filter path segment based on incoming angle and known geometry around point.
                     pointNormal = self.targetPointNormals[i]
                     cosLimit = self.targetCosLimits[i]

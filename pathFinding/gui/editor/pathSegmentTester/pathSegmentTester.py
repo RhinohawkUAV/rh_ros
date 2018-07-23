@@ -50,7 +50,7 @@ class PathSegmentTester(Drawable, SubGUI):
         
         (startUnitVelocity, startSpeed) = calcs.unitAndLength(self._inputDict[TEST_INPUT_KEY].startVelocity)
                 
-        goalSegment = self._obstacleData.findPathSegmentToPoint(startTime=0.0,
+        goalSegments = self._obstacleData.findPathSegmentsToPoint(startTime=0.0,
                                                          startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                          startSpeed=startSpeed,
                                                          startUnitVelocity=startUnitVelocity,
@@ -59,16 +59,21 @@ class PathSegmentTester(Drawable, SubGUI):
 
         # Draw obstacles as they appear at this time
         drawTime = 0.0
-        if goalSegment is not None:
+        closestDistance = 50.0
+        closestPoint = None
+        for goalSegment in goalSegments:
             goalSegment.draw(canvas)
 
             if self._pointOfInterest is not None:
-                (closestPoint, distance, pointTime) = goalSegment.calcPointDebug(self._pointOfInterest)
-                if distance < 50.0:
-                    drawTime = pointTime
-                    draw.drawPoint(canvas, closestPoint, radius=radius, color="orange")
-                    draw.drawDynamicNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].dynamicNoFlyZones, time=drawTime, color="blue")
-                    draw.drawNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].noFlyZones, time=drawTime, color="blue")
+                (point, distance, time) = goalSegment.calcPointDebug(self._pointOfInterest)
+                if distance < closestDistance:
+                    closestDistance = distance
+                    closestPoint = point
+                    drawTime = time
+        if closestPoint is not None:
+            draw.drawPoint(canvas, closestPoint, radius=radius, color="orange")
+            draw.drawDynamicNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].dynamicNoFlyZones, time=drawTime, color="blue")
+            draw.drawNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].noFlyZones, time=drawTime, color="blue")
 
         if self._showPathsToPoints:
             (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(startTime=0.0,

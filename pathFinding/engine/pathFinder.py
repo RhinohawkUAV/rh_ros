@@ -97,15 +97,18 @@ class PathFinder:
         Check if there is a path from self._currentVertex to the goal.  Update the best solution if this is better.
         :return:
         """
-        pathSegment = self._obstacleData.findPathSegmentToPoint(startTime=self._currentVertex.timeToVertex,
+        
+        # TODO: Check all path segments.  Currently we just use the 1st, shortest, path segment
+        pathSegments = self._obstacleData.findPathSegmentsToPoint(startTime=self._currentVertex.timeToVertex,
                                                                  startPoint=self._currentVertex.position,
                                                                  startSpeed=self._currentVertex.speed,
                                                                  startUnitVelocity=self._currentVertex.unitVelocity,
                                                                  targetPoint=self._goal,
                                                                  velocityOfTarget=np.array((0, 0), np.double))
-        if pathSegment is None:
+        if len(pathSegments) == 0:
             return False
         else:
+            pathSegment = pathSegments[0]
             timeToGoal = self._currentVertex.timeToVertex + pathSegment.elapsedTime
             if timeToGoal < self._bestSolutionTime:
                 self._solution = Vertex(position=self._goal,

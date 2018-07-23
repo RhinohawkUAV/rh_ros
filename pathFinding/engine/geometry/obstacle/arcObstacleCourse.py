@@ -1,9 +1,8 @@
-import math
-
-from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
+from constants import MAX_ARC_LENGTH
 from engine.geometry.arc import Arc
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder import ArcFinder
+from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 from utils import profile
 
@@ -19,7 +18,7 @@ class ArcObstacleCourse(DefaultObstacleCourse):
         self.acceleration = acceleration
 
     @profile.accumulate("Find Arc")
-    def createPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def createPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         try:
             arcFinderCCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)
             arcFinderCCW.solve(targetPoint, velocityOfTarget)
@@ -34,14 +33,23 @@ class ArcObstacleCourse(DefaultObstacleCourse):
         except NoSolutionException:
             timeCW = float("inf")
  
-        # TODO: Should return both arcs and check for collisions before choosing
+        arcFinders = [] 
         if timeCCW < timeCW:
-            arcFinder = arcFinderCCW
+            arcFinders.append(arcFinderCCW)
+            if timeCW < float("inf"):
+                arcFinders.append(arcFinderCW)
         elif timeCW < float("inf"):
-            arcFinder = arcFinderCW
-        else:
-            return None
- 
-        return ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.lineStartPoint, arcFinder.lineEndPoint, arcFinder.speed, arcFinder.endUnitVelocity,
-                              Arc(arcFinder.rotDirection, arcFinder.arcRadius, arcFinder.center, arcFinder.arcStart, arcFinder.arcLength))
+            arcFinders.append(arcFinderCW)
+            if timeCCW < float("inf"):
+                arcFinders.append(arcFinderCCW)
 
+        segments = []
+        for arcFinder in arcFinders:
+            if arcFinder.arcLength < MAX_ARC_LENGTH:
+                segment = ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.lineStartPoint, arcFinder.lineEndPoint, arcFinder.speed, arcFinder.endUnitVelocity,
+                                      Arc(arcFinder.rotDirection, arcFinder.arcRadius, arcFinder.center, arcFinder.arcStart, arcFinder.arcLength))
+                segments.append(segment)
+                # TODO: Remove this and search all arcs (too slow for testing)
+                break
+
+        return segments

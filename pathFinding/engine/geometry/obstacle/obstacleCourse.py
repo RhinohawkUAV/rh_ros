@@ -17,7 +17,7 @@ class ObstacleCourse:
         """
         pass
     
-    def findPathSegmentToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         """
         Find legal path segments from a given starting point and velocity to the moving target, ending at finalSpeed.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
