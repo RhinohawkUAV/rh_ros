@@ -1,0 +1,230 @@
+let missionPlan = `
+solutionWaypoints: 
+  - 
+    position: 
+      lat: -35.2542307941
+      lon: 149.162837588
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.2516522304
+      lon: 149.15076429
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.2552168686
+      lon: 149.144759729
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.2621036374
+      lon: 149.135035473
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.2673704552
+      lon: 149.133209744
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.2759720651
+      lon: 149.134409851
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.2795604969
+      lon: 149.131632059
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.2850404866
+      lon: 149.122009451
+    radius: 120.0
+  - 
+    position: 
+      lat: -35.307325836
+      lon: 149.115735123
+    radius: 120.0
+solutionPathSegments: 
+  - 
+    startTime: 206.098089736
+    elapsedTime: 25.0360389929
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.2541032476
+        lon: 149.151349373
+      start: 323.270889446
+      length: 51.3402614375
+    lineStartPoint: 
+      lat: -35.2519247199
+      lon: 149.152041101
+    endPoint: 
+      lat: -35.2539582886
+      lon: 149.161561515
+    endVelocity: 
+      heading: 104.611150884
+      speed: 44.7
+  - 
+    startTime: 191.01981466
+    elapsedTime: 15.0782750761
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.2576136142
+        lon: 149.145616106
+      start: 318.011573887
+      length: 5.25931555937
+    lineStartPoint: 
+      lat: -35.255809537
+      lon: 149.143974439
+    endPoint: 
+      lat: -35.2522992466
+      lon: 149.14970765
+    endVelocity: 
+      heading: 53.2708894463
+      speed: 44.7
+  - 
+    startTime: 165.143495726
+    elapsedTime: 25.8763189341
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.2636797433
+        lon: 149.137397696
+      start: 283.469527495
+      length: 34.5420463918
+    lineStartPoint: 
+      lat: -35.2620065684
+      lon: 149.135561363
+    endPoint: 
+      lat: -35.2559405614
+      lon: 149.143779741
+    endVelocity: 
+      heading: 48.011573887
+      speed: 44.7
+  - 
+    startTime: 151.676787403
+    elapsedTime: 13.466708323
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.2682333088
+        lon: 149.136067558
+      start: 264.551380503
+      length: 18.9181469926
+    lineStartPoint: 
+      lat: -35.2677090456
+      lon: 149.133398084
+    endPoint: 
+      lat: -35.2631555088
+      lon: 149.134728362
+    endVelocity: 
+      heading: 13.4695274952
+      speed: 44.7
+  - 
+    startTime: 130.517562987
+    elapsedTime: 21.1592244159
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.275545103
+        lon: 149.131409062
+      start: 125.507255396
+      length: -40.9558748931
+    lineStartPoint: 
+      lat: -35.2753312824
+      lon: 149.134141848
+    endPoint: 
+      lat: -35.2684471732
+      lon: 149.133335014
+    endVelocity: 
+      heading: -5.44861949739
+      speed: 44.7
+  - 
+    startTime: 120.094803564
+    elapsedTime: 10.4227594231
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.2783603188
+        lon: 149.128961031
+      start: 144.383410434
+      length: -18.8761550379
+    lineStartPoint: 
+      lat: -35.2796678233
+      lon: 149.131195836
+    endPoint: 
+      lat: -35.2768525632
+      lon: 149.133643829
+    endVelocity: 
+      heading: 35.5072553957
+      speed: 44.7
+  - 
+    startTime: 96.5908699705
+    elapsedTime: 23.5039335932
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.2865516506
+        lon: 149.124434611
+      start: 281.566928473
+      length: 42.8164819605
+    lineStartPoint: 
+      lat: -35.2847215035
+      lon: 149.122835866
+    endPoint: 
+      lat: -35.2801903882
+      lon: 149.130559789
+    endVelocity: 
+      heading: 54.3834104337
+      speed: 44.7
+  - 
+    startTime: 39.9532137526
+    elapsedTime: 56.6376562178
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.3051761079
+        lon: 149.114184199
+      start: 175.053770938
+      length: -73.4868424645
+    lineStartPoint: 
+      lat: -35.3056278185
+      lon: 149.11687455
+    endPoint: 
+      lat: -35.2861001058
+      lon: 149.121744846
+    endVelocity: 
+      heading: 11.5669284732
+      speed: 44.7
+  - 
+    startTime: 0.0
+    elapsedTime: 39.9532137526
+    speed: 44.7
+    arc: 
+      radius: 249.76125
+      center: 
+        lat: -35.3064880144
+        lon: 149.095638495
+      start: 196.378368008
+      length: -21.3245970705
+    lineStartPoint: 
+      lat: -35.3087308715
+      lon: 149.095874341
+    endPoint: 
+      lat: -35.3074189298
+      lon: 149.11442055
+    endVelocity: 
+      heading: 85.0537709376
+      speed: 44.7
+finished: True
+`;

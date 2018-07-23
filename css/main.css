@@ -29,6 +29,10 @@ body{
 	padding-right:0px;
 }
 
+.telemetryHolder:first-child {
+	margin-left:12px;
+}
+
 
 .telemetryRow{
 	background:rgba(10,10,10,.6);
@@ -38,6 +42,19 @@ body{
     width: 100%;
     margin: 0px;
 }
+.telemetryRow.topRow{
+	bottom: 70px;
+}
+
+.buttonRow{
+	bottom: 230px;
+}
+
+.telemetryRow.timingRow{
+	height: 70px;
+	background:rgba(10,10,10,.8);
+}
+
 
 .tel-header, .tel-sub-header {
 	text-transform:uppercase;
@@ -57,7 +74,7 @@ body{
 	font-weight: 200;
 }
 
-#tel-lat, #tel-long {
+#tel-lat, #tel-long, #tel-time {
 	font-size:25px;
 	margin-bottom: 4px;
 }
@@ -88,6 +105,20 @@ body{
 	width:100%;
 	top:13px;
 	text-align: center;
+}
+
+.buttonRow a{
+	text-decoration: none;
+	color:#fff;
+	background: #00C1FF;
+	padding:8px 16px;
+	border-radius: 3px;
+	margin-left:12px;
+	box-shadow: 1px 1px 1px #00000059;
+}
+
+.buttonRow a:first-child{
+	margin-left:24px;
 }
 
 
@@ -208,7 +239,7 @@ body{
 }
 
 .leaflet-bottom .leaflet-control.leaflet-control-zoom {
-	margin-bottom:165px;
+	margin-bottom: 215px;
 }
 
 
@@ -219,13 +250,13 @@ body{
 #groundGauge, #airGauge {
 	transform: rotate(-45deg);
 	position: absolute;
-    top: 8px;
-    left: -90px;
+    top: -8px;
+    left: -102px;
 }
 
 #tel-speed, #tel-airSpeed {
-	margin-top: 65px;
-    margin-left: 59px;
+	margin-top: 44px;
+    margin-left: 49px;
 }
 
 
@@ -309,43 +340,18 @@ body{
     clear:both;
 }
 
-.nfcButton {
-    background: #fff;
-    text-decoration: none;
-    color:#111;
-    font-weight: bold;
-    text-align: center;
-    border-radius: 2px;
-    padding-top:5px;
-    margin-right:14px;
-}
+/*******************  Define Mission *******************/
 
-.nfcButton:hover {
-	color:#fff;
-	background:#00C1FF;
-	text-decoration: none;
-}
-
-#NFCPopUp {
+.planMissionToolTip {
 	position: absolute;
-	top:100px;
-	left:100px;
-	display:block;
-	background:#fff;
-	padding: 20px;
-	border-radius: 4px;
-}
-
-#NFCPopUp span{
-	width:60px;
-	float:left;
-}
-
-#NFCPopUp input[type=submit]{
-	width:100%;
-	background:#00C1FF;
-	border:none;
-	border-radius: 2px;
-	padding: 10px;
+	top:10px;
+	left:50%;
+	width:30%;
+	margin-left:-10%;
 	color:#fff;
+	background: #00C1FF95;
+	border-radius: 20px;
+	padding:4px ;
+	text-align: center;
+	font-size:15px;
 }
