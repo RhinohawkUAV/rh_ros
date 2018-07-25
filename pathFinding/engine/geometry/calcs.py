@@ -285,7 +285,7 @@ def modAngleUnsigned(angle):
     :param angle:
     :return:
     """
-    return modAngle(angle, 0)
+    return modAngle(angle, 0.0)
 
 
 def isAngleInArcCCW(angle, start, length):

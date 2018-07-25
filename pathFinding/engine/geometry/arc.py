@@ -83,3 +83,4 @@ class Arc:
             point = self.pointAtAngle(self.start + i * step)
             points.append(point)
         return points
+    

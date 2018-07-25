@@ -1,7 +1,7 @@
 from constants import MAX_ARC_LENGTH
-from engine.geometry.arc import Arc
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder import ArcFinder
+from engine.geometry.obstacle.arcFinder.pointTarget import PointTarget
 from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 from utils import profile
@@ -19,16 +19,18 @@ class ArcObstacleCourse(DefaultObstacleCourse):
 
     @profile.accumulate("Find Arc")
     def createPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+
+        target = PointTarget(targetPoint, velocityOfTarget)
         try:
             arcFinderCCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)
-            arcFinderCCW.solve(targetPoint, velocityOfTarget)
+            arcFinderCCW.solve(target)
             timeCCW = arcFinderCCW.totalTime
         except NoSolutionException:
             timeCCW = float("inf")
  
         try:
             arcFinderCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration)
-            arcFinderCW.solve(targetPoint, velocityOfTarget)
+            arcFinderCW.solve(target)
             timeCW = arcFinderCW.totalTime
         except NoSolutionException:
             timeCW = float("inf")
@@ -45,9 +47,14 @@ class ArcObstacleCourse(DefaultObstacleCourse):
 
         segments = []
         for arcFinder in arcFinders:
-            if arcFinder.arcLength < MAX_ARC_LENGTH:
-                segment = ArcPathSegment(startTime, arcFinder.totalTime, arcFinder.lineStartPoint, arcFinder.lineEndPoint, arcFinder.speed, arcFinder.endUnitVelocity,
-                                      Arc(arcFinder.rotDirection, arcFinder.arcRadius, arcFinder.center, arcFinder.arcStart, arcFinder.arcLength))
+            if arcFinder.arc.length < MAX_ARC_LENGTH:
+                segment = ArcPathSegment(startTime,
+                                         arcFinder.totalTime,
+                                         arcFinder.lineStartPoint,
+                                         arcFinder.lineEndPoint,
+                                         startSpeed,
+                                         arcFinder.endUnitVelocity,
+                                         arcFinder.arc)
                 segments.append(segment)
                 # TODO: Remove this and search all arcs (too slow for testing)
                 break
