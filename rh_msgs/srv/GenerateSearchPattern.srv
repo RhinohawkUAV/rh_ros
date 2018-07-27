@@ -1,0 +1,8 @@
+rh_msgs/GPSCoord target
+rh_msgs/GPSCoord current_location
+float64 search_radius
+float64 strip_width
+float64 search_altitude
+---
+rh_msgs/GPSCoordList waypoints
+

@@ -28,6 +28,7 @@ add_service_files(
   StartMission.srv
   AbortMission.srv
   FlyWaypoints.srv
+  GenerateSearchPattern.srv
 )
 
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs geographic_msgs std_msgs mavros_msgs)
