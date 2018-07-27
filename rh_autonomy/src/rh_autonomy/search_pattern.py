@@ -9,7 +9,7 @@ import rospy
 
 from math import ceil, pow, sqrt, atan2, cos, sin
 
-class Point:
+class MyPoint:
     """ Point class represents and manipulates x,y coords. 
         Per ROS convention, this should be in meters.
     """
@@ -55,9 +55,9 @@ def create_waypoints(req):
     sign = 1
     for _ in range(num_strips):
         x = sqrt(pow(search_radius, 2) - pow((abs(y) - (strip_width / 2.0)), 2))       
-        pointList.append(Point(sign * x, y))
+        pointList.append(MyPoint(sign * x, y))
         sign = -1 * sign
-        pointList.append(Point(sign * x, y))
+        pointList.append(MyPoint(sign * x, y))
         y = y - strip_width
                 
     """ 
@@ -82,20 +82,22 @@ def create_waypoints(req):
     """
     rotatedPointList = []
     for p in pointList:
-        rotatedPointList.append(Point((p.x * cos(theta)) + (p.y * sin(theta)), \
+        rotatedPointList.append(MyPoint((p.x * cos(theta)) + (p.y * sin(theta)), \
             (p.x * sin(-theta) + (cos(theta) * p.y))))
         
     """
     Finally, we can scale and translate.
     """
-    GPSCoordList = []
+    gpsList = []
     for p in rotatedPointList:
-        GPSCoordList.append(GPSCoord(
+        gpsList.append(GPSCoord(
             lat=(p.y / meters_per_degree_latitude) + target.lat, \
 	    lon=(p.x / meters_per_degree_longitude) + target.lon, \
 	    alt=search_altitude))
-     
-    return GPSCoordList
+    
+    resp = GenerateSearchPatternResponse()
+    resp.waypoints = GPSCoordList(points=gpsList)
+    return resp
 
 def generate_search_pattern_server():
     rospy.init_node('generate_search_pattern')
