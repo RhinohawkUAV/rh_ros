@@ -32,3 +32,5 @@ class ArcCalc(Arc):
             arcLength = self.length
         return arcLength / self.angularSpeed
     
+    def arcLength(self, time):
+        return time * self.angularSpeed

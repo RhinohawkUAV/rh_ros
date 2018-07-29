@@ -72,6 +72,28 @@ def findClosestPoint(point, points):
     return (closestDistanceSquared, closestPointIndex)
 
 
+def movingCircleCollision(relativePosition, relativeVelocity, radius1, radius2, outside=True):
+    """
+    Find times when two moving circles collide with each other.
+    If outside == True, then this will find times when circles 1st touch "externally"
+    Otherwise, this will find times when circles touch, with one inside the other.
+    
+    Times can be negative, reflecting an intersection which occurred in the past.  Smaller time will appear 1st.
+    """
+    if outside:
+        rsquared = (radius1 + radius2)
+    else:
+        rsquared = (radius1 - radius2)
+        
+    rsquared *= rsquared
+    # (vx^2 + vy^2)*t^2 + (2*px*vx + 2*py*vy)*t + px^2 + py^2 - rsquared == 0
+    
+    return quadratic.solveQuad(
+                    np.dot(relativeVelocity, relativeVelocity),
+                    2.0 * np.dot(relativeVelocity, relativePosition),
+                    np.dot(relativePosition, relativePosition) - rsquared)
+
+
 class StraightPathSolution:
     """
     Holds _solution to the hitTargetAtSpeed problem.
@@ -87,6 +109,8 @@ def hitTargetCircleAtSpeed(vehicleStart, vehicleSpeed, center, velocity, radius)
     """
     Solves the problem of hitting a target circle, given a starting position and speed.
     This always results in a 2 element solution vector.  Either/both solutions may be None to signify they are not possible.
+    Solutions are ordered by which point is in the CCW vs. CW direction vs. the center.
+    [CCW,CW] 
     
     """
     toCenter = center - vehicleStart

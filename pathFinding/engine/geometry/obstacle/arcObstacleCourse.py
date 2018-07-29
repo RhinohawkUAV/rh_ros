@@ -1,6 +1,7 @@
 from constants import MAX_ARC_LENGTH
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder import ArcFinder
+from engine.geometry.obstacle.arcFinder.circularTarget import CircularTarget
 from engine.geometry.obstacle.arcFinder.pointTarget import PointTarget
 from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
@@ -60,3 +61,8 @@ class ArcObstacleCourse(DefaultObstacleCourse):
                 break
 
         return segments
+
+    def createPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
+#         target = CircularTarget(dynamicNoFlyZone.center, dynamicNoFlyZone.velocity, dynamicNoFlyZone.radius)
+        return self.createPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone.center, dynamicNoFlyZone.velocity)
+        

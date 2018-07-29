@@ -46,7 +46,7 @@ class ArcFinder:
         
         iteration = 0
         while iteration < MAX_ITERATIONS:
-            (angle, solution) = target.getSolution(self.arc)
+            (angle, solution) = target.iterateSolution(self.arc)
             angleDiff = calcs.modAngleSigned(angle - (self.arc.start + self.arc.length))
             
             if math.fabs(angleDiff) <= MAX_ANGLE_ERROR:
