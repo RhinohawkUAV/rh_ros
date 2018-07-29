@@ -72,6 +72,39 @@ def findClosestPoint(point, points):
     return (closestDistanceSquared, closestPointIndex)
 
 
+def getRayCircleIntersections(startPoint, direction, center, radius):
+    """
+    Calculate distances, from start, where a ray intersects a circle.  
+    Returns a list of distances of length 0, 1 or 2.  
+    The smallest distance always appears 1st and can be negative to represent the case of the intersection being "behind" the source.
+    
+    direction must not be (0,0)!
+    """
+    fromCenter = startPoint - center
+    return quadratic.solveQuad(1.0,
+                               2.0 * np.dot(direction, fromCenter),
+                               np.dot(fromCenter, fromCenter) - radius * radius)
+
+
+def lineSegmentCircleIntersect(startPoint, endPoint, center, radius):
+    """
+    Test if the given line segment intersects a circle.
+    """
+    (direction, length) = unitAndLength(endPoint - startPoint)
+    return lineRayCircleIntersect(startPoint, direction, length, center, radius)
+
+
+def lineRayCircleIntersect(startPoint, direction, length, center, radius):
+    """
+    Test if the given line segment intersects a circle.
+    """
+    distances = getRayCircleIntersections(startPoint, direction, center, radius)
+    for distance in distances:
+        if distance >= 0.0 and distance <= length:
+            return True
+    return False
+
+
 def movingCircleCollision(relativePosition, relativeVelocity, radius1, radius2, outside=True):
     """
     Find times when two moving circles collide with each other.
@@ -114,12 +147,22 @@ def hitTargetCircleAtSpeed(vehicleStart, vehicleSpeed, center, velocity, radius)
     
     """
     toCenter = center - vehicleStart
-    toCenterUnit = unit(toCenter)
+    (toCenterUnit, distance) = unitAndLength(toCenter)
     
-    toCenterRadiusPerp = radius * CCWNorm(toCenterUnit)
-    targetPoint1 = center + toCenterRadiusPerp
-    targetPoint2 = center - toCenterRadiusPerp
+    # Starting point inside circle
+    if distance < radius:
+        return (None, None)
     
+    length = math.sqrt(distance * distance - radius * radius)
+        
+    toCenterPerp = CCWNorm(toCenterUnit)
+ 
+    y = radius / distance
+    x = math.sqrt(1 - y * y)
+     
+    targetPoint1 = vehicleStart + (x * toCenterUnit + y * toCenterPerp) * length
+    targetPoint2 = vehicleStart + (x * toCenterUnit - y * toCenterPerp) * length
+     
     solution1 = hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetPoint1, velocity)
     solution2 = hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetPoint2, velocity)
     return (solution1, solution2)
@@ -376,15 +419,6 @@ def unitAndLength(vector):
     return (vector / length, length)
 
 
-def rayIntersectCircle(startPoint, direction, center, radius):
-    """
-    Calculate distances, from start, where a ray intersects a circle.  
-    Returns a list of distances of length 0, 1 or 2.  
-    The smallest distance always appears 1st and can be negative to represent the case of the intersection being "behind" the source.
-    
-    direction must not be (0,0)!
-    """
-    fromCenter = startPoint - center
-    return quadratic.solveQuad(1.0,
-                               2.0 * np.dot(direction, fromCenter),
-                               np.dot(fromCenter, fromCenter) - radius * radius)
+def changeBasis(vec, x, y):
+    return (np.dot(vec, x), np.dot(vec, y))
+

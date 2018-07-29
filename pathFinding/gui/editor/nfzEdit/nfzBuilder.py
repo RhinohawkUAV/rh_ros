@@ -4,7 +4,7 @@ from gui import Drawable
 from gui.editor.polyBuilder import PolyBuilder
 
 
-class NFZBuilder(PolyBuilder, Drawable):
+class NFZBuilder(PolyBuilder):
 
     def __init__(self):
         PolyBuilder.__init__(self)

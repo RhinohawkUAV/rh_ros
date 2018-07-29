@@ -1,13 +1,12 @@
 from editableNoFlyZoneList import EditableNoFlyZoneList
 from engine.interface.fileUtils import SCENARIO_KEY
-from gui.core import Drawable
 from gui.editor.subGUI import SubGUI
 from nfzPointMover import NFZPointMover
 from nfzVelocityChanger import NFZVelocityChanger
 from noFlyMover import NoFlyMover
 
 
-class NFZEditor(Drawable, SubGUI):
+class NFZEditor(SubGUI):
 
     def __init__(self):
         self._nfzEdit_nfzEdit = None
@@ -55,6 +54,8 @@ class NFZEditor(Drawable, SubGUI):
             self._pressVelocity = not self._pressVelocity
             
     def draw(self, canvas, **kwargs):
+        SubGUI.draw(self, canvas, **kwargs)
+
         self._nfzEdit.draw(canvas, **kwargs)
         self._pointMover.draw(canvas, **kwargs)
         self._mover.draw(canvas, **kwargs)

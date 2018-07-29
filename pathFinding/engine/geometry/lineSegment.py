@@ -76,9 +76,10 @@ class LineSegment(Drawable):
         parametric = self.closestPointParametric(point)
         return self.getParametricPoint(parametric)
 
+# TODO: Consider how we want to handle edge cases and tolerance for intersections
+
     def checkLineIntersection(self, startPoint, endPoint):
         """
-        TODO: Consider how we want to handle edge cases and tolerance
 
         Determine if the directed line segment, from p1 to p2, intersects this one-sided line segment.
 

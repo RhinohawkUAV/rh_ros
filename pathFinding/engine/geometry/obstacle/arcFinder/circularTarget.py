@@ -1,10 +1,11 @@
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder.arcCriticalPoint import ArcCriticalPoint
+from engine.geometry.obstacle.arcFinder.target import Target
 import numpy as np
 
 
-class CircularTarget:
+class CircularTarget(Target):
 
     def __init__(self, position, velocity, radius, rotDirection):
         self.startPosition = position
@@ -15,7 +16,7 @@ class CircularTarget:
         # The more clockwise (-1) or more CCW (1) solution
         self.rotDirection = rotDirection
         
-        if self.rotDirection == -1:
+        if self.rotDirection == 1:
             self.solutionIndex = 0
         else:
             self.solutionIndex = 1

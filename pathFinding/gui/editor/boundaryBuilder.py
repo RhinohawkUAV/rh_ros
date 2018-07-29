@@ -1,9 +1,8 @@
 from engine.interface.fileUtils import SCENARIO_KEY
 from polyBuilder import PolyBuilder
-from subGUI import SubGUI
 
 
-class BoundaryBuilder(PolyBuilder, SubGUI):
+class BoundaryBuilder(PolyBuilder):
 
     def __init__(self):
         PolyBuilder.__init__(self)

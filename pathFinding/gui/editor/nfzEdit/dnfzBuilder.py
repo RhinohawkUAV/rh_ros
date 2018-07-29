@@ -7,7 +7,7 @@ from gui.editor.subGUI import SubGUI
 import numpy as np
 
 
-class DNFZBuilder(Drawable, SubGUI):
+class DNFZBuilder(SubGUI):
 
     def __init__(self):
         self._previewCenter = None
@@ -48,6 +48,7 @@ class DNFZBuilder(Drawable, SubGUI):
             self._inputDict[SCENARIO_KEY].dynamicNoFlyZones = keepDNFZs
     
     def draw(self, canvas, **kwargs):
+        SubGUI.draw(self, canvas, **kwargs)
         if self._previewCenter is not None:
             gui.draw.drawCircle(canvas, self._previewCenter, self._previewRadius)
             gui.draw.drawVelocity(canvas, self._previewCenter, self._previewVelocity)

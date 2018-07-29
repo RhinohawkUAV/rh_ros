@@ -1,6 +1,6 @@
 import Tkinter as tk
 from defaultPathSegment import DefaultPathSegment
-from engine.geometry import LineSegment
+from engine.geometry import LineSegment, calcs
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
 import numpy as np
@@ -34,3 +34,7 @@ class LinePathSegment(DefaultPathSegment):
 
     def intersectsObstacleLine(self, obstacleLine):
         return obstacleLine.checkPathIntersectsLine(self.startTime, self.startPoint, self.endPoint, self.startSpeed)
+
+    def intersectsDNFZ(self, dnfz):
+        dnfz.checkPathIntersection(self.startTime, self.startPoint, self.endPoint, self.startSpeed)
+    

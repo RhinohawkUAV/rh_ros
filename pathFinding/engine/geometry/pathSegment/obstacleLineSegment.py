@@ -1,6 +1,6 @@
 import testmod
 
-from engine.geometry import LineSegment
+from engine.geometry import LineSegment, calcs
 import numpy as np
 
 

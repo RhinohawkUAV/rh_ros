@@ -1,7 +1,7 @@
 import Tkinter as tk
 from constants import MAX_ARC_INTERPOLATION_ERROR
 from defaultPathSegment import DefaultPathSegment
-from engine.geometry import LineSegment
+from engine.geometry import LineSegment, calcs
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
 import numpy as np
@@ -76,3 +76,13 @@ class ArcPathSegment(DefaultPathSegment):
                                                     speed=self.speed):
                 return True
         return False
+
+    def intersectsDNFZ(self, dnfz):
+        for i in range(0, len(self.linearPathPoints) - 1):
+            if dnfz.checkPathIntersection(self.startTime + self.linearPathStartTimes[i],
+                                                    startPoint=self.linearPathPoints[i],
+                                                    endPoint=self.linearPathPoints[i + 1],
+                                                    speed=self.speed):
+                return True
+        return False        
+    

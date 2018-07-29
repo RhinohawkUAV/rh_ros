@@ -28,7 +28,10 @@ COURSE_DIM = 11000.0 / math.sqrt(2.0)
 # Don't consider arcs which seem too counter productive
 MAX_ARC_LENGTH = math.radians(210.0)
 
-IDENTICAL_POINT_TOLERANCE = 0.1
+# Its easy to end up in a situation where another point in the path can be found right on top of the current point.
+# This is not productive in most cases and can significantly slow down the path finding process.
+# Increasing this number will make the path finder miss cases where it could "just" squeeze through a tight spot.
+IDENTICAL_POINT_TOLERANCE = 1.0
 
 # This is used to determine if 2 points are identical (is the distance squared between them less than this)
 DISTANCE_TOLERANCE_SQUARED = IDENTICAL_POINT_TOLERANCE * IDENTICAL_POINT_TOLERANCE

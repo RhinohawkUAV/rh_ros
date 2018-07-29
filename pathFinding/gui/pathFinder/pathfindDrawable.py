@@ -23,9 +23,6 @@ class PathFindDrawable(Drawable):
         self._solutionWaypoints = solutionsWaypoints
         self._solutionPathSegments = solutionPathSegments
         self._finished = finished
-        self._pastPathSegments = []
-        self._futurePathSegments = []
-        self._filteredPathSegments = []
         
     def findClosestPointOnPath(self, point, snapDistance):
         pathSegments = []
@@ -44,6 +41,7 @@ class PathFindDrawable(Drawable):
              vertexColor="green",
              pathColor="purple",
              solutionColor="green",
+             showFiltered=False,
              **kwargs):
 
         if pointOfInterest is None:
@@ -57,6 +55,9 @@ class PathFindDrawable(Drawable):
             gui.draw.drawPoint(canvas, pointOfInterest, color="cyan", outline="black", width=1.5, radius=1.0)
             
         if not self._finished:
+            if showFiltered:
+                for pathSegment in self._filteredPathSegments:
+                    pathSegment.draw(canvas, color=lineOfSightColor, filtered=True)            
             for pathSegment in self._futurePathSegments:
                 pathSegment.draw(canvas, color=lineOfSightColor)            
             for pathSegment in self._pastPathSegments:
@@ -70,3 +71,5 @@ class PathFindDrawable(Drawable):
 
         for solutionWaypoint in self._solutionWaypoints:
             gui.draw.drawCircle(canvas, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
+        
+        return drawTime

@@ -8,3 +8,6 @@ class DefaultPathSegment(PathSegment):
 
     def intersectsObstacleLine(self, obstacleLine):
         return False
+
+    def intersectsDNFZ(self, dnfz):
+        return False

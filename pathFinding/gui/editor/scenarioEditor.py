@@ -5,7 +5,6 @@ from engine import interface
 from engine.interface.fileUtils import TEST_INPUT_KEY
 from engine.interface.scenario import Scenario
 from engine.interface.testScenario import TestScenario
-from gui import draw
 from gui.editor.nfzEdit.dnfzBuilder import DNFZBuilder
 from gui.editor.pathSegmentTester.pathSegmentTester import PathSegmentTester
 from gui.editor.wayPointEditor import WayPointEditor
@@ -111,5 +110,4 @@ class ScenarioEditor(Visualizer, Drawable):
         self.drawToCanvas(self)
 
     def draw(self, canvas, **kwargs):
-        draw.drawScenario(canvas, self._inputDict[interface.SCENARIO_KEY])
         self._mode.draw(canvas, **kwargs)

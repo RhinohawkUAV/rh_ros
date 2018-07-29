@@ -16,7 +16,7 @@ class PointTarget(Target):
         return np.dot(toCenter, toCenter) < arc.radius * arc.radius
     
     def getCriticalPoints(self, arc):
-        distances = calcs.rayIntersectCircle(self.startPosition, self.direction, arc.center, arc.radius)
+        distances = calcs.getRayCircleIntersections(self.startPosition, self.direction, arc.center, arc.radius)
         criticalPoints = []
         for distance in distances:
             if distance >= 0.0:

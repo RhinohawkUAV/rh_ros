@@ -18,6 +18,7 @@ class PathFinder:
         self._obstacleData = ArcObstacleCourse(vehicle.acceleration, params.nfzBufferSize)
 #         self._obstacleData = LineSegmentObstacleData(params.nfzBufferSize)
         self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
+        self._obstacleData.setDynamicNoFlyZones(scenario.dynamicNoFlyZones)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = scenario.calcBounds()

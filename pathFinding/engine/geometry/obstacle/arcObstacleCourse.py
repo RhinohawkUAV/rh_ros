@@ -7,13 +7,15 @@ from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
 from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 from utils import profile
 
+_rotDirections = (-1.0, 1.0)
+
 
 class ArcObstacleCourse(DefaultObstacleCourse):
     """
     Basic implementation of ObstacleData which produces simple line segments.  This assumes that the vehicle travels
     at a constant speed and that it is only limited by a maximum turning angle, which ignores speed.
     """
-
+    
     def __init__(self, acceleration, targetOffsetLength):
         DefaultObstacleCourse.__init__(self, targetOffsetLength)
         self.acceleration = acceleration
@@ -22,47 +24,41 @@ class ArcObstacleCourse(DefaultObstacleCourse):
     def createPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
 
         target = PointTarget(targetPoint, velocityOfTarget)
+        unfilteredSegments = []
         try:
-            arcFinderCCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)
-            arcFinderCCW.solve(target)
-            timeCCW = arcFinderCCW.totalTime
+            arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)
+            unfilteredSegments.append(arcFinder.solve(target, startTime))
         except NoSolutionException:
-            timeCCW = float("inf")
- 
+            pass
         try:
-            arcFinderCW = ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration)
-            arcFinderCW.solve(target)
-            timeCW = arcFinderCW.totalTime
+            arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration)
+            unfilteredSegments.append(arcFinder.solve(target, startTime))
         except NoSolutionException:
-            timeCW = float("inf")
- 
-        arcFinders = [] 
-        if timeCCW < timeCW:
-            arcFinders.append(arcFinderCCW)
-            if timeCW < float("inf"):
-                arcFinders.append(arcFinderCW)
-        elif timeCW < float("inf"):
-            arcFinders.append(arcFinderCW)
-            if timeCCW < float("inf"):
-                arcFinders.append(arcFinderCCW)
-
+            pass
+        return self.sortFilter(unfilteredSegments)
+        
+    def createPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
+        unfilteredSegments = []
+        for arcRotDirection in _rotDirections:
+            for targetRotDirection in _rotDirections:
+                arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, arcRotDirection, self.acceleration)
+                target = CircularTarget(dynamicNoFlyZone.center + startTime * dynamicNoFlyZone.velocity,
+                                        dynamicNoFlyZone.velocity,
+                                        dynamicNoFlyZone.radius + self.targetOffsetLength,
+                                        targetRotDirection)
+                try:
+                    unfilteredSegments.append(arcFinder.solve(target, startTime))
+                except NoSolutionException:
+                    pass
+        return self.sortFilter(unfilteredSegments)
+        
+    def sortFilter(self, unfilteredSegments):
+        unfilteredSegments.sort(key=lambda arc: arc.elapsedTime)
         segments = []
-        for arcFinder in arcFinders:
-            if arcFinder.arc.length < MAX_ARC_LENGTH:
-                segment = ArcPathSegment(startTime,
-                                         arcFinder.totalTime,
-                                         arcFinder.lineStartPoint,
-                                         arcFinder.lineEndPoint,
-                                         startSpeed,
-                                         arcFinder.endUnitVelocity,
-                                         arcFinder.arc)
+        for segment in unfilteredSegments:
+            if segment.arc.length < MAX_ARC_LENGTH:
                 segments.append(segment)
                 # TODO: Remove this and search all arcs (too slow for testing)
-                break
-
+#                 break
+                    
         return segments
-
-    def createPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
-#         target = CircularTarget(dynamicNoFlyZone.center, dynamicNoFlyZone.velocity, dynamicNoFlyZone.radius)
-        return self.createPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone.center, dynamicNoFlyZone.velocity)
-        

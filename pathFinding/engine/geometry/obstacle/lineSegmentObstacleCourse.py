@@ -1,6 +1,7 @@
 import math
 
 from engine.geometry import calcs
+from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.defaultObstacleCourse import DefaultObstacleCourse
 from engine.geometry.pathSegment.linePathSegment import LinePathSegment
 import numpy as np
@@ -27,6 +28,23 @@ class LineSegmentObstacleCourse(DefaultObstacleCourse):
             
             return [LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, startSpeed, solution.velocity / startSpeed)]
         return []
+
+    def createPathSegmentsToDynamicNoFlyZone(self, startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone):
+        results = []
+        try:
+            solutions = calcs.hitTargetCircleAtSpeed(startPoint,
+                                                     startSpeed,
+                                                     dynamicNoFlyZone.center + startTime * dynamicNoFlyZone.velocity,
+                                                     dynamicNoFlyZone.velocity,
+                                                     dynamicNoFlyZone.radius)
+            for solution in solutions:
+                if solution is not None:
+                    endPoint = solution.endPoint
+                    results.append(LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, startSpeed, solution.velocity / startSpeed))
+        except NoSolutionException:
+            pass
+                
+        return results
 
 
 def turnIsLegal(speed, unitVelocity, velocity2):

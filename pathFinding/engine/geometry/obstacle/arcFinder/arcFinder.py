@@ -1,9 +1,9 @@
 import math
 
 from engine.geometry import calcs
-from engine.geometry.arc import Arc
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder.arcCalc import ArcCalc
+from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
 import numpy as np
 
 # TODO: Move to constants
@@ -16,7 +16,7 @@ MAX_ANGLE_ERROR = 0.001
 
 MIN_ANGLE_ERROR_COS = math.cos(MAX_ANGLE_ERROR)
 
-    
+
 class ArcFinder:
 
     def __init__(self, startPoint, startSpeed, unitVelocity, rotDirection, acceleration):
@@ -40,28 +40,28 @@ class ArcFinder:
         self.lineEndPoint = None
         self.finalVelocity = None
 
-    def solve(self, target):
-        
+    def solve(self, target, starTimeOffset):
+          
         self.arc.length = target.initialGuess(self.arc)
-        
+          
         iteration = 0
         while iteration < MAX_ITERATIONS:
             (angle, solution) = target.iterateSolution(self.arc)
             angleDiff = calcs.modAngleSigned(angle - (self.arc.start + self.arc.length))
-            
-            if math.fabs(angleDiff) <= MAX_ANGLE_ERROR:
-                self.arcTime = self.arc.arcTime()
-                self.totalTime = solution.time + self.arcTime 
-                self.lineEndPoint = solution.endPoint
-                self.finalVelocity = solution.velocity
-                arcEnd = self.arc.start + self.arc.length
-                arcEndVec = calcs.unitVectorOfAngle(arcEnd, self.arc.rotDirection)
-                self.lineStartPoint = self.arc.center + self.arc.radius * arcEndVec
-                self.endUnitVelocity = self.arc.rotDirection * calcs.CCWNorm(arcEndVec)                
-                return
             self.arc.length += angleDiff
             if self.arc.length < 0.0:
                 raise NoSolutionException            
+            elif math.fabs(angleDiff) <= MAX_ANGLE_ERROR:
+                return self.generateSolution(solution.time, starTimeOffset)
             iteration += 1
         raise NoSolutionException
-
+  
+    def generateSolution(self, lineTime, starTimeOffset):
+        (arcEndPoint, arcEndDirection) = self.arc.endInfo()
+        return ArcPathSegment(starTimeOffset,
+                         elapsedTime=lineTime + self.arc.arcTime(),
+                         lineStartPoint=arcEndPoint,
+                         endPoint=arcEndPoint + self.arc.speed * arcEndDirection * lineTime,
+                         endSpeed=self.arc.speed,
+                         endUnitVelocity=arcEndDirection,
+                         arc=self.arc)

@@ -1,13 +1,10 @@
-import Tkinter as tk
 from engine.geometry import calcs
 from engine.interface.fileUtils import SCENARIO_KEY
-from gui import Drawable, draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
-import numpy as np
 from subGUI import SubGUI
 
 
-class WayPointEditor(SubGUI, Drawable):
+class WayPointEditor(SubGUI):
 
     def __init__(self, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR):
         self._points = []
@@ -57,6 +54,3 @@ class WayPointEditor(SubGUI, Drawable):
                 (distance, index) = calcs.findClosestPoint(point, self._points)
                 self._points.pop(index)
         self.sync()
-
-    def draw(self, canvas, **kwargs):
-        pass

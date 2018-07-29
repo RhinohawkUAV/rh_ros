@@ -3,25 +3,27 @@ from engine.geometry.obstacle.arcObstacleCourse import ArcObstacleCourse
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.vehicle import DEFAULT_VEHICLE
-from gui import Drawable, draw
+from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
 from gui.editor.subGUI import SubGUI
+from gui.pathFinder.pathfindDrawable import PathFindDrawable
 
 
-class PathSegmentTester(Drawable, SubGUI):
+class PathSegmentTester(SubGUI):
 
     def __init__(self):
+        self._pathFinderDrawable = None
         self._obstacleData = None
         self._pointOfInterest = None
         self._showPathsToPoints = False
-        self._pathSegments = []
-        self._filteredPathSegments = []
 
     def onLeftRelease(self, point, control=False):
         if control:
             self._inputDict[TEST_INPUT_KEY].targetPoint = point
         else:
             self._inputDict[TEST_INPUT_KEY].startPoint = point
+            
+        self.updateDrawable()
 
     def onKey(self, point, key, ctrl=False):
         if key == "v":
@@ -32,6 +34,7 @@ class PathSegmentTester(Drawable, SubGUI):
 
         if key == "z":
             self._showPathsToPoints = not self._showPathsToPoints
+        self.updateDrawable()
 
     def onMotion(self, point, control=False):
         self._pointOfInterest = point
@@ -41,15 +44,12 @@ class PathSegmentTester(Drawable, SubGUI):
         self._obstacleData = ArcObstacleCourse(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
         self._obstacleData.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
+        self._obstacleData.setDynamicNoFlyZones(self._inputDict[SCENARIO_KEY].dynamicNoFlyZones)
+        self._pathFinderDrawable = PathFindDrawable(self._inputDict[SCENARIO_KEY])
 
-    def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
-        draw.drawPoint(canvas, self._inputDict[TEST_INPUT_KEY].startPoint, radius=radius, color=color)
-        draw.drawVelocity(canvas,
-                          self._inputDict[TEST_INPUT_KEY].startPoint,
-                          self._inputDict[TEST_INPUT_KEY].startVelocity)
-        
+    def updateDrawable(self):
         (startUnitVelocity, startSpeed) = calcs.unitAndLength(self._inputDict[TEST_INPUT_KEY].startVelocity)
-                
+                 
         goalSegments = self._obstacleData.findPathSegmentsToPoint(startTime=0.0,
                                                          startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                          startSpeed=startSpeed,
@@ -57,38 +57,28 @@ class PathSegmentTester(Drawable, SubGUI):
                                                          targetPoint=self._inputDict[TEST_INPUT_KEY].targetPoint,
                                                          velocityOfTarget=self._inputDict[TEST_INPUT_KEY].velocityOfTarget)
 
-        # Draw obstacles as they appear at this time
-        drawTime = 0.0
-        closestDistance = 50.0
-        closestPoint = None
-        for goalSegment in goalSegments:
-            goalSegment.draw(canvas)
-
-            if self._pointOfInterest is not None:
-                (point, distance, time) = goalSegment.calcPointDebug(self._pointOfInterest)
-                if distance < closestDistance:
-                    closestDistance = distance
-                    closestPoint = point
-                    drawTime = time
-        if closestPoint is not None:
-            draw.drawPoint(canvas, closestPoint, radius=radius, color="orange")
-            draw.drawDynamicNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].dynamicNoFlyZones, time=drawTime, color="blue")
-            draw.drawNoFlyZones(canvas, self._inputDict[SCENARIO_KEY].noFlyZones, time=drawTime, color="blue")
-
         if self._showPathsToPoints:
-            (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(startTime=0.0,
+            (pathSegments, filteredPathSegments) = self._obstacleData.findPathSegments(startTime=0.0,
                                                                                                    startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                                                                    startSpeed=startSpeed,
                                                                                                    startUnitVelocity=startUnitVelocity)
         else:
-            self._pathSegments = []
-            self._filteredPathSegments = []
+            pathSegments = []
+            filteredPathSegments = []
+        self._pathFinderDrawable.updateDebug([], pathSegments, filteredPathSegments)
+        self._pathFinderDrawable.updateSolution([], goalSegments, False)
 
-        for pathSegment in self._pathSegments:
-            pathSegment.draw(canvas)
-        for pathSegment in self._filteredPathSegments:
-            pathSegment.draw(canvas, filtered=True)
+    def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
+        drawTime = self._pathFinderDrawable.draw(canvas,
+                                      pointOfInterest=self._pointOfInterest,
+                                      snapDistance=50.0,
+                                      showFiltered=True)
+        draw.drawPoint(canvas, self._inputDict[TEST_INPUT_KEY].startPoint, radius=radius, color=color)
+        draw.drawVelocity(canvas,
+                          self._inputDict[TEST_INPUT_KEY].startPoint,
+                          self._inputDict[TEST_INPUT_KEY].startVelocity)
 
         targetPoint = self._inputDict[TEST_INPUT_KEY].targetPoint + self._inputDict[TEST_INPUT_KEY].velocityOfTarget * drawTime
         draw.drawPoint(canvas, targetPoint, radius=radius, color=color)
         draw.drawVelocity(canvas, targetPoint, self._inputDict[TEST_INPUT_KEY].velocityOfTarget)
+

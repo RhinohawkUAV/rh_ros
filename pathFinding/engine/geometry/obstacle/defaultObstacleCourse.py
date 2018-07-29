@@ -29,6 +29,7 @@ class DefaultObstacleCourse(ObstacleCourse):
 
         # When finding paths to no fly zone vertices, this applies an "outward" offset to each vertex of this length
         self.targetOffsetLength = targetOffsetLength
+        self.dynamicNoFlyZones = []
 
     def setInitialState(self, boundaryPoints, noFlyZones):
         del self.targetPoints[:]
@@ -75,7 +76,7 @@ class DefaultObstacleCourse(ObstacleCourse):
 
     def createPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         """
-        Creates a PathSegment object from the given start point and velocity, which will hit the target, which is moving
+        Creates a list of PathSegment objects from the given start point and velocity, which will hit the target, which is moving
         at a given velocity.
         :param startTime: absolute time at start of segment
         :param startPoint:
@@ -106,7 +107,7 @@ class DefaultObstacleCourse(ObstacleCourse):
 
         filteredPathSegments = []
         for pathSegment in pathSegments:
-            if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
+            if self._filterPathSegment(pathSegment, self.obstacleLines, self.dynamicNoFlyZones):
                 filteredPathSegments.append(pathSegment)
         return filteredPathSegments
 
@@ -114,7 +115,7 @@ class DefaultObstacleCourse(ObstacleCourse):
         pathSegments = self.createPathSegmentsToDynamicNoFlyZone(startTime, startPoint, startSpeed, startUnitVelocity, dynamicNoFlyZone)
         filteredPathSegments = []
         for pathSegment in pathSegments:
-            if pathSegment is not None and self._filterPathSegment(pathSegment, self.obstacleLines):
+            if self._filterPathSegment(pathSegment, self.obstacleLines):
                 filteredPathSegments.append(pathSegment)
         return filteredPathSegments
 
@@ -126,7 +127,7 @@ class DefaultObstacleCourse(ObstacleCourse):
         unfilteredPathSegments = []
         unfilteredPathSegments.extend(staticPathSegments)
         unfilteredPathSegments.extend(dynamicPathSegments)
-        return self._filterPathSegments(unfilteredPathSegments, self.obstacleLinesAtTime)
+        return self._filterPathSegments(unfilteredPathSegments, self.obstacleLinesAtTime, self.dynamicNoFlyZones)
         
     def _findStaticPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
         pathSegments = []
@@ -148,26 +149,28 @@ class DefaultObstacleCourse(ObstacleCourse):
                         pathSegments.append(pathSegment)
         return pathSegments
 
-    # TODO: Use the "buffer" constant to increase circle radius when skirting dnfzs
     def _findDynamicPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
-        
         pathSegments = []
+        for dnfz in self.dynamicNoFlyZones:
+            pathSegments.extend(self.createPathSegmentsToDynamicNoFlyZone(startTime, startPoint, startSpeed, startUnitVelocity, dnfz))
         return pathSegments
 
-    # TODO: Filtering should include dnfzs at some point
-    def _filterPathSegment(self, pathSegment, obstacleLines):
+    def _filterPathSegment(self, pathSegment, obstacleLines, dynamicNoFlyZones):
         for i in range(len(obstacleLines)):
             obstacleLine = obstacleLines[i]
             if pathSegment.intersectsObstacleLine(obstacleLine):
                 return False
+        for dynamicNoFlyZone in dynamicNoFlyZones:
+            if pathSegment.intersectsDNFZ(dynamicNoFlyZone):
+                return False
         return True
 
     @profile.accumulate("Collision Detection")
-    def _filterPathSegments(self, pathSegments, obstacleLines):
+    def _filterPathSegments(self, pathSegments, obstacleLines, dynamicNoFlyZones):
         unfilteredPathSegments = []
         filteredPathSegments = []
         for pathSegment in pathSegments:
-            if self._filterPathSegment(pathSegment, obstacleLines):
+            if self._filterPathSegment(pathSegment, obstacleLines, dynamicNoFlyZones):
                 unfilteredPathSegments.append(pathSegment)
             else:
                 filteredPathSegments.append(pathSegment)

@@ -1,4 +1,9 @@
-class SubGUI:
+from engine.interface.fileUtils import SCENARIO_KEY
+from gui import draw
+from gui.core import Drawable
+
+
+class SubGUI(Drawable):
     """Depending on mode of GeometryCreator, a subGUI will be signalled to take action in response to input events."""
 
     def __init__(self):
@@ -21,3 +26,6 @@ class SubGUI:
     
     def onExit(self):
         pass
+    
+    def draw(self, canvas, **kwargs):
+        draw.drawScenario(canvas, self._inputDict[SCENARIO_KEY])

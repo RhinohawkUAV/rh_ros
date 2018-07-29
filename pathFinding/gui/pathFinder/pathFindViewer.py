@@ -73,7 +73,20 @@ class PathFindViewer(Visualizer, PathFinderListener):
                           (COURSE_DIM / 2.0, COURSE_DIM / 2.0), (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)]
 
         # TODO: Make regular NFZs not dynamic.  Generate dynamic NFZs according to rules.         
-        noFlyZones = engine.utils.genRandomNoFlyZoneInputsHard(50,
+        noFlyZones = []
+        dynamicNoFlyZones = []
+        
+#         dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputsHard(50,
+#                                                                     - COURSE_DIM / 2.0 * 0.9,
+#                                                                     - COURSE_DIM / 2.0 * 0.9,
+#                                                                     COURSE_DIM * 0.9,
+#                                                                     COURSE_DIM * 0.9,
+#                                                                     0.005, 0.05,
+#                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
+#                                                                     startPoint=startPoint, endPoint=endPoint,
+#                                                                     averageSpeed=self._vehicle.maxSpeed)
+        
+        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(50,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
@@ -83,7 +96,6 @@ class PathFindViewer(Visualizer, PathFinderListener):
                                                                     startPoint=startPoint, endPoint=endPoint,
                                                                     averageSpeed=self._vehicle.maxSpeed)
          
-        dynamicNoFlyZones = []
         roads = []
         wayPoints = [endPoint]
         scenario = Scenario(boundaryPoints, noFlyZones, dynamicNoFlyZones, roads, startPoint, startVelocity, wayPoints)
@@ -108,6 +120,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self.updateDisplay()
 
     def solution(self, solutionsWaypoints, solutionPathSegments, finished):
+        self._pathFindDrawable.updateDebug([], [], [])
         self._pathFindDrawable.updateSolution(solutionsWaypoints, solutionPathSegments, finished)
         self.updateDisplay()
 

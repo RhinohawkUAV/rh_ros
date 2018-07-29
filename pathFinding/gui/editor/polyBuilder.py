@@ -1,13 +1,12 @@
-import numpy as np
-
-import gui
 from engine.geometry import LineSegment
-from gui import Drawable
+import gui
 from gui.draw import DEFAULT_COLOR
+import numpy as np
 from subGUI import SubGUI
 
 
-class PolyBuilder(Drawable, SubGUI):
+class PolyBuilder(SubGUI):
+
     def __init__(self):
         self._points = []
         self._lines = []
@@ -62,6 +61,8 @@ class PolyBuilder(Drawable, SubGUI):
         pass
 
     def draw(self, canvas, color=DEFAULT_COLOR, **kwargs):
+        SubGUI.draw(self, canvas, **kwargs)
+        
         for point in self._points:
             gui.draw.drawPoint(canvas, point, color=color)
         for line in self._lines:
