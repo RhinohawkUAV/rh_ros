@@ -72,28 +72,35 @@ def create_waypoints(req):
             
     """
     Calculate x-y coordinate system rotation angle relative to latitude-longtitude 
-    Use atan2, not atan, to avoid possible issues near 90 degrees
+    Use atan2, not atan, to avoid possible issues near 90 degrees. atan2 takes (y,x)
+    
+    A few other weird things: GPS system is LHS, not RHS, which changes the sign of
+    the numerator
+    Need to do the trigonometry in meters, not GPS, as lat and lon are unequal per degree
     """
-    theta = atan2((current.lat - target.lat) , (current.lon - target.lon))
+    theta = atan2((target.lon - current.lon) * meters_per_degree_longitude,
+		(current.lat - target.lat) * meters_per_degree_latitude)
+                  
+    print("theta: {}", theta)
     
     """
-    Rotate points to align axes. We must rotate by NEGATIVE theta.
-    cos(-theta) = cos(theta), sin(-theta) = -sin(theta)
+    Rotate points to align axes. We must rotate by theta.
     """
     rotatedPointList = []
     for p in pointList:
-        rotatedPointList.append(MyPoint((p.x * cos(theta)) + (p.y * sin(theta)), \
-            (p.x * sin(-theta) + (cos(theta) * p.y))))
+        rotatedPointList.append(MyPoint((p.x * cos(theta)) - (p.y * sin(theta)), \
+            (p.x * sin(theta) + (cos(theta) * p.y))))
         
     """
-    Finally, we can scale and translate.
+    Finally, we can scale and translate. Account for LHS with negative lon
     """
     gpsList = []
     for p in rotatedPointList:
         gpsList.append(GPSCoord(
-            lat=(p.y / meters_per_degree_latitude) + target.lat, \
-	    lon=(p.x / meters_per_degree_longitude) + target.lon, \
-	    alt=search_altitude))
+            lat = (p.y / meters_per_degree_latitude) + target.lat,
+            lon = (-1 * p.x / meters_per_degree_longitude) + target.lon,
+            alt = search_altitude
+            ))
     
     resp = GenerateSearchPatternResponse()
     resp.waypoints = GPSCoordList(points=gpsList)
