@@ -29,6 +29,10 @@
 
   <arg name="cname" value="$(optenv CAMERA_NAME gopro)"/>
  
+  <node pkg="camera_driver" type="metadata.py" name="metadata" ns="camera" output="screen">
+    <param name="camera_metadata_path" value="$(find camera_driver)/metadata/$(arg cname).yaml" />
+  </node>
+
   <!-- GSCAM node for 3dr Solo Camera -->
   <group unless="$(eval cname == 'chameleon3')"> 
 

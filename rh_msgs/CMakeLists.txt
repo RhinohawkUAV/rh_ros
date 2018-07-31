@@ -14,6 +14,7 @@ add_message_files(
   Mission.msg
   State.msg
   VehicleState.msg
+  CameraMetadata.msg
 )
 
 add_service_files(
@@ -29,6 +30,7 @@ add_service_files(
   AbortMission.srv
   FlyWaypoints.srv
   GenerateSearchPattern.srv
+  GetCameraMetadata.srv
 )
 
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs geographic_msgs std_msgs mavros_msgs)
