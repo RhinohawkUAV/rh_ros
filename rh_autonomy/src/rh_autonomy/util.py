@@ -98,7 +98,7 @@ def coord_lists_equal(wps1, wps2, approx=True):
         within a margin of GPS error of each other.
     """
     if len(wps1)!=len(wps2): 
-        rospy.logwarn("Lists lengths dont match (%d!=%d)"\
+        rospy.logdebug("Lists lengths dont match (%d!=%d)"\
                 %(len(wps1),len(wps2)))
         return False
     for wp1,wp2 in zip(wps1,wps2):
@@ -114,7 +114,7 @@ def coords_equal(wp1, wp2, approx=True):
     if approx:
         d = gps_dist(wp1, wp2)
         if d >= GPS_ERROR:
-            rospy.loginfo("Lists are not the same because WPs are %2.6f apart"%d)
+            rospy.logdebug("Lists are not the same because WPs are %2.6f apart"%d)
         return d < GPS_ERROR
     else:
         return wp1.lat==wp2.lat and wp1.lon==wp2.lon and wp1.alt==wp2.alt

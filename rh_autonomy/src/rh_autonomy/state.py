@@ -229,7 +229,10 @@ class StateNode():
 
         # TODO: check for status==READY
 
+        # TODO: check to see if mission controller is spinning (?)
+
         self.mission_status = MissionStatus.RUNNING
+        log("STARTING MISSION")
         return StartMissionResponse(True)
 
 

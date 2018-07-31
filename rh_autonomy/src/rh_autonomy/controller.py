@@ -18,20 +18,29 @@ import pathfinding.msg as pfm
 
 # check state and adjust control every other second
 CONTROL_RATE_HZ = 0.5
-
+DEFAULT_STRIP_WIDTH = 10 # meters
 
 def calculate_ground_res(m, altitude):
     """ Given camera metadata and an altitude, this function calculates the 
         resulting ground resolution (cm of ground represented by a single pixel)
     """
-    ground_res_x = (altitude * m.sensor_width * 100) / (m.image_width * m.focal_length)
-    ground_res_y = (altitude * m.sensor_height * 100) / (m.image_width * m.focal_length)
-    return (ground_res_x, ground_res_y)
+    x = (altitude * m.sensor_width * 100) / (m.image_width * m.focal_length)
+    y = (altitude * m.sensor_height * 100) / (m.image_height * m.focal_length)
+    return (x, y)
 
 
 def calculate_strip_width(altitude, overlap):
-    get_metadata = get_proxy('/camera/get_metadata', GetCameraMetadata)
-    m = get_metadata().metadata
+    
+    # Attempt to get metadata from the camera
+    try:
+        get_metadata = rospy.ServiceProxy('/camera/get_metadata', GetCameraMetadata)
+        res = get_metadata()
+        if not res: raise Exception("Null camera metadata result")
+    except:
+            rospy.logwarn("Could not get camera metadata. Using default strip width.")
+            return DEFAULT_STRIP_WIDTH
+
+    m = res.metadata
     ground_res = calculate_ground_res(m, altitude)
     rospy.loginfo("Ground Sampling Distance: (%2.2fmm, %2.2fm)" % ground_res)
     if ground_res[0] > 2.63:
@@ -43,17 +52,6 @@ def calculate_strip_width(altitude, overlap):
     rospy.loginfo("Ground Resolution: (%2.2fm, %2.2fm)" % image_res)
     return image_res[0] - overlap
 
-
-def generate_search_pattern(current_pos, search_target, search_radius, \
-        search_altitude, strip_width):
-    req = GenerateSearchPattern()
-    req.target = current_pos
-    req.current_location = search_target
-    req.search_radius = search_radius
-    req.strip_width = strip_width
-    req.search_altitude = search_altitude
-    res = create_waypoints(req) 
-    return res.waypoints
 
 
 class ControllerNode():
@@ -79,6 +77,29 @@ class ControllerNode():
             rate.sleep()
     
 
+    def control(self):
+
+        state = self.get_state().state
+        status = state.mission_status
+        
+        if status == MissionStatus.ABORTING:
+            rospy.logwarn("Aborting mission")
+            self.control_aborting(state)
+
+        elif status == MissionStatus.RUNNING:
+            rospy.logdebug("Autonomous navigation")
+            self.control_running(state)
+
+        elif status == MissionStatus.READY:
+            pass
+
+        elif status == MissionStatus.NOT_READY:
+            pass
+
+        else:
+            rospy.logwarn("Unknown mission status: %d"%status)
+
+
     def control_aborting(self, state):
         # TODO: implement abort logic
         pass
@@ -92,16 +113,69 @@ class ControllerNode():
 
         # current goal
         tmi = state.target_mission_wp
+        rospy.loginfo("Control to goal %d"%tmi)
 
         if tmi == len(mission_wps)-1:
+            rospy.loginfo("Control to last waypoint")
+
             # last mission waypoint
-            # TODO: perform search and precision landing
             target = mission_wps[tmi]
-            self.control_waypoint(state, target)
+
+            if rhc.PERFORM_SEARCH:
+
+                # Have we found a place to land yet?
+                if state.landing_location.lat and state.landing_location.lon:
+                    self.control_landing(state, state.landing_location)
+                
+                # If not, perform a search
+                else:
+                    self.control_search(state, target)
+
+            else:
+                # No search, just land at the last waypoint
+                self.control_waypoint(state, target)
+
         elif tmi < len(mission_wps):
             target = mission_wps[tmi]
             next_target = mission_wps[tmi+1]
             self.control_waypoint(state, target, next_target)
+
+
+
+    def control_search(self, state, target):
+
+        vs = state.vehicle_state
+        mission_goal_id = state.target_mission_wp
+        
+        search_gcl = self.generate_search_pattern(vs.position, target)
+
+        if search_gcl:
+            wps = search_gcl.points
+            rospy.logdebug("Will submit %d waypoints", len(wps))
+            if not self.fly_waypoints(mission_goal_id, \
+                    self.cruise_alt, self.wp_radius, \
+                    search_gcl, \
+                    False, \
+                    False):
+                rospy.logerr("Could not fly waypoints")
+        else:
+            rospy.logdebug("No search waypoints!")
+
+
+    def control_landing(self, state, target):
+
+        vs = state.vehicle_state
+        mission_goal_id = state.target_mission_wp
+        
+        wpl = GPSCoordList()
+        wpl.waypoints = [target]
+        rospy.logdebug("Will submit final landing waypoint")
+        if not self.fly_waypoints(mission_goal_id, \
+                self.cruise_alt, self.wp_radius, \
+                wpl, \
+                False, \
+                True):
+            rospy.logerr("Could not fly waypoints")
 
 
     def control_waypoint(self, state, target, next_target=None): 
@@ -183,8 +257,6 @@ class ControllerNode():
         rospy.loginfo("Pathfinder returned %d waypoints until goal" % len(wps))
 
         if wps:
-            #if next_target:
-            #    wps.append(next_target)
             rospy.logdebug("Will submit %d waypoints", len(wps))
             if not self.fly_waypoints(mission_goal_id, \
                     self.cruise_alt, self.wp_radius, \
@@ -196,22 +268,16 @@ class ControllerNode():
             rospy.logdebug("No solution waypoints!")
 
 
-    def control(self):
+    def generate_search_pattern(self, current_pos, search_target):
+        req = GenerateSearchPattern()
+        req.current_location = current_pos
+        req.target = search_target
+        req.search_radius = rhc.SEARCH_RADIUS
+        req.strip_width = self.search_strip_width
+        req.search_altitude = rhc.SEARCH_ALTITUDE
+        res = create_waypoints(req) 
+        return res.waypoints
 
-        state = self.get_state().state
-        status = state.mission_status
-
-        if status == MissionStatus.ABORTING:
-            rospy.logwarn("Aborting mission")
-            self.control_aborting(state)
-
-        elif status == MissionStatus.RUNNING:
-            rospy.logdebug("Autonomous navigation")
-            self.control_running(state)
-
-        else:
-            # Nothing for us to do
-            pass
 
 
 if __name__ == "__main__":

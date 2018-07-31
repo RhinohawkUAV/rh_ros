@@ -27,8 +27,14 @@ GOAL_ID_START = 3333
 # Mission cruise altitude in meters
 CRUISE_ALTITUDE = 30
 
+# Should we search for a target, or just land?
+PERFORM_SEARCH = True
+
 # Search altitude in meters
 SEARCH_ALTITUDE = 20
+
+# Search radius in meters
+SEARCH_RADIUS = 50
 
 # Overlap of search strips in meters
 SEARCH_STRIP_OVERLAP = 10
