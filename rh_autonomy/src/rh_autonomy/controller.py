@@ -9,14 +9,51 @@ import rospy
 import actionlib
 
 from rh_msgs.msg import GPSCoord, GPSCoordList
-from rh_msgs.srv import GetState, FlyWaypoints
+from rh_msgs.srv import GetState, GetCameraMetadata, FlyWaypoints, GenerateSearchPattern
 from rh_autonomy.util import get_proxy
 from rh_autonomy.state import MissionStatus, VehicleStatus
+from rh_autonomy.search_pattern import create_waypoints
 import rh_autonomy.constants as rhc
 import pathfinding.msg as pfm
 
 # check state and adjust control every other second
 CONTROL_RATE_HZ = 0.5
+
+
+def calculate_ground_res(m, altitude):
+    """ Given camera metadata and an altitude, this function calculates the 
+        resulting ground resolution (cm of ground represented by a single pixel)
+    """
+    ground_res_x = (altitude * m.sensor_width * 100) / (m.image_width * m.focal_length)
+    ground_res_y = (altitude * m.sensor_height * 100) / (m.image_width * m.focal_length)
+    return (ground_res_x, ground_res_y)
+
+
+def calculate_strip_width(altitude, overlap):
+    get_metadata = get_proxy('/camera/get_metadata', GetCameraMetadata)
+    m = get_metadata().metadata
+    ground_res = calculate_ground_res(m, altitude)
+    rospy.loginfo("Ground Sampling Distance: (%2.2fmm, %2.2fm)" % ground_res)
+    if ground_res[0] > 2.63:
+        rospy.logwarn("Ground sampling distance (GSD) is greater than 2.63 "+\
+                "and will not allow for arUco marker detection.")
+    # amount of area covered by a single image
+    image_res = (m.image_width * ground_res[0], m.image_height * ground_res[1])
+    # for now, ignore frontal overlap
+    rospy.loginfo("Ground Resolution: (%2.2fm, %2.2fm)" % image_res)
+    return image_res[0] - overlap
+
+
+def generate_search_pattern(current_pos, search_target, search_radius, \
+        search_altitude, strip_width):
+    req = GenerateSearchPattern()
+    req.target = current_pos
+    req.current_location = search_target
+    req.search_radius = search_radius
+    req.strip_width = strip_width
+    req.search_altitude = search_altitude
+    res = create_waypoints(req) 
+    return res.waypoints
 
 
 class ControllerNode():
@@ -25,6 +62,7 @@ class ControllerNode():
         rospy.init_node("controller")
         self.get_state = get_proxy('/rh/command/get_state', GetState)
         self.fly_waypoints = get_proxy('/rh/command/fly_waypoints', FlyWaypoints)
+        self.search_strip_width = calculate_strip_width(rhc.SEARCH_ALTITUDE, rhc.SEARCH_STRIP_OVERLAP)
         self.cruise_alt = rhc.CRUISE_ALTITUDE
         self.wp_radius = rhc.WAYPOINT_ACCEPTANCE_RADIUS
         self.nfz_buffer_size = rhc.NOFLYZONE_BUFFER_SIZE

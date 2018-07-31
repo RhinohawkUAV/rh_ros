@@ -25,7 +25,13 @@ MAV_CMD_DO_SET_HOME = 179
 GOAL_ID_START = 3333
 
 # Mission cruise altitude in meters
-CRUISE_ALTITUDE = 20
+CRUISE_ALTITUDE = 30
+
+# Search altitude in meters
+SEARCH_ALTITUDE = 20
+
+# Overlap of search strips in meters
+SEARCH_STRIP_OVERLAP = 10
 
 # Distance from waypoint in meters at which the waypoint is considered "completed"
 WAYPOINT_ACCEPTANCE_RADIUS = 10
