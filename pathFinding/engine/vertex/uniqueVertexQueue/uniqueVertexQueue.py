@@ -4,6 +4,9 @@ import numpy as np
 from uniqueVertexTree import UniqueTree
 from utils.minheap import MinHeap
 
+# TODO: Remove high number of 0 uniqueness points
+# TODO: Is diagonal length useful?
+
 
 class UniqueVertexQueue(VertexPriorityQueue):
     """
@@ -38,7 +41,12 @@ class UniqueVertexQueue(VertexPriorityQueue):
 
     def push(self, vertex):
         uniqueness = self._uniqueTree.insert(vertex)
-        priority = vertex.estimatedTimeThroughVertex - uniqueness * self._diagnonalTime
+        
+        if uniqueness == 0.0:
+            return
+        priority = vertex.estimatedTimeThroughVertex / uniqueness
+        
+        vertex.uniqueness = uniqueness
         self._heap.push(priority, vertex)
 
     def pop(self):

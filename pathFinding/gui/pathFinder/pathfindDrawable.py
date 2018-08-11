@@ -59,7 +59,9 @@ class PathFindDrawable(Drawable):
                 for pathSegment in self._filteredPathSegments:
                     pathSegment.draw(canvas, color=lineOfSightColor, filtered=True)            
             for pathSegment in self._futurePathSegments:
-                pathSegment.draw(canvas, color=lineOfSightColor)            
+                pathSegment.draw(canvas, color=lineOfSightColor)
+                if pathSegment.debug is not None:
+                    gui.draw.drawText(canvas, pathSegment.endPoint , str(pathSegment.debug) + "\n" + str(pathSegment.endPoint))  
             for pathSegment in self._pastPathSegments:
                 pathSegment.draw(canvas, color=pathColor, width=2.0)
             solutionWidth = 2

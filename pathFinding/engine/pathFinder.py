@@ -1,3 +1,4 @@
+import math
 import time
 
 from engine.geometry.obstacle.arcObstacleCourse import ArcObstacleCourse
@@ -15,6 +16,7 @@ class PathFinder:
     @profile.accumulate("setup")
     def __init__(self, params, scenario, vehicle):
         self._params = params
+        self._vehicle = vehicle
         self._obstacleData = ArcObstacleCourse(vehicle.acceleration, params.nfzBufferSize)
 #         self._obstacleData = LineSegmentObstacleData(params.nfzBufferSize)
         self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
@@ -22,7 +24,7 @@ class PathFinder:
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = scenario.calcBounds()
-        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2], bounds[3], vehicle.maxSpeed)
+        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1], vehicle.maxSpeed)
 
         self._start = np.array(scenario.startPoint, np.double)
         self._goal = np.array(scenario.wayPoints[0], np.double)
@@ -89,6 +91,7 @@ class PathFinder:
                                        pathSegment=pathSegment)
         
                     self._vertexQueue.push(newVertex)
+                    pathSegment.debug = newVertex.uniqueness
                 return False
         except QueueEmptyException:
             return True
@@ -126,7 +129,19 @@ class PathFinder:
     def heuristic(self, point, speed, unitVelocity):
         # TODO: Heuristic should be based on obstacle data and in the case of arcs should account for the heading at a given point.
         # This could use the, possibly filtered path, from the current vertex, to the goal
-        return calcs.calcTravelTime(point, self._goal, speed)
+        
+        # Approximate time is based on time to turn plus straightline distance.  
+        # This can give an over estimate making this method no longer admissible.  Given how open ended the search is, this is fine.
+        (direction, distance) = calcs.unitAndLength(self._goal - point)
+        
+        # TODO: This should not be necessary and doesn't account for -1.0.  This seems to be some kind of result of float64
+        turnAngleCos = min(1.0, np.dot(unitVelocity, direction))
+        
+        turnAngle = math.acos(turnAngleCos)
+        turnTime = turnAngle * speed / self._vehicle.acceleration
+        straightTime = distance / speed
+        return turnTime + straightTime
+#         return calcs.calcTravelTime(point, self._goal, speed)
 
     def hasSolution(self):
         return self._solution is not None

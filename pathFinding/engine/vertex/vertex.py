@@ -28,6 +28,9 @@ class Vertex(Drawable):
         # A path segment from the previous vertex to this vertex.  Stored for rendering/debug.
         self.pathSegment = pathSegment
 
+        # Potentially holds information for debugging
+        self.debug = None
+
     def drawPath(self, canvas, **kwargs):
         if self.previousVertex is not None:
             self.pathSegment.draw(canvas, **kwargs)

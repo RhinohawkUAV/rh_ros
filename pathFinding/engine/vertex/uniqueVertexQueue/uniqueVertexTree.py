@@ -28,18 +28,17 @@ def checkCoincident(p1, p2):
 
 class UniqueTree:
     """
-    A 4-d quadtree-ish data structure used to determine uniqueness value.  Every node in the tree has a uniqueness
-    value proportional to the size of its edge.  The root has a uniqueness of 1.0 and each level down the
-    tree has 1/2 the uniqueness of the previous level.
+    A 4-d quadtree-ish data structure used to determine uniqueness value.  The uniqueness of a node is a function of its depth.
 
     For efficiency this does not check for illegal values outside the range of the cell.  DON'T INSERT THESE VALUES!
     """
 
-    def __init__(self, x, y, width, height, maximumSpeed):
+    def __init__(self, x, y, width, height, maximumSpeed, levelUniquenessFactor=0.5):
         minPosition = np.array([x, y, -maximumSpeed, -maximumSpeed], np.double)
         dims = np.array([width, height, 2.0 * maximumSpeed, 2.0 * maximumSpeed], np.double)
 
-        self._root = UniqueNode(minPosition, dims, uniqueness=0.5)
+        self._root = UniqueNode(minPosition, dims, uniqueness=levelUniquenessFactor)
+        self._levelUniquenessFactor = levelUniquenessFactor
         self._empty = True
 
     def insert(self, vertex):
@@ -50,19 +49,47 @@ class UniqueTree:
         """
         position = np.array([vertex.position[0], vertex.position[1], vertex.speed * vertex.unitVelocity[0], vertex.speed * vertex.unitVelocity[1]])
 
-        # TODO: OK I lied.  For now we do check this.  However, we'll remove this check once the geo-fence is in place.
-        if (position < self._root._minPosition).sum() + (
-                position >= (self._root._minPosition + self._root._dims)).sum() > 0:
-            return 0.0
-
         if self._empty:
             self._empty = False
-            self._root.insert(position)
+            self._insertRecurse(self._root, position)
             return 1.0
 
-        return self._root.insert(position)
+        return self._insertRecurse(self._root, position)
 
+    def _insertRecurse(self, node, position):
+        """
+        Inserts the position into one of the 16 available children of node.
+        This will recurse if the child is not empty.
+        :param position:
+        :return:
+        """
+        subIndices = node._calcSubIndices(position)
+        index = _calcIndex(subIndices)
 
+        # If the slot is empty just insert the position there
+        if node._children[index] is None:
+            node._children[index] = position
+            return node._uniqueness
+
+        # If there is an exising position (not a sub-tree), at the index where we want to insert, then 
+        # 1. Replace the exising position with a subtree 
+        # 2. Insert the replaced exising position into the subtree
+        # 3. Insert the new position into the sub tree
+        elif not isinstance(node._children[index], UniqueNode):
+            existingPosition = node._children[index]
+
+            # This point already exists.  Don't insert it and return a uniqueness of 0.0!
+            if checkCoincident(position, existingPosition):
+                return 0.0
+            subTree = node._createSubTree(subIndices, node._uniqueness * self._levelUniquenessFactor)
+            node._children[index] = subTree
+
+            # Insert the existing position into the subtree 1st
+            self._insertRecurse(subTree, existingPosition)
+
+        return self._insertRecurse(node._children[index], position)
+
+        
 class UniqueNode:
     """
     Handles the work of actually inserting positions into sub-trees.
@@ -82,44 +109,15 @@ class UniqueNode:
         self._children = [None] * 16  # type: Union[np.ndarray, UniqueNode]
         self._uniqueness = uniqueness  # type: float
 
-    def insert(self, position):
-        """
-        Inserts the position into one of the 16 available children of node.
-        This will recurse if the child is not empty.
-        :param position:
-        :return:
-        """
-        subIndices = self._calcSubIndices(position)
-        index = _calcIndex(subIndices)
-
-        # If the slot is empty just insert the position there
-        if self._children[index] is None:
-            self._children[index] = position
-            return self._uniqueness
-
-        # If there is not a sub-tree at the index we want to insert at then we need to create one
-        elif not isinstance(self._children[index], UniqueNode):
-            existingPosition = self._children[index]
-
-            # This point already exists.  Don't insert it and return a uniqueness of 0.0!
-            if checkCoincident(position, existingPosition):
-                return 0.0
-            subTree = self._createSubTree(subIndices)
-            self._children[index] = subTree
-
-            # Insert the existing position into the subtree 1st
-            subTree.insert(existingPosition)
-
-        return self._children[index].insert(position)
-
-    def _createSubTree(self, subIndices):
+    def _createSubTree(self, subIndices, uniqueness):
         """
         Create a new sub-tree root based on this cell and the given sub-indices.
         :param subIndices:
+        :param uniqueness:
         :return:
         """
         subCellPosition = self._minPosition + subIndices * self._halfDims
-        return UniqueNode(subCellPosition, self._halfDims, self._calcSubUniqueness())
+        return UniqueNode(subCellPosition, self._halfDims, uniqueness)
 
     def _calcSubIndices(self, position):
         """
@@ -133,10 +131,3 @@ class UniqueNode:
         ratios /= self._halfDims
         subIndices = ratios.astype(np.int32)
         return subIndices
-
-    def _calcSubUniqueness(self):
-        """
-        Determines a sub-tree's uniqueness based on this tree's uniqueness.
-        :return:
-        """
-        return self._uniqueness / 2.0

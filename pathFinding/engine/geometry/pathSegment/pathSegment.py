@@ -9,6 +9,8 @@ class PathSegment(Drawable):
         self.endPoint = endPoint
         self.endSpeed = endSpeed
         self.endUnitVelocity = endUnitVelocity
+        # Field for holding whatever data is useful for debugging.
+        self.debug = None
 
     def calcPointDebug(self, point):
         """

@@ -4,6 +4,7 @@ import os
 import tkFileDialog
 
 from constants import COURSE_DIM
+import constants
 from engine import interface
 import engine
 from engine.geometry import calcs
@@ -76,17 +77,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         noFlyZones = []
         dynamicNoFlyZones = []
         
-#         dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputsHard(50,
-#                                                                     - COURSE_DIM / 2.0 * 0.9,
-#                                                                     - COURSE_DIM / 2.0 * 0.9,
-#                                                                     COURSE_DIM * 0.9,
-#                                                                     COURSE_DIM * 0.9,
-#                                                                     0.005, 0.05,
-#                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
-#                                                                     startPoint=startPoint, endPoint=endPoint,
-#                                                                     averageSpeed=self._vehicle.maxSpeed)
-        
-        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(50,
+        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputsHard(50,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
@@ -95,6 +86,16 @@ class PathFindViewer(Visualizer, PathFinderListener):
                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
                                                                     startPoint=startPoint, endPoint=endPoint,
                                                                     averageSpeed=self._vehicle.maxSpeed)
+        
+#         noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(50,
+#                                                                     - COURSE_DIM / 2.0 * 0.9,
+#                                                                     - COURSE_DIM / 2.0 * 0.9,
+#                                                                     COURSE_DIM * 0.9,
+#                                                                     COURSE_DIM * 0.9,
+#                                                                     0.01, 0.1,
+#                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
+#                                                                     startPoint=startPoint, endPoint=endPoint,
+#                                                                     averageSpeed=self._vehicle.maxSpeed)
          
         roads = []
         wayPoints = [endPoint]
