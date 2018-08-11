@@ -1,13 +1,12 @@
+from engine.vertex.uniqueVertexQueue.uniqueSpaceTree import UniqueTree
 from engine.vertex.vertexPriorityQueue import VertexPriorityQueue, \
     QueueEmptyException
 import numpy as np
-from uniqueVertexTree import UniqueTree
 from utils.minheap import MinHeap
+
 
 # TODO: Remove high number of 0 uniqueness points
 # TODO: Is diagonal length useful?
-
-
 class UniqueVertexQueue(VertexPriorityQueue):
     """
     This VertexPriorityQueue uses several criteria to determine priority:
@@ -40,7 +39,8 @@ class UniqueVertexQueue(VertexPriorityQueue):
         self._diagnonalTime = np.math.sqrt(width * width + height * height) / maximumSpeed
 
     def push(self, vertex):
-        uniqueness = self._uniqueTree.insert(vertex)
+        position = np.array([vertex.position[0], vertex.position[1], vertex.speed * vertex.unitVelocity[0], vertex.speed * vertex.unitVelocity[1]])
+        uniqueness = self._uniqueTree.insert(position)
         
         if uniqueness == 0.0:
             return
