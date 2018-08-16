@@ -1,7 +1,10 @@
 import math
 import time
 
-from engine.geometry.obstacle.arcObstacleCourse import ArcObstacleCourse
+from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
+from engine.geometry.obstacle.lineFinder.lineSegmentFinder import LineSegmentFinder
+from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
+from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
@@ -17,10 +20,14 @@ class PathFinder:
     def __init__(self, params, scenario, vehicle):
         self._params = params
         self._vehicle = vehicle
-        self._obstacleData = ArcObstacleCourse(vehicle.acceleration, params.nfzBufferSize)
-#         self._obstacleData = LineSegmentObstacleData(params.nfzBufferSize)
-        self._obstacleData.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
-        self._obstacleData.setDynamicNoFlyZones(scenario.dynamicNoFlyZones)
+
+        pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzBufferSize)
+#         pathSegmentFinder = LineSegmentFinder(params.nfzBufferSize)
+        pathIntersectionDetector = PyPathIntersectionDetector()
+
+        self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
+        self._obstacleCourse.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
+        self._obstacleCourse.setDynamicNoFlyZones(scenario.dynamicNoFlyZones)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = scenario.calcBounds()
@@ -71,7 +78,7 @@ class PathFinder:
                 return True
             else:
                 self._findPathsTime -= time.time()
-                (self._pathSegments, self._filteredPathSegments) = self._obstacleData.findPathSegments(
+                (self._pathSegments, self._filteredPathSegments) = self._obstacleCourse.findPathSegments(
                     startTime=self._currentVertex.timeToVertex,
                     startPoint=self._currentVertex.position,
                     startSpeed=self._currentVertex.speed,
@@ -103,7 +110,7 @@ class PathFinder:
         """
         
         # TODO: Check all path segments.  Currently we just use the 1st, shortest, path segment
-        pathSegments = self._obstacleData.findPathSegmentsToPoint(startTime=self._currentVertex.timeToVertex,
+        pathSegments = self._obstacleCourse.findPathSegmentsToPoint(startTime=self._currentVertex.timeToVertex,
                                                                  startPoint=self._currentVertex.position,
                                                                  startSpeed=self._currentVertex.speed,
                                                                  startUnitVelocity=self._currentVertex.unitVelocity,

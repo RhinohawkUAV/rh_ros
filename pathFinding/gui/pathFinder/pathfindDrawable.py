@@ -1,4 +1,4 @@
-from engine.geometry.pathSegment.pathSegment import calcSegmentsPointDebug
+from engine.geometry.obstacle.pathSegment import calcSegmentsPointDebug
 from gui import Drawable
 import gui
 

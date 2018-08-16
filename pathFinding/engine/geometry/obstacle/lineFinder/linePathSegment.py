@@ -1,13 +1,12 @@
 import Tkinter as tk
-from defaultPathSegment import DefaultPathSegment
-from engine.geometry import LineSegment, calcs
+from engine.geometry import LineSegment
+from engine.geometry.obstacle.pathSegment import PathSegment
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
 import numpy as np
-from pathSegment import PathSegment
 
 
-class LinePathSegment(DefaultPathSegment):
+class LinePathSegment(PathSegment):
 
     def __init__(self, startTime, startPoint, startSpeed, elapsedTime, endPoint, endSpeed, endUnitVelocity):
         PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity)
@@ -32,9 +31,6 @@ class LinePathSegment(DefaultPathSegment):
         distance = np.linalg.norm(point - closestPoint)
         return (closestPoint, distance, self.startTime + timeInterp * self.elapsedTime)
 
-    def intersectsObstacleLine(self, obstacleLine):
-        return obstacleLine.checkPathIntersectsLine(self.startTime, self.startPoint, self.endPoint, self.startSpeed)
-
-    def intersectsDNFZ(self, dnfz):
-        dnfz.checkPathIntersection(self.startTime, self.startPoint, self.endPoint, self.startSpeed)
+    def testIntersection(self, pathIntersectionDetector):
+        return pathIntersectionDetector.testStraightPathIntersection(self.startTime, self.startPoint, self.endPoint, self.startSpeed)
     

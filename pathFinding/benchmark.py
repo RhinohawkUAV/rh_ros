@@ -8,7 +8,7 @@ from engine.interface.vehicle import DEFAULT_VEHICLE
 from engine.pathFinder import PathFinder
 from utils import profile
 
-inputDict = interface.loadInput("../scenarios/mainTest1.json")
+inputDict = interface.loadInput("../scenarios/testDynamic.json")
 pathFinder = PathFinder(DEFAULT_PARAMS, inputDict[SCENARIO_KEY], DEFAULT_VEHICLE)
 pathFinder.findPath()
 profile.printAggregate()

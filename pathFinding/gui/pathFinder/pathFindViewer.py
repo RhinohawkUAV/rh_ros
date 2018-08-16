@@ -77,15 +77,13 @@ class PathFindViewer(Visualizer, PathFinderListener):
         noFlyZones = []
         dynamicNoFlyZones = []
         
-        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputsHard(50,
+        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputs(50,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     0.01, 0.1,
-                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
-                                                                    startPoint=startPoint, endPoint=endPoint,
-                                                                    averageSpeed=self._vehicle.maxSpeed)
+                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed)
         
 #         noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(50,
 #                                                                     - COURSE_DIM / 2.0 * 0.9,

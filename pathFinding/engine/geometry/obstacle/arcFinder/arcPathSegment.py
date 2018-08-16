@@ -1,14 +1,13 @@
 import Tkinter as tk
 from constants import MAX_ARC_INTERPOLATION_ERROR
-from defaultPathSegment import DefaultPathSegment
-from engine.geometry import LineSegment, calcs
+from engine.geometry import LineSegment
+from engine.geometry.obstacle.pathSegment import PathSegment
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
 import numpy as np
-from pathSegment import PathSegment
 
 
-class ArcPathSegment(DefaultPathSegment):
+class ArcPathSegment(PathSegment):
 
     def __init__(self, startTime, elapsedTime, lineStartPoint, endPoint, endSpeed, endUnitVelocity, arc):
         PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity)
@@ -68,21 +67,12 @@ class ArcPathSegment(DefaultPathSegment):
         distance = np.linalg.norm(point - closestPoint)
         return (closestPoint, distance, timeInterp)
 
-    def intersectsObstacleLine(self, obstacleLine):
+    def testIntersection(self, pathIntersectionDetector):
         for i in range(0, len(self.linearPathPoints) - 1):
-            if obstacleLine.checkPathIntersectsLine(self.startTime + self.linearPathStartTimes[i],
+            if pathIntersectionDetector.testStraightPathIntersection(self.startTime + self.linearPathStartTimes[i],
                                                     startPoint=self.linearPathPoints[i],
                                                     endPoint=self.linearPathPoints[i + 1],
                                                     speed=self.speed):
                 return True
         return False
 
-    def intersectsDNFZ(self, dnfz):
-        for i in range(0, len(self.linearPathPoints) - 1):
-            if dnfz.checkPathIntersection(self.startTime + self.linearPathStartTimes[i],
-                                                    startPoint=self.linearPathPoints[i],
-                                                    endPoint=self.linearPathPoints[i + 1],
-                                                    speed=self.speed):
-                return True
-        return False        
-    

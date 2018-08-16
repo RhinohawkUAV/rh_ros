@@ -1,5 +1,7 @@
 from engine.geometry import calcs
-from engine.geometry.obstacle.arcObstacleCourse import ArcObstacleCourse
+from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
+from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
+from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.vehicle import DEFAULT_VEHICLE
@@ -13,7 +15,7 @@ class PathSegmentTester(SubGUI):
 
     def __init__(self):
         self._pathFinderDrawable = None
-        self._obstacleData = None
+        self._obstacleCourse = None
         self._pointOfInterest = None
         self._showPathsToPoints = False
 
@@ -41,16 +43,22 @@ class PathSegmentTester(SubGUI):
 
     def onSwitch(self, inputDict):
         SubGUI.onSwitch(self, inputDict)
-        self._obstacleData = ArcObstacleCourse(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
-        self._obstacleData.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
+        
+        pathSegmentFinder = ArcSegmentFinder(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
+#         pathSegmentFinder = LineSegmentFinder(params.nfzBufferSize)
+        pathIntersectionDetector = PyPathIntersectionDetector()
+
+        self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
+
+        self._obstacleCourse.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
-        self._obstacleData.setDynamicNoFlyZones(self._inputDict[SCENARIO_KEY].dynamicNoFlyZones)
+        self._obstacleCourse.setDynamicNoFlyZones(self._inputDict[SCENARIO_KEY].dynamicNoFlyZones)
         self._pathFinderDrawable = PathFindDrawable(self._inputDict[SCENARIO_KEY])
 
     def updateDrawable(self):
         (startUnitVelocity, startSpeed) = calcs.unitAndLength(self._inputDict[TEST_INPUT_KEY].startVelocity)
                  
-        goalSegments = self._obstacleData.findPathSegmentsToPoint(startTime=0.0,
+        goalSegments = self._obstacleCourse.findPathSegmentsToPoint(startTime=0.0,
                                                          startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                          startSpeed=startSpeed,
                                                          startUnitVelocity=startUnitVelocity,
@@ -58,7 +66,7 @@ class PathSegmentTester(SubGUI):
                                                          velocityOfTarget=self._inputDict[TEST_INPUT_KEY].velocityOfTarget)
 
         if self._showPathsToPoints:
-            (pathSegments, filteredPathSegments) = self._obstacleData.findPathSegments(startTime=0.0,
+            (pathSegments, filteredPathSegments) = self._obstacleCourse.findPathSegments(startTime=0.0,
                                                                                                    startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                                                                    startSpeed=startSpeed,
                                                                                                    startUnitVelocity=startUnitVelocity)

@@ -1,17 +1,19 @@
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder.arcCriticalPoint import ArcCriticalPoint
-from engine.geometry.obstacle.arcFinder.target import Target
+from engine.geometry.obstacle.arcFinder.arcTarget import ArcTarget
+from engine.geometry.obstacle.circularTarget import CircularTarget
 import numpy as np
 
 
-class CircularTarget(Target):
+class CircularArcTarget(CircularTarget, ArcTarget):
 
-    def __init__(self, position, velocity, radius, rotDirection):
-        self.startPosition = position
-        (self.direction, self.speed) = calcs.unitAndLength(velocity)
-        self.radius = radius
-        
+    def __init__(self, startPosition, velocity, radius):
+        CircularTarget.__init__(self, startPosition, velocity, radius)
+        self.rotDirection = None
+        self.solutionIndex = None
+    
+    def setRotDirection(self, rotDirection):
         # There are two ways around the circle.  This specifies which solution is being found
         # The more clockwise (-1) or more CCW (1) solution
         self.rotDirection = rotDirection
@@ -27,16 +29,16 @@ class CircularTarget(Target):
         else:
             radius = arc.radius - self.radius
 
-        toCenter = self.startPosition - arc.center
+        toCenter = self.position - arc.center
         
         return np.dot(toCenter, toCenter) < radius * radius
 
     def getCriticalPoints(self, arc):
         outside = (arc.rotDirection == self.rotDirection)
-        times = calcs.movingCircleCollision(self.startPosition, self.direction * self.speed, self.radius, arc.radius, outside)
+        times = calcs.movingCircleCollision(self.position, self.direction * self.speed, self.radius, arc.radius, outside)
         criticalPoints = []
         for time in times:
-            intersectionPoint = self.startPosition + self.direction * (self.speed * time + self.radius)
+            intersectionPoint = self.position + self.direction * (self.speed * time + self.radius)
             criticalPoints.append(ArcCriticalPoint(vehicleArc=arc.arcToPoint(intersectionPoint),
                                                    targetArc=arc.arcLength(time)))
         return criticalPoints
@@ -48,8 +50,8 @@ class CircularTarget(Target):
         arcEndPoint = arc.center + arc.radius * endAngleVec
         
         velocityOfTarget = self.direction * self.speed
-        targetStartPoint = self.startPosition + velocityOfTarget * time
-            
+        targetStartPoint = self.position + velocityOfTarget * time
+
         solutions = calcs.hitTargetCircleAtSpeed(arcEndPoint, arc.speed, targetStartPoint, velocityOfTarget, self.radius)
         solution = solutions[self.solutionIndex]
         if solution is None:

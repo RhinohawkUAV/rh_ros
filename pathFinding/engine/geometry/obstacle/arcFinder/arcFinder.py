@@ -3,8 +3,7 @@ import math
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder.arcCalc import ArcCalc
-from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
-import numpy as np
+from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
 
 # TODO: Move to constants
 MAX_ITERATIONS = 5

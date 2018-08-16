@@ -1,15 +1,15 @@
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder.arcCriticalPoint import ArcCriticalPoint
-from engine.geometry.obstacle.arcFinder.target import Target
+from engine.geometry.obstacle.arcFinder.arcTarget import ArcTarget
+from engine.geometry.obstacle.vertexTarget import VertexTarget
 import numpy as np
 
 
-class PointTarget(Target):
+class VertexArcTarget(VertexTarget, ArcTarget):
 
-    def __init__(self, position, velocity):
-        self.startPosition = position
-        (self.direction, self.speed) = calcs.unitAndLength(velocity)
+    def __init__(self, position, velocity, normal, pointAngle):
+        VertexTarget.__init__(self, position, velocity, normal, pointAngle)
 
     def notInitiallyReachable(self, arc):
         toCenter = self.startPosition - arc.center

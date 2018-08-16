@@ -238,23 +238,15 @@ def calcBounds(points):
     return [xMin, yMin, xMax, yMax]
 
 
-def calcEdgeAngle(prevVertex, vertex, nextVertex):
+def calcVertexAngle(prevVertex, vertex, nextVertex):
     """
-    Calculate the angle at a vertex in a polygon assuming CCW winding
+    Calculate the inside angle at a vertex in a polygon assuming CCW winding
     """
-    diff = vertex - prevVertex
-    length = np.linalg.norm(diff)
-    dir1 = diff / length
-
-    diff = vertex - nextVertex
-    length = np.linalg.norm(diff)
-    dir2 = diff / length
+    dir1 = unit(vertex - prevVertex)
+    dir2 = unit(vertex - nextVertex)
+    dir3 = unit(nextVertex - prevVertex)
 
     cosAngle = np.dot(dir1, dir2)
-
-    diff = nextVertex - prevVertex
-    length = np.linalg.norm(diff)
-    dir3 = diff / length
 
     angle = math.acos(cosAngle)
 
@@ -271,7 +263,7 @@ def woundCCW(points):
         currVertex = points[i]
         nextVertex = points[i + 1]
 
-        angle += calcEdgeAngle(prevVertex, currVertex, nextVertex)
+        angle += calcVertexAngle(prevVertex, currVertex, nextVertex)
     # If the points are wound CCW then this should given an answer following the standard formula for angle inside a polygon.
     # If wound CW, we will get a much bigger number (4*pi bigger).  We add a small margin of error (0.1) to the calculation.
     if angle < math.pi * (len(points) - 2) + 0.1:

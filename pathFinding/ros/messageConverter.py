@@ -4,7 +4,7 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 import math
 import pathfinding.msg as pfm
 
-from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
+from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
 import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
 import engine.interface.noFlyZone

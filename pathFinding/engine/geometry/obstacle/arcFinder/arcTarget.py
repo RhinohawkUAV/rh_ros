@@ -2,15 +2,15 @@ from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 
 
-class Target:
+class ArcTarget:
     """
-    Some the vehicle is attempting to hit/skirt with an arc+straight-line.
+    A target the vehicle is attempting to hit/skirt with an arc+straight-line.
     """
 
     def initialGuess(self, arc):
         if self.notInitiallyReachable(arc):
             if self.speed == 0.0:
-                # Target is unmoving and contained within the the vehicle's arc's circle.
+                # ArcTarget is unmoving and contained within the the vehicle's arc's circle.
                 # It is impossible to reach this self.
                 raise NoSolutionException
             criticalPoints = self.getCriticalPoints(arc)

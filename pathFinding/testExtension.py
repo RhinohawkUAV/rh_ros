@@ -1,6 +1,6 @@
 import testmod
-from engine.geometry.pathSegment.arcPathSegment import ArcPathSegment
-from engine.geometry.pathSegment.obstacleLineSegment import ObstacleLineSegment
+from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
+from engine.geometry.obstacle.intersectionDetector.obstacleLineSegment import ObstacleLineSegment
 import numpy as np
 
 # testmod.test_print("print this")

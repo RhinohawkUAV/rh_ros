@@ -25,6 +25,9 @@ class PathSegment(Drawable):
         """
         pass
 
+    def testIntersection(self, pathIntersectionDetector):
+        pass
+
     def draw(self, canvas, **kwargs):
         pass
 
