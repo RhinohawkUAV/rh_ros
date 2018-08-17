@@ -39,7 +39,7 @@ class ObstacleCourse:
         :return:
         """
         pathSegments = self.pathSegmentFinder.findPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
-        return self._filterPathSegments(pathSegments)[0]
+        return self._filterPathSegments(pathSegments)
 
     def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
         """

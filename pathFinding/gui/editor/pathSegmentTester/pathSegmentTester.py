@@ -1,7 +1,7 @@
 from engine.geometry import calcs
 from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
-from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
 from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
+from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.vehicle import DEFAULT_VEHICLE
@@ -58,7 +58,7 @@ class PathSegmentTester(SubGUI):
     def updateDrawable(self):
         (startUnitVelocity, startSpeed) = calcs.unitAndLength(self._inputDict[TEST_INPUT_KEY].startVelocity)
                  
-        goalSegments = self._obstacleCourse.findPathSegmentsToPoint(startTime=0.0,
+        (goalSegments, filteredGoalSegments) = self._obstacleCourse.findPathSegmentsToPoint(startTime=0.0,
                                                          startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                          startSpeed=startSpeed,
                                                          startUnitVelocity=startUnitVelocity,
@@ -73,6 +73,7 @@ class PathSegmentTester(SubGUI):
         else:
             pathSegments = []
             filteredPathSegments = []
+        filteredPathSegments.extend(filteredGoalSegments)
         self._pathFinderDrawable.updateDebug([], pathSegments, filteredPathSegments)
         self._pathFinderDrawable.updateSolution([], goalSegments, False)
 

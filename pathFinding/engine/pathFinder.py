@@ -2,9 +2,9 @@ import math
 import time
 
 from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
+from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from engine.geometry.obstacle.lineFinder.lineSegmentFinder import LineSegmentFinder
 from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
-from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
@@ -108,9 +108,7 @@ class PathFinder:
         Check if there is a path from self._currentVertex to the goal.  Update the best solution if this is better.
         :return:
         """
-        
-        # TODO: Check all path segments.  Currently we just use the 1st, shortest, path segment
-        pathSegments = self._obstacleCourse.findPathSegmentsToPoint(startTime=self._currentVertex.timeToVertex,
+        (pathSegments, filteredSegments) = self._obstacleCourse.findPathSegmentsToPoint(startTime=self._currentVertex.timeToVertex,
                                                                  startPoint=self._currentVertex.position,
                                                                  startSpeed=self._currentVertex.speed,
                                                                  startUnitVelocity=self._currentVertex.unitVelocity,
@@ -118,8 +116,7 @@ class PathFinder:
                                                                  velocityOfTarget=np.array((0, 0), np.double))
         if len(pathSegments) == 0:
             return False
-        else:
-            pathSegment = pathSegments[0]
+        for pathSegment in pathSegments:
             timeToGoal = self._currentVertex.timeToVertex + pathSegment.elapsedTime
             if timeToGoal < self._bestSolutionTime:
                 self._solution = Vertex(position=self._goal,
@@ -131,7 +128,7 @@ class PathFinder:
                                         pathSegment=pathSegment)
 
                 self._bestSolutionTime = timeToGoal
-            return True
+        return True
         
     def heuristic(self, point, speed, unitVelocity):
         # TODO: Heuristic should be based on obstacle data and in the case of arcs should account for the heading at a given point.
