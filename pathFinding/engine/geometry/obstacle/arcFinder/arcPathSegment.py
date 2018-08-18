@@ -23,7 +23,7 @@ class ArcPathSegment(PathSegment):
         numArcSegments = len(self.linearPathPoints) - 1
 
         self.linearPathPoints.append(endPoint)
-
+        
         # Remember the start times for each path segment to individually query for collisions
         self.linearPathStartTimes = []
         for i in range(numArcSegments):
@@ -31,6 +31,18 @@ class ArcPathSegment(PathSegment):
             self.linearPathStartTimes.append(startTime)
         self.linearPathStartTimes.append(self.arcTime)
 
+        # TODO: Check distance ==0 (can we use time ==0)?
+        
+        # TODO: Should be organized better.  Perhaps computed in collision detection system.
+        self.linearPathTimes = []
+        self.linearPathVelocities = []
+        for i in range(len(self.linearPathStartTimes) - 1):
+            time = self.linearPathStartTimes[i + 1] - self.linearPathStartTimes[i]
+            self.linearPathTimes.append(time)
+            self.linearPathVelocities.append((self.linearPathPoints[i + 1] - self.linearPathPoints[i]) / time)
+        self.linearPathTimes.append(self.lineTime)
+        self.linearPathVelocities.append(endSpeed * endUnitVelocity)
+        
     def draw(self, canvas, filtered=False, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
         if filtered:
             dash = DEFAULT_DASH
@@ -71,8 +83,8 @@ class ArcPathSegment(PathSegment):
         for i in range(0, len(self.linearPathPoints) - 1):
             if pathIntersectionDetector.testStraightPathIntersection(self.startTime + self.linearPathStartTimes[i],
                                                     startPoint=self.linearPathPoints[i],
-                                                    endPoint=self.linearPathPoints[i + 1],
-                                                    speed=self.speed):
+                                                    velocity=self.linearPathVelocities[i],
+                                                    time=self.linearPathTimes[i]):
                 return True
         return False
 

@@ -32,5 +32,5 @@ class LinePathSegment(PathSegment):
         return (closestPoint, distance, self.startTime + timeInterp * self.elapsedTime)
 
     def testIntersection(self, pathIntersectionDetector):
-        return pathIntersectionDetector.testStraightPathIntersection(self.startTime, self.startPoint, self.endPoint, self.startSpeed)
+        return pathIntersectionDetector.testStraightPathIntersection(self.startTime, self.startPoint, self.endSpeed * self.endUnitVelocity, self.elapsedTime)
     

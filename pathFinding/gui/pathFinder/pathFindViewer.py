@@ -73,11 +73,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
                           (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
                           (COURSE_DIM / 2.0, COURSE_DIM / 2.0), (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)]
 
-        # TODO: Make regular NFZs not dynamic.  Generate dynamic NFZs according to rules.         
-        noFlyZones = []
-        dynamicNoFlyZones = []
-        
-        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputs(50,
+        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputs(30,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
@@ -85,15 +81,13 @@ class PathFindViewer(Visualizer, PathFinderListener):
                                                                     0.01, 0.1,
                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed)
         
-#         noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(50,
-#                                                                     - COURSE_DIM / 2.0 * 0.9,
-#                                                                     - COURSE_DIM / 2.0 * 0.9,
-#                                                                     COURSE_DIM * 0.9,
-#                                                                     COURSE_DIM * 0.9,
-#                                                                     0.01, 0.1,
-#                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
-#                                                                     startPoint=startPoint, endPoint=endPoint,
-#                                                                     averageSpeed=self._vehicle.maxSpeed)
+        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputs(30,
+                                                                    - COURSE_DIM / 2.0 * 0.9,
+                                                                    - COURSE_DIM / 2.0 * 0.9,
+                                                                    COURSE_DIM * 0.9,
+                                                                    COURSE_DIM * 0.9,
+                                                                    0.01, 0.1,
+                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed)
          
         roads = []
         wayPoints = [endPoint]

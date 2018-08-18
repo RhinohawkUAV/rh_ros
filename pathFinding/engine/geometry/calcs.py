@@ -72,6 +72,7 @@ def findClosestPoint(point, points):
     return (closestDistanceSquared, closestPointIndex)
 
 
+#TODO: Consolidate circle intersection calcs.  All use the same primary equation.
 def getRayCircleIntersections(startPoint, direction, center, radius):
     """
     Calculate distances, from start, where a ray intersects a circle.  
@@ -86,12 +87,18 @@ def getRayCircleIntersections(startPoint, direction, center, radius):
                                np.dot(fromCenter, fromCenter) - radius * radius)
 
 
-def lineSegmentCircleIntersect(startPoint, endPoint, center, radius):
+def lineSegmentCircleIntersect(startPoint, lineVector, center, radius):
     """
     Test if the given line segment intersects a circle.
     """
-    (direction, length) = unitAndLength(endPoint - startPoint)
-    return lineRayCircleIntersect(startPoint, direction, length, center, radius)
+    fromCenter = startPoint - center
+    solutions = quadratic.solveQuad(np.dot(lineVector, lineVector),
+                               2.0 * np.dot(lineVector, fromCenter),
+                               np.dot(fromCenter, fromCenter) - radius * radius)
+    for solution in solutions:
+        if solution >= 0.0 and solution <= 1.0:
+            return True
+    return False
 
 
 def lineRayCircleIntersect(startPoint, direction, length, center, radius):
@@ -409,6 +416,10 @@ def unitAndLength(vector):
     if length == 0.0:
         return (vector, length)
     return (vector / length, length)
+
+
+def length(vector):
+    return np.linalg.norm(vector)
 
 
 def changeBasis(vec, x, y):

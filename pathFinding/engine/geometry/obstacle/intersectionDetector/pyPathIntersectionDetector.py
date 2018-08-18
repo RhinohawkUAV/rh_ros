@@ -1,5 +1,6 @@
-from engine.geometry.obstacle.intersectionDetector.pathInteresectionDetector import PathIntersectionDetector
+from engine.geometry import calcs
 from engine.geometry.obstacle.intersectionDetector.obstacleLineSegment import ObstacleLineSegment
+from engine.geometry.obstacle.intersectionDetector.pathInteresectionDetector import PathIntersectionDetector
 import numpy as np
 from utils import profile
 
@@ -31,12 +32,12 @@ class PyPathIntersectionDetector(PathIntersectionDetector):
         pass
     
     @profile.accumulate("Collision Detection")
-    def testStraightPathIntersection(self, startTime, startPoint, endPoint, speed):
+    def testStraightPathIntersection(self, startTime, startPoint, velocity, time):
         for obstacleLine in self.obstacleLines:
-            if obstacleLine.checkPathIntersectsLine(startTime, startPoint, endPoint, speed):
+            if obstacleLine.checkPathIntersectsLine(startTime, startPoint, velocity, time):
                 return True
         for dnfz in self.dynamicNoFlyZones:
-            if dnfz.checkPathIntersection(startTime, startPoint, endPoint, speed):
+            if dnfz.checkPathIntersection(startTime, startPoint, velocity, time):
                 return True
            
         return False

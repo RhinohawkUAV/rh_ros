@@ -66,10 +66,9 @@ class Arc:
         :return:
         """
 
-        # If the arc has no length just return 2 points at the start of the arc
+        # If the arc has no length just return 1 point at the start of the arc
         if self.length == 0.0 or self.radius == 0.0:
-            startPoint = self.pointAtAngle(self.start)
-            return [startPoint, startPoint]
+            return [self.pointAtAngle(self.start)]
 
         if maxError > self.radius:
             maxError = self.radius

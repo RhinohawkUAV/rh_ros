@@ -18,7 +18,7 @@ class ObstacleLineSegment(LineSegment):
         Does a path from startPoint to endPoint, at the given speed intersect?
         """
         return self.checkPathIntersectsLinePy(startTime, startPoint, endPoint, speed)
-    
+
     def checkPathIntersectsLineC(self, startTime, startPoint, endPoint, speed):
         """
         Does a path from startPoint to endPoint, at the given speed intersect?
@@ -28,27 +28,15 @@ class ObstacleLineSegment(LineSegment):
 #         return result == 1
         return False
     
-    def checkPathIntersectsLinePy(self, startTime, startPoint, endPoint, speed):
+    def checkPathIntersectsLinePy(self, startTime, startPoint, velocity, pathTime):
         """
-        Does a path from startPoint to endPoint, at the given speed intersect?
+        Does a path from intersect line at any point in time?
         """
-       
-        direction = endPoint - startPoint
-        distance = np.linalg.norm(direction)
-        if distance == 0.0:
-            return False
-
-        # velocity vector - has magnitude in speed heading in velocity from start to end
-        velocity = (speed / distance) * direction
-
         # Offset velocity by the velocity of the no-fly-zone (pretend it is not moving)
-        velocity -= self.velocity
-
-        # Time to get from start to end
-        t = distance / speed
+        velocity = velocity - self.velocity
 
         # The new end point takes the same time to reach, but at a new offset heading
-        endPoint = startPoint + velocity * t
+        endPoint = startPoint + velocity * pathTime
 
         # Given the start time, this line will have moved.  Alternately, we offset the start and end points in the
         # opposite direction
