@@ -14,8 +14,8 @@ class NoFlyZone:
         self.points = np.array(points, np.double)
 
         # A list of 2-d _points, defining the no fly zone _boundary, in counter-clockwise order.
-        # Enforce CW winding (normals face outward)
-        if calcs.woundCCW(self.points):
+        # Enforce CCW winding (normals face outward)
+        if not calcs.woundCCW(self.points):
             self.points = np.flipud(self.points)
 
         # A vector describing the velocity of the no fly zone.

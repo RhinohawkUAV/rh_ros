@@ -1,6 +1,7 @@
 from Tkinter import Canvas
 import math
 
+from engine.geometry import calcs
 from gui import Drawable
 import gui.draw
 import numpy as np
@@ -21,13 +22,14 @@ class LineSegment(Drawable):
 
     def __init__(self, p1, p2):
         # Point 1
-        self.p1 = np.array(p1, np.double)
+        self.p1 = p1
 
         # Point 2
-        self.p2 = np.array(p2, np.double)
+        self.p2 = p2
 
         diff = self.p2 - self.p1
-        magSquared = diff[0] * diff[0] + diff[1] * diff[1]
+        
+        magSquared = calcs.lengthSquared(diff)
 
         # TODO: This could actually happen, so we need to either prevent it or handle it.
         if magSquared == 0.0:
@@ -36,14 +38,10 @@ class LineSegment(Drawable):
         # Unit normal of the line.  Paths only intersect this line if opposing the normal.
         # Normal is chosen so that, if polygons are wound counter-clockwise,
         # normals point outwards.
-        self.n = np.array([-diff[1], diff[0]], np.double)
-        self.n /= np.math.sqrt(magSquared)
+        self.n = calcs.unit(calcs.CWNorm(diff))
 
         # Points from point 1 to point 2 with length inverse to the distance between the _points.
         self.invTan = diff / magSquared
-
-        # For drawing ONLY
-        self.mid = (self.p1 + self.p2) / 2.0
 
     def pointSignedDistance(self, point):
         p1diff = point - self.p1
@@ -137,14 +135,14 @@ class LineSegment(Drawable):
         :return:
         """
 
-        # type: (Canvas, str) -> None
+        mid = (self.p1 + self.p2) / 2.0
         if not text == "":
-            textPos = self.mid - self.n * textOffsetFactor
+            textPos = mid - self.n * textOffsetFactor
             gui.draw.drawText(canvas, textPos, text=text, **kwargs)
 
         gui.draw.drawLine(canvas, self.p1, self.p2, **kwargs)
         if drawVectors:
-            gui.draw.drawLine(canvas, self.mid, self.mid + self.n * normalDisplayFactor, **kwargs)
+            gui.draw.drawLine(canvas, mid, mid + self.n * normalDisplayFactor, **kwargs)
 
     def xRay(self, point):
         """

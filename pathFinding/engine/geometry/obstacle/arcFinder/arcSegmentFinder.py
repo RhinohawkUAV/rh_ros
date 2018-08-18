@@ -11,16 +11,16 @@ _rotDirections = (-1.0, 1.0)
 
 class ArcSegmentFinder(PathSegmentFinder):
 
-    def __init__(self, acceleration, targetOffsetLength):
+    def __init__(self, acceleration, targetOffset):
+        PathSegmentFinder.__init__(self, targetOffset)
         self.acceleration = acceleration
-        self.targetOffsetLength = targetOffsetLength
         self.vertexTargets = []
         self.circularTargets = []        
 
     def setDynamicNoFlyZones(self, dynamicNoFlyZones):
         self.circularTargets = []
         for dfnz in dynamicNoFlyZones:
-            self.circularTargets.append(CircularArcTarget(dfnz.center, dfnz.velocity, dfnz.radius + self.targetOffsetLength))
+            self.circularTargets.append(CircularArcTarget(dfnz.center, dfnz.velocity, dfnz.radius + self.targetOffset))
         
     def createVertexTarget(self, point, velocity, normal, pointAngle):
         self.vertexTargets.append(VertexArcTarget(point, velocity, normal, pointAngle))

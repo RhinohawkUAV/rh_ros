@@ -2,11 +2,15 @@ import math
 
 from engine.geometry import calcs
 from engine.geometry.obstacle.vertexTarget import VertexTarget
+import numpy as np
 from utils import profile
 
 
-class PathSegmentFinder(object):
-
+class PathSegmentFinder:
+    
+    def __init__(self, targetOffset):
+        self.targetOffset = targetOffset
+        
     def setInitialState(self, boundaryPoints, noFlyZones):
         """
         Set the state of the static obstacle data.
@@ -15,8 +19,10 @@ class PathSegmentFinder(object):
         :return:
         """
         for nfz in noFlyZones:
-            self.createNFZTargets(nfz)
-    
+            self.createPolygonTargets(nfz.points, nfz.velocity)
+
+        self.createPolygonTargets(boundaryPoints, np.array((0.0, 0.0), np.double))
+        
     def setDynamicNoFlyZones(self, dynamicNoFlyZones):
         """
         Set the state of the dynamic obstacle data at time=0.0.
@@ -25,15 +31,14 @@ class PathSegmentFinder(object):
         """
         pass 
 
-    def createNFZTargets(self, nfz):
-        for i in range(-1, len(nfz.points) - 1):
-            normal = calcs.CCWNorm(nfz.points[i + 1] - nfz.points[i - 1])
+    def createPolygonTargets(self, points, velocity):
+        for i in range(-1, len(points) - 1):
+            normal = calcs.CWNorm(points[i + 1] - points[i - 1])
             normal = calcs.unit(normal)
             
-            # TODO: NFZs are wound CW (we should make CCW given other conventions)
-            pointAngle = calcs.calcVertexAngle(nfz.points[i + 1], nfz.points[i], nfz.points[i - 1])
+            pointAngle = calcs.calcVertexAngle(points[i - 1], points[i], points[i + 1])
             if pointAngle < math.pi:
-                self.createVertexTarget(nfz.points[i], nfz.velocity, normal, pointAngle)
+                self.createVertexTarget(points[i] + normal * self.targetOffset, velocity, normal, pointAngle)
 
     def createVertexTarget(self, point, velocity, normal, pointAngle):
         pass

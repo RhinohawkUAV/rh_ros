@@ -72,7 +72,7 @@ def findClosestPoint(point, points):
     return (closestDistanceSquared, closestPointIndex)
 
 
-#TODO: Consolidate circle intersection calcs.  All use the same primary equation.
+# TODO: Consolidate circle intersection calcs.  All use the same primary equation.
 def getRayCircleIntersections(startPoint, direction, center, radius):
     """
     Calculate distances, from start, where a ray intersects a circle.  
@@ -292,6 +292,15 @@ def CCWNorm(vec):
     return np.array([-vec[1], vec[0]], np.double)
 
 
+def CWNorm(vec):
+    """
+    Rotate vec 90 degrees clockwise.
+    :param vec:
+    :return:
+    """
+    return np.array([vec[1], -vec[0]], np.double)
+
+
 def rotate2d(point, angle):
     """Rotate CCW by angle"""
     cosAngle = math.cos(angle)
@@ -420,6 +429,10 @@ def unitAndLength(vector):
 
 def length(vector):
     return np.linalg.norm(vector)
+
+
+def lengthSquared(vector):
+    return np.dot(vector, vector)
 
 
 def changeBasis(vec, x, y):

@@ -13,11 +13,11 @@ class ObstacleLineSegment(LineSegment):
         LineSegment.__init__(self, p1, p2)
         self.velocity = np.array(velocity, np.double)
 
-    def checkPathIntersectsLine(self, startTime, startPoint, endPoint, speed):
+    def checkPathIntersectsLine(self, startTime, startPoint, velocity, pathTime):
         """
         Does a path from startPoint to endPoint, at the given speed intersect?
         """
-        return self.checkPathIntersectsLinePy(startTime, startPoint, endPoint, speed)
+        return self.checkPathIntersectsLinePy(startTime, startPoint, velocity, pathTime)
 
     def checkPathIntersectsLineC(self, startTime, startPoint, endPoint, speed):
         """

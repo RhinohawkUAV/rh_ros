@@ -3,9 +3,9 @@ import math
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.circularTarget import CircularTarget
+from engine.geometry.obstacle.lineFinder.linePathSegment import LinePathSegment
 from engine.geometry.obstacle.pathSegmentFinder import PathSegmentFinder
 from engine.geometry.obstacle.vertexTarget import VertexTarget
-from engine.geometry.obstacle.lineFinder.linePathSegment import LinePathSegment
 import numpy as np
 
 MAX_TURN_ANGLE = 60
@@ -28,14 +28,14 @@ def turnIsLegal(speed, unitVelocity, velocity2):
 class LineSegmentFinder(PathSegmentFinder):
 
     def __init__(self, targetOffsetLength):
-        self.targetOffsetLength = targetOffsetLength
+        PathSegmentFinder.__init__(self, targetOffsetLength)
         self.vertexTargets = []
         self.circularTargets = []        
 
     def setDynamicNoFlyZones(self, dynamicNoFlyZones):
         self.circularTargets = []
         for dfnz in dynamicNoFlyZones:
-            self.circularTargets.append(CircularTarget(dfnz.center, dfnz.velocity, dfnz.radius + self.targetOffsetLength))
+            self.circularTargets.append(CircularTarget(dfnz.center, dfnz.velocity, dfnz.radius + self.targetOffset))
         
     def createVertexTarget(self, point, velocity, normal, pointAngle):
         self.vertexTargets.append(VertexTarget(point, velocity, normal, pointAngle))
