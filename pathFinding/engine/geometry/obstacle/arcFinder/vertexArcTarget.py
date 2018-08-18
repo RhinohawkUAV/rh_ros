@@ -12,15 +12,15 @@ class VertexArcTarget(VertexTarget, ArcTarget):
         VertexTarget.__init__(self, position, velocity, normal, pointAngle)
 
     def notInitiallyReachable(self, arc):
-        toCenter = self.startPosition - arc.center
+        toCenter = self.position - arc.center
         return np.dot(toCenter, toCenter) < arc.radius * arc.radius
     
     def getCriticalPoints(self, arc):
-        distances = calcs.getRayCircleIntersections(self.startPosition, self.direction, arc.center, arc.radius)
+        distances = calcs.getRayCircleIntersections(self.position, self.direction, arc.center, arc.radius)
         criticalPoints = []
         for distance in distances:
             if distance >= 0.0:
-                intersectionPoint = self.startPosition + distance * self.direction
+                intersectionPoint = self.position + distance * self.direction
                 targetTimeToIntersection = distance / self.speed
                 
                 criticalPoints.append(ArcCriticalPoint(vehicleArc=arc.arcToPoint(intersectionPoint),
@@ -28,14 +28,11 @@ class VertexArcTarget(VertexTarget, ArcTarget):
         return criticalPoints
 
     def iterateSolution(self, arc):
-        time = arc.arcTime()
         endAngle = arc.start + arc.length
         endAngleVec = calcs.unitVectorOfAngle(endAngle, arc.rotDirection)
         arcEndPoint = arc.center + arc.radius * endAngleVec
         
-        velocityOfTarget = self.direction * self.speed
-        targetStartPoint = self.startPosition + velocityOfTarget * time
-        solution = calcs.hitTargetAtSpeed(arcEndPoint, arc.speed, targetStartPoint, velocityOfTarget)
+        solution = calcs.hitTargetAtSpeed(arcEndPoint, arc.speed, self.getPosition(arc.arcTime()), self.velocity)
         if solution is None:
             raise NoSolutionException
         angle = arc.angleOfVelocity(solution.velocity)

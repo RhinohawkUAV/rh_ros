@@ -6,11 +6,16 @@ from engine.geometry.arc import Arc
 
 class ArcCalc(Arc):
 
-    def __init__(self, rotDirection, radius, center, start, length, speed):
-        Arc.__init__(self, rotDirection, radius, center, start, length)
+    def __init__(self, startPoint, speed, unitVelocity, rotDirection, acceleration):
+        arcRadius = speed * speed / acceleration
+        fromCenterDir = -rotDirection * calcs.CCWNorm(unitVelocity)
+        fromCenterToStart = fromCenterDir * arcRadius
+        center = startPoint - fromCenterToStart
+        arcStart = calcs.angleOfVector(fromCenterToStart, rotDirection)
+        Arc.__init__(self, rotDirection, arcRadius, center, arcStart, 0.0)
         self.speed = speed
-        self.angularSpeed = speed / self.radius
-    
+        self.angularSpeed = speed / self.radius        
+   
     def angleOfVelocity(self, velocity):
         return calcs.angleOfVector(velocity, self.rotDirection) - math.pi / 2.0
 
@@ -41,3 +46,7 @@ class ArcCalc(Arc):
         endPoint = self.center + self.radius * endVec
         endDirection = self.rotDirection * calcs.CCWNorm(endVec)
         return (endPoint, endDirection)
+
+    def cloneArc(self):
+        return Arc(self.rotDirection, self.radius, self.center, self.start, self.length)
+    

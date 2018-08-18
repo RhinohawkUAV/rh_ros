@@ -29,6 +29,7 @@ class ArcSegmentFinder(PathSegmentFinder):
         pathSegments = []
         # In this case, the last 2 arguments are meaningless
         target = VertexArcTarget(targetPoint, velocityOfTarget, None, 0.0)
+        target.update(startTime)
         for arcRotDirection in _rotDirections:
             try:
                 arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, arcRotDirection, self.acceleration)
@@ -44,14 +45,14 @@ class ArcSegmentFinder(PathSegmentFinder):
 
     @profile.accumulate("Find Arc Point")
     def _findStaticPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
+        arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1, self.acceleration),
+                      ArcFinder(startPoint, startSpeed, startUnitVelocity, 1, self.acceleration)]
         pathSegments = []
         for target in self.vertexTargets:
             target.update(startTime)
             if not calcs.arePointsClose(startPoint, target.position):
-                for arcRotDirection in _rotDirections:
+                for arcFinder in arcFinders:
                     try:
-                        # TODO: Make ArcFinder Reuseable
-                        arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, arcRotDirection, self.acceleration)
                         pathSegment = arcFinder.solve(target, startTime)
                         if target.testEntryVelocity(pathSegment.endSpeed * pathSegment.endUnitVelocity):
                             pathSegments.append(pathSegment)
@@ -61,14 +62,15 @@ class ArcSegmentFinder(PathSegmentFinder):
 
     @profile.accumulate("Find Arc Circle")
     def _findDynamicPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
+        arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1, self.acceleration),
+                      ArcFinder(startPoint, startSpeed, startUnitVelocity, 1, self.acceleration)]
+         
         pathSegments = []
         for target in self.circularTargets:
             target.update(startTime)
             for targetRotDirection in _rotDirections:
-                for arcRotDirection in _rotDirections:
+                for arcFinder in arcFinders:
                     target.setRotDirection(targetRotDirection)
-                    arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, arcRotDirection, self.acceleration)
-       
                     try:
                         pathSegments.append(arcFinder.solve(target, startTime))
                     except NoSolutionException:

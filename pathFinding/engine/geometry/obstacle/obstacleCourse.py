@@ -36,7 +36,8 @@ class ObstacleCourse:
         :param startUnitVelocity: the direction of the vehicle at the start of the path
         :param targetPoint: the destination point
         :param velocityOfTarget: the velocity of the destination (this is usually a point on a NFZ, which may be moving)
-        :return:
+        :return: (valid,filtered)  The 1st list of valid path segments (do not intersect NFZs).  The 2nd list 
+        shows path segments that were filtered, for debugging purposes.
         """
         pathSegments = self.pathSegmentFinder.findPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
         return self._filterPathSegments(pathSegments)
@@ -49,8 +50,8 @@ class ObstacleCourse:
         :param startPoint:
         :param startSpeed: the speed of the vehicle at the start of the path
         :param startUnitVelocity: the direction of the vehicle at the start of the path
-        :return: a list of PathSegments describing routes from the start point to noFlyZone vertices.  This 1st list of
-        valid path segments.  The 2nd list shows path segments that were filtered, for debugging purposes.
+        :return: (valid,filtered)  The 1st list of valid path segments (do not intersect NFZs).  The 2nd list 
+        shows path segments that were filtered, for debugging purposes.
         """
         pathSegments = self.pathSegmentFinder.findPathSegments(startTime, startPoint, startSpeed, startUnitVelocity)
         return self._filterPathSegments(pathSegments)
@@ -63,4 +64,4 @@ class ObstacleCourse:
                 filteredPathSegments.append(pathSegment)
             else:
                 unfilteredPathSegments.append(pathSegment)
-        return (unfilteredPathSegments, filteredPathSegments)    
+        return (unfilteredPathSegments, filteredPathSegments)   

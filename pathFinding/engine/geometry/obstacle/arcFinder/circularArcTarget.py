@@ -44,18 +44,13 @@ class CircularArcTarget(CircularTarget, ArcTarget):
         return criticalPoints
 
     def iterateSolution(self, arc):
-        time = arc.arcTime()
         endAngle = arc.start + arc.length
         endAngleVec = calcs.unitVectorOfAngle(endAngle, arc.rotDirection)
         arcEndPoint = arc.center + arc.radius * endAngleVec
-        
-        velocityOfTarget = self.direction * self.speed
-        targetStartPoint = self.position + velocityOfTarget * time
-
-        solutions = calcs.hitTargetCircleAtSpeed(arcEndPoint, arc.speed, targetStartPoint, velocityOfTarget, self.radius)
+ 
+        solutions = calcs.hitTargetCircleAtSpeed(arcEndPoint, arc.speed, self.getPosition(arc.arcTime()), self.velocity, self.radius)
         solution = solutions[self.solutionIndex]
         if solution is None:
             raise NoSolutionException
         angle = arc.angleOfVelocity(solution.velocity)
         return angle, solution
-

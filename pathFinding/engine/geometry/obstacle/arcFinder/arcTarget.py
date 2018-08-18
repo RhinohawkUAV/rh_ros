@@ -40,6 +40,7 @@ class ArcTarget:
                     
                     return criticalPoints[1].vehicleArc
         
+        arc.length = 0.0
         (angle, solution) = self.iterateSolution(arc)
         return calcs.modAngle(angle - arc.start, 0.0)
 

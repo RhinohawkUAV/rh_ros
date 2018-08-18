@@ -22,27 +22,10 @@ class ArcFinder:
         # TODO: Should move check to higher level
         if startSpeed == 0.0 or acceleration == 0.0:
             raise NoSolutionException
-
-        self.lineStartPoint = startPoint
-        self.endUnitVelocity = unitVelocity
-
-        arcRadius = startSpeed * startSpeed / acceleration
-        fromCenterDir = -rotDirection * calcs.CCWNorm(unitVelocity)
-        fromCenterToStart = fromCenterDir * arcRadius
-    
-        center = startPoint - fromCenterToStart
-        arcStart = calcs.angleOfVector(fromCenterToStart, rotDirection)
-        self.arc = ArcCalc(rotDirection, arcRadius, center, arcStart, 0.0, startSpeed)
-
-        self.arcTime = 0.0
-        self.totalTime = 0.0
-        self.lineEndPoint = None
-        self.finalVelocity = None
+        self.arc = ArcCalc(startPoint, startSpeed, unitVelocity, rotDirection, acceleration)
 
     def solve(self, target, starTimeOffset):
-          
         self.arc.length = target.initialGuess(self.arc)
-          
         iteration = 0
         while iteration < MAX_ITERATIONS:
             (angle, solution) = target.iterateSolution(self.arc)
@@ -63,4 +46,4 @@ class ArcFinder:
                          endPoint=arcEndPoint + self.arc.speed * arcEndDirection * lineTime,
                          endSpeed=self.arc.speed,
                          endUnitVelocity=arcEndDirection,
-                         arc=self.arc)
+                         arc=self.arc.cloneArc())

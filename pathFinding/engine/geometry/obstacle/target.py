@@ -4,14 +4,19 @@ from engine.geometry import calcs
 class Target:
 
     def __init__(self, startPosition, velocity):
-        self.startPosition = startPosition
+        self._startPosition = startPosition
         self.position = None
         self.velocity = velocity
         (self.direction, self.speed) = calcs.unitAndLength(self.velocity)
     
-    def getPosition(self, time):
-        return self.startPosition + self.velocity * time
-    
     def update(self, time):
-        self.position = self.startPosition + self.velocity * time
+        """
+        Updates position based on the current time.  Should be called on a target for each time at which computation will take place.
+        """
+        self.position = self._startPosition + self.velocity * time
 
+    def getPosition(self, time):
+        """
+        Starting at position (not _startPosition) get a relative, future position at the given time.
+        """
+        return self.position + self.velocity * time
