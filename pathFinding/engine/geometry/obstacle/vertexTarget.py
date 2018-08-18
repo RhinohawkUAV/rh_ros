@@ -10,7 +10,7 @@ class VertexTarget(Target):
     def __init__(self, startPosition, velocity, normal, vertexAngle):
         Target.__init__(self, startPosition, velocity)
         self.normal = normal
-        self.cosLimit = math.cos((math.pi - vertexAngle) / 2.0)
+        self.cosLimit = math.cos(math.pi - vertexAngle / 2.0)
     
     def testEntryVelocity(self, entryVelocity):
         """
