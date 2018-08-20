@@ -1,3 +1,5 @@
+import math
+
 from constants import NFZ_MAX_NEW_VERTEX_EXPANSION_RATIO
 from engine.geometry import calcs
 from gui.core import Drawable
@@ -33,9 +35,9 @@ class PathSegmentFinder(Drawable):
         points = calcs.calcShell(points, self.targetOffset)
         for i in range(-1, len(points) - 1):
             pointAngle = calcs.calcVertexAngle(points[i - 1], points[i], points[i + 1])
-            pointNormal = calcs.calcVertexNormal(points[i - 1], points[i], points[i + 1])
-            # TODO: Should not create target if angle will not accept any incoming velocities!!
-            self.createVertexTarget(points[i], velocity, pointNormal, pointAngle)
+            if pointAngle <= math.pi:
+                pointNormal = calcs.calcVertexNormal(points[i - 1], points[i], points[i + 1])
+                self.createVertexTarget(points[i], velocity, pointNormal, pointAngle)
 
     def createVertexTarget(self, point, velocity, normal, pointAngle):
         pass
