@@ -1,3 +1,5 @@
+from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
+from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from engine.geometry.obstacle.pathSegment import calcSegmentsPointDebug
 from gui import Drawable
 import gui
@@ -5,8 +7,17 @@ import gui
 
 class PathFindDrawable(Drawable):
 
-    def __init__(self, scenario):
+    def __init__(self, params, vehicle, scenario):
         self.scenario = scenario
+        
+        # TODO: Should create an obstacle course.  Move code to do this elsewhere.
+        self._pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzTargetOffset)
+        self._pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth)
+        self._pathIntersectionDetector.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
+        self._pathIntersectionDetector.setDynamicNoFlyZones(scenario.dynamicNoFlyZones)  
+        self._pathSegmentFinder.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
+        self._pathSegmentFinder.setDynamicNoFlyZones(scenario.dynamicNoFlyZones)
+
         self._pastPathSegments = []
         self._futurePathSegments = []
         self._filteredPathSegments = []
@@ -50,7 +61,8 @@ class PathFindDrawable(Drawable):
             (pointOfInterest, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance)
             
         gui.draw.drawScenario(canvas, self.scenario, time=drawTime)
-
+        self._pathIntersectionDetector.draw(canvas, time=drawTime)
+        self._pathSegmentFinder.draw(canvas, time=drawTime)
         if pointOfInterest is not None:
             gui.draw.drawPoint(canvas, pointOfInterest, color="cyan", outline="black", width=1.5, radius=1.0)
             

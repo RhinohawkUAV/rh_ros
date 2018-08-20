@@ -1,6 +1,6 @@
 import math
 
-from constants import DISTANCE_TOLERANCE_SQUARED
+from constants import DISTANCE_TOLERANCE_SQUARED, NFZ_MAX_NEW_VERTEX_EXPANSION_RATIO
 import numpy as np
 from utils import quadratic
 
@@ -244,6 +244,49 @@ def calcBounds(points):
             yMax = point[1]
     return [xMin, yMin, xMax, yMax]
 
+    
+def biProjection(unitVec1, unitVec2):
+    """
+    Given 2 unit vectors, find a vector which projects, exactly length 1.0 along both vectors.
+    """
+    if np.array_equal(unitVec1, unitVec2):
+        return unitVec1
+    
+    along = np.dot(unitVec1, unitVec2)
+    if along == -1.0:
+        return None
+    
+    unitVec1Perp = unit(unitVec2 - along * unitVec1)
+    
+    return unitVec1 + unitVec1Perp * (1.0 - along) / np.dot(unitVec2, unitVec1Perp)
+
+
+def calcShell(points, width, maxVertexExpansionRatio=NFZ_MAX_NEW_VERTEX_EXPANSION_RATIO):
+    
+    shellPoints = []
+    for i in range(-1, len(points) - 1):
+        n1 = unit(CWNorm(points[i] - points[i - 1]))
+        n2 = unit(CWNorm(points[i + 1] - points[i]))
+        vertexOffset = biProjection(n1, n2)
+        if length(vertexOffset) > maxVertexExpansionRatio:
+            vertexNormal = calcVertexNormal(points[i - 1], points[i], points[i + 1])
+            vertexOffset1 = biProjection(n1, vertexNormal)
+            vertexOffset2 = biProjection(n2, vertexNormal)
+            shellPoints.append(points[i] + width * vertexOffset1)
+            shellPoints.append(points[i] + width * vertexOffset2)
+        else:
+            shellPoints.append(points[i] + width * vertexOffset)
+    return shellPoints
+
+
+def calcVertexNormal(prevVertex, vertex, nextVertex):
+    """
+    Calculate the point's normal (average of normals of connected edges) assuming CCW winding
+    """
+    n1 = unit(CWNorm(vertex - prevVertex))
+    n2 = unit(CWNorm(nextVertex - vertex))
+    return unit(n1 + n2)
+
 
 def calcVertexAngle(prevVertex, vertex, nextVertex):
     """
@@ -416,7 +459,7 @@ def unitVectorOfAngle(angle, rotDirection=1.0):
 def unit(vector):
     length = np.linalg.norm(vector)
     if length == 0.0:
-        return vector
+        raise Exception("Norm of 0-length vector!")
     return vector / length
 
 

@@ -30,7 +30,7 @@ class EditableNoFlyZone(Drawable):
         # type: (Canvas) -> None
 
         for line in self._lines:
-            line.draw(canvas, drawVectors=False, **kwargs)
+            line.draw(canvas, **kwargs)
 
         if np.linalg.norm(self.velocity) > 0.0:
             gui.draw.drawVelocity(canvas, self._midPoint, self.velocity, **kwargs)

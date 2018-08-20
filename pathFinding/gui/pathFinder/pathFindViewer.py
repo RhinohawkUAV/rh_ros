@@ -105,7 +105,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self._pathFindInput = {}
         self._pathFindInput[SCENARIO_KEY] = scenario
         self._pathFinderInterface.submitProblem(self._params, scenario, self._vehicle)
-        self._pathFindDrawable = PathFindDrawable(scenario)
+        self._pathFindDrawable = PathFindDrawable(self._params, self._vehicle, scenario)
         self.updateDisplay()
 
     def debug(self, pastPathSegments, futurePathSegments, filteredPathSegments):

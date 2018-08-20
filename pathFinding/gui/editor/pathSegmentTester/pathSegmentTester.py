@@ -44,16 +44,16 @@ class PathSegmentTester(SubGUI):
     def onSwitch(self, inputDict):
         SubGUI.onSwitch(self, inputDict)
         
-        pathSegmentFinder = ArcSegmentFinder(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzBufferSize)
-#         pathSegmentFinder = LineSegmentFinder(params.nfzBufferSize)
-        pathIntersectionDetector = PyPathIntersectionDetector()
+        pathSegmentFinder = ArcSegmentFinder(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzTargetOffset)
+#         pathSegmentFinder = LineSegmentFinder(DEFAULT_PARAMS.nfzTargetOffset)
+        pathIntersectionDetector = PyPathIntersectionDetector(DEFAULT_PARAMS.nfzBufferWidth)
 
         self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
 
         self._obstacleCourse.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
                                                   self._inputDict[SCENARIO_KEY].noFlyZones)
         self._obstacleCourse.setDynamicNoFlyZones(self._inputDict[SCENARIO_KEY].dynamicNoFlyZones)
-        self._pathFinderDrawable = PathFindDrawable(self._inputDict[SCENARIO_KEY])
+        self._pathFinderDrawable = PathFindDrawable(DEFAULT_PARAMS, DEFAULT_VEHICLE, self._inputDict[SCENARIO_KEY])
 
     def updateDrawable(self):
         (startUnitVelocity, startSpeed) = calcs.unitAndLength(self._inputDict[TEST_INPUT_KEY].startVelocity)

@@ -1,10 +1,11 @@
 import testmod
 
-from engine.geometry import LineSegment, calcs
+from engine.geometry import LineSegment
+import gui.draw
 import numpy as np
 
 
-class ObstacleLineSegment(LineSegment):
+class LineSegmentObstacle(LineSegment):
     """
     An extension to the standard LineSegment class which includes a velocity
     """
@@ -44,3 +45,6 @@ class ObstacleLineSegment(LineSegment):
 
         return self.checkLineIntersection(startPoint + offset, endPoint + offset)
     
+    def draw(self, canvas, time=0.0, **kwargs):
+        gui.draw.drawLine(canvas, self.p1 + self.velocity * time, self.p2 + self.velocity * time, **kwargs)
+        

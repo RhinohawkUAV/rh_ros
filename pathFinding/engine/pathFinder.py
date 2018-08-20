@@ -21,9 +21,10 @@ class PathFinder:
         self._params = params
         self._vehicle = vehicle
 
-        pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzBufferSize)
-#         pathSegmentFinder = LineSegmentFinder(params.nfzBufferSize)
-        pathIntersectionDetector = PyPathIntersectionDetector()
+        #TODO: Obstacle course should probably be passed in
+        pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzTargetOffset)
+#         pathSegmentFinder = LineSegmentFinder(params.nfzTargetOffset)
+        pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth)
 
         self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
         self._obstacleCourse.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)

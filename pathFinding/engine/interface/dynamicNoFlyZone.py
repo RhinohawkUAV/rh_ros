@@ -22,18 +22,6 @@ class DynamicNoFlyZone:
         # and assume no history.
         self.ID = ID
 
-    def checkPathIntersection(self, startTime, startPoint, velocity, pathTime):
-        
-        # Offset velocity by the velocity of the no-fly-zone (pretend it is not moving)
-        velocity = velocity - self.velocity
-        pathVector = velocity * pathTime
-
-        # Given the start time, this dnfz will have moved.  Alternately, we offset the start and end points in the
-        # opposite direction
-        offset = -self.velocity * startTime
-        
-        return calcs.lineSegmentCircleIntersect(startPoint + offset, pathVector, self.center, self.radius)
-
 
 def fromJSONDict(objDict):
     return DynamicNoFlyZone(objDict["center"], objDict["radius"], objDict["velocity"], objDict["ID"])

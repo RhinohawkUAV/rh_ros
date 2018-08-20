@@ -2,8 +2,8 @@
 Utilities for converting ROS messages to/from inputs to the path-finder.
 """
 import math
-import pathfinding.msg as pfm
 
+from constants import DEFAULT_NFZ_TARGET_OFFSET
 from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
 import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
@@ -14,6 +14,7 @@ import engine.interface.scenario
 import engine.interface.solutionWaypoint
 import engine.interface.vehicle
 import numpy as np
+import pathfinding.msg as pfm
 
 
 #**********************Msg objects to path finding objects********************
@@ -24,7 +25,14 @@ class MessageConverter:
 
     def msgToParams(self, inputParamsMsg):
         return engine.interface.pathFindParams.PathFindParams(float(inputParamsMsg.waypointAcceptanceRadii),
-                                  float(inputParamsMsg.nfzBufferSize))
+                                  float(inputParamsMsg.nfzBufferSize),
+                                  DEFAULT_NFZ_TARGET_OFFSET
+                                  )
+        # TODO: Add Target Offset Param and rename
+        return engine.interface.pathFindParams.PathFindParams(float(inputParamsMsg.waypointAcceptanceRadii),
+                                  float(inputParamsMsg.nfzBufferWidth),
+                                  float(inputParamsMsg.nfzTargetOffset)
+                                  )
     
     def msgToVehicle(self, msg):
         return engine.interface.vehicle.Vehicle(float(msg.maxSpeed), float(msg.acceleration))
@@ -126,7 +134,11 @@ class MessageConverter:
     def paramsToMsg(self, inputParams):
         msg = pfm.Params()
         msg.waypointAcceptanceRadii = inputParams.waypointAcceptanceRadii
-        msg.nfzBufferSize = inputParams.nfzBufferSize
+        msg.nfzBufferSize = inputParams.nfzBufferWidth
+        # TODO: Add Target Offset Param and rename
+#         msg.nfzBufferWidth = inputParams.nfzBufferWidth
+#         msg.nfzTargetOffset = inputParams.nfzTargetOffset
+        
         return msg
     
     def vehicleToMsg(self, vehicle):

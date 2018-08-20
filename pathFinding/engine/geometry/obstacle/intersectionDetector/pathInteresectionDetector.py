@@ -1,4 +1,7 @@
-class PathIntersectionDetector:
+from gui.core import Drawable
+
+
+class PathIntersectionDetector(Drawable):
 
     def setInitialState(self, boundaryPoints, noFlyZones):
         """
@@ -17,8 +20,5 @@ class PathIntersectionDetector:
         """
         pass
     
-    def testIntersections(self, lineSets):
-        pass
-    
     def testStraightPathInteresection(self, startTime, startPoint, endPoint, speed):
-        pass
+        return False

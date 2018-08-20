@@ -74,8 +74,6 @@ class LineSegment(Drawable):
         parametric = self.closestPointParametric(point)
         return self.getParametricPoint(parametric)
 
-# TODO: Consider how we want to handle edge cases and tolerance for intersections
-
     def checkLineIntersection(self, startPoint, endPoint):
         """
 
@@ -127,22 +125,14 @@ class LineSegment(Drawable):
 
         return parametric >= 0 and parametric <= 1
 
-    def draw(self, canvas, text="", time=0.0, drawVectors=True, **kwargs):
+    def draw(self, canvas, **kwargs):
         """
         Draw on the canvas with any modifiers stored in kwargs.
         :param canvas:
         :param kwargs:
         :return:
         """
-
-        mid = (self.p1 + self.p2) / 2.0
-        if not text == "":
-            textPos = mid - self.n * textOffsetFactor
-            gui.draw.drawText(canvas, textPos, text=text, **kwargs)
-
         gui.draw.drawLine(canvas, self.p1, self.p2, **kwargs)
-        if drawVectors:
-            gui.draw.drawLine(canvas, mid, mid + self.n * normalDisplayFactor, **kwargs)
 
     def xRay(self, point):
         """

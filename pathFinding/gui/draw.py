@@ -40,8 +40,8 @@ def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
                        fill=color, **kwargs)
 
 
-def drawCircle(canvas, center, radius, color=DEFAULT_COLOR, **kwargs):
-    canvas.create_oval(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, outline=color, **kwargs)
+def drawCircle(canvas, center, radius, color=DEFAULT_COLOR, dash=None, **kwargs):
+    canvas.create_oval(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, outline=color, dash=dash, **kwargs)
 
     
 def drawArc(canvas, center, radius, startAngle, length, color=DEFAULT_COLOR, **kwargs):
@@ -58,13 +58,13 @@ def drawArcObj(canvas, arc, **kwargs):
 
 def drawDynamicNoFlyZone(canvas, dynamicNoFlyZone, color=DEFAULT_COLOR, time=0.0, **kwargs):
     center = dynamicNoFlyZone.center + dynamicNoFlyZone.velocity * time
-    drawCircle(canvas, center, dynamicNoFlyZone.radius)
+    drawCircle(canvas, center, dynamicNoFlyZone.radius, color=color)
     drawVelocity(canvas, center, dynamicNoFlyZone.velocity)
 
 
-def drawDynamicNoFlyZones(canvas, dynamicNoFlyZones, **kwargs):
+def drawDynamicNoFlyZones(canvas, dynamicNoFlyZones, color=DEFAULT_COLOR, **kwargs):
     for dnfz in dynamicNoFlyZones:
-        drawDynamicNoFlyZone(canvas, dnfz, **kwargs)
+        drawDynamicNoFlyZone(canvas, dnfz, color=color, **kwargs)
 
 
 def drawNoFlyZone(canvas, noFlyZone, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, time=0.0, **kwargs):
@@ -96,8 +96,8 @@ def drawWayPoints(canvas, startPoint, startVelocity, wayPoints, radius=DEFAULT_P
 
 
 def drawScenario(canvas, scenarioInput, time=0.0, **kwargs):
-    drawNoFlyZones(canvas, scenarioInput.noFlyZones, color="black", width=1.0, time=time, **kwargs)
-    drawDynamicNoFlyZones(canvas, scenarioInput.dynamicNoFlyZones, color="black", time=time, **kwargs)
+    drawNoFlyZones(canvas, scenarioInput.noFlyZones, color="red", width=1.0, time=time, **kwargs)
+    drawDynamicNoFlyZones(canvas, scenarioInput.dynamicNoFlyZones, color="red", time=time, **kwargs)
     if len(scenarioInput.boundaryPoints) > 2:
         drawPoly(canvas, scenarioInput.boundaryPoints, color="red")
     drawWayPoints(canvas, scenarioInput.startPoint, scenarioInput.startVelocity, scenarioInput.wayPoints)

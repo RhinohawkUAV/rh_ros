@@ -1,12 +1,10 @@
-import math
-
+from constants import NFZ_MAX_NEW_VERTEX_EXPANSION_RATIO
 from engine.geometry import calcs
-from engine.geometry.obstacle.vertexTarget import VertexTarget
+from gui.core import Drawable
 import numpy as np
-from utils import profile
 
 
-class PathSegmentFinder:
+class PathSegmentFinder(Drawable):
     
     def __init__(self, targetOffset):
         self.targetOffset = targetOffset
@@ -32,13 +30,12 @@ class PathSegmentFinder:
         pass 
 
     def createPolygonTargets(self, points, velocity):
+        points = calcs.calcShell(points, self.targetOffset)
         for i in range(-1, len(points) - 1):
-            normal = calcs.CWNorm(points[i + 1] - points[i - 1])
-            normal = calcs.unit(normal)
-            
             pointAngle = calcs.calcVertexAngle(points[i - 1], points[i], points[i + 1])
-            if pointAngle < math.pi:
-                self.createVertexTarget(points[i] + normal * self.targetOffset, velocity, normal, pointAngle)
+            pointNormal = calcs.calcVertexNormal(points[i - 1], points[i], points[i + 1])
+            # TODO: Should not create target if angle will not accept any incoming velocities!!
+            self.createVertexTarget(points[i], velocity, pointNormal, pointAngle)
 
     def createVertexTarget(self, point, velocity, normal, pointAngle):
         pass

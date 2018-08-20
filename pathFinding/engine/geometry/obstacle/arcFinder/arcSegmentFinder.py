@@ -5,7 +5,10 @@ from engine.geometry.obstacle.arcFinder.arcFinder import ArcFinder
 from engine.geometry.obstacle.arcFinder.circularArcTarget import CircularArcTarget
 from engine.geometry.obstacle.arcFinder.vertexArcTarget import VertexArcTarget
 from engine.geometry.obstacle.pathSegmentFinder import PathSegmentFinder
+from gui.draw import DEFAULT_DASH
+import gui.draw
 from utils import profile
+
 _rotDirections = (-1.0, 1.0)
 
 
@@ -86,3 +89,12 @@ class ArcSegmentFinder(PathSegmentFinder):
                 segments.append(segment)
                     
         return segments
+
+    def draw(self, canvas, time=0.0, **kwargs):
+        for target in self.vertexTargets:
+            target.update(time)
+            gui.draw.drawPoint(canvas, target.position, 4)
+            
+        for target in self.circularTargets:
+            target.update(time)
+            gui.draw.drawCircle(canvas, target.position, target.radius, dash=DEFAULT_DASH)

@@ -1,5 +1,6 @@
 from engine.geometry import calcs
-from engine.geometry.obstacle.intersectionDetector.obstacleLineSegment import ObstacleLineSegment
+from engine.geometry.obstacle.intersectionDetector.circularObstacle import CircularObstacle
+from engine.geometry.obstacle.intersectionDetector.lineSegmentObstacle import LineSegmentObstacle
 from engine.geometry.obstacle.intersectionDetector.pathInteresectionDetector import PathIntersectionDetector
 import numpy as np
 from utils import profile
@@ -7,37 +8,41 @@ from utils import profile
 
 class PyPathIntersectionDetector(PathIntersectionDetector):
     
-    def __init__(self):
+    def __init__(self, bufferWidth):
+        self.bufferWidth = bufferWidth
         self.obstacleLines = []
-        self.dynamicNoFlyZones = []
+        self.circularObstacles = []
 
     def setInitialState(self, boundaryPoints, noFlyZones):
         del self.obstacleLines[:]
 
-        for noFlyZoneInput in noFlyZones:
-            points = noFlyZoneInput.points
-            for i in range(0, len(points)):
-                self.obstacleLines.append(
-                    ObstacleLineSegment(points[i - 1], points[i], np.array(noFlyZoneInput.velocity, np.double)))
+        for noFlyZone in noFlyZones:
+            self.createObstacleLines(noFlyZone.points, noFlyZone.velocity)
+            
+        self.createObstacleLines(boundaryPoints, np.array((0, 0), np.double))
 
-        for i in range(len(boundaryPoints)):
+    def createObstacleLines(self, points, velocity):
+        shell = calcs.calcShell(points, self.bufferWidth)
+        for i in range(len(shell)):
             self.obstacleLines.append(
-                ObstacleLineSegment(boundaryPoints[i - 1],
-                                    boundaryPoints[i], np.array((0, 0), np.double)))
+                LineSegmentObstacle(shell[i - 1], shell[i], velocity))
 
     def setDynamicNoFlyZones(self, dynamicNoFlyZones):
-        self.dynamicNoFlyZones = dynamicNoFlyZones
-    
-    def testIntersections(self, lineSets):
-        pass
+        self.circularObstacles = list(map(lambda d: CircularObstacle(d.center, d.radius + self.bufferWidth, d.velocity), dynamicNoFlyZones))
     
     @profile.accumulate("Collision Detection")
     def testStraightPathIntersection(self, startTime, startPoint, velocity, time):
         for obstacleLine in self.obstacleLines:
             if obstacleLine.checkPathIntersectsLine(startTime, startPoint, velocity, time):
                 return True
-        for dnfz in self.dynamicNoFlyZones:
-            if dnfz.checkPathIntersection(startTime, startPoint, velocity, time):
+        for circularObstacle in self.circularObstacles:
+            if circularObstacle.checkPathIntersection(startTime, startPoint, velocity, time):
                 return True
            
         return False
+    
+    def draw(self, canvas, time=0.0, **kwargs):
+        for obstacleLine in self.obstacleLines:
+            obstacleLine.draw(canvas, time=time, **kwargs)
+        for circularObstacle in self.circularObstacles:
+            circularObstacle.draw(canvas, time=time, **kwargs)
