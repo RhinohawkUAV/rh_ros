@@ -73,21 +73,25 @@ class PathFindViewer(Visualizer, PathFinderListener):
                           (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
                           (COURSE_DIM / 2.0, COURSE_DIM / 2.0), (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)]
 
-        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputs(30,
+        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputsHard(25,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     0.01, 0.1,
-                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed)
+                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
+                                                                    startPoint=startPoint, endPoint=endPoint,
+                                                                    averageSpeed=self._vehicle.maxSpeed)                                                                    
         
-        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputs(30,
+        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(25,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     0.01, 0.1,
-                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed)
+                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
+                                                                    startPoint=startPoint, endPoint=endPoint,
+                                                                    averageSpeed=self._vehicle.maxSpeed)
          
         roads = []
         wayPoints = [endPoint]
