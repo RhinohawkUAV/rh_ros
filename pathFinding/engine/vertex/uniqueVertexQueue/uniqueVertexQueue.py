@@ -1,3 +1,4 @@
+import constants
 from engine.vertex.uniqueVertexQueue.uniqueSpaceTree import UniqueTree
 from engine.vertex.vertexPriorityQueue import VertexPriorityQueue, \
     QueueEmptyException
@@ -33,9 +34,9 @@ class UniqueVertexQueue(VertexPriorityQueue):
     2. Should uniqueness be given more or less weight compared to estimated time?
     """
 
-    def __init__(self, x, y, width, height, maximumSpeed):
+    def __init__(self, x, y, width, height, maximumSpeed, coincidentDistance=constants.UNIQUE_TREE_COINCIDENT_DISTANCE):
         self._heap = MinHeap()
-        self._uniqueTree = UniqueTree(x, y, width, height, maximumSpeed)
+        self._uniqueTree = UniqueTree(x, y, width, height, maximumSpeed, coincidentDistance)
         self._diagnonalTime = np.math.sqrt(width * width + height * height) / maximumSpeed
 
     def push(self, vertex):
@@ -46,7 +47,6 @@ class UniqueVertexQueue(VertexPriorityQueue):
             return
         priority = vertex.estimatedTimeThroughVertex / uniqueness
         
-        vertex.uniqueness = uniqueness
         self._heap.push(priority, vertex)
 
     def pop(self):

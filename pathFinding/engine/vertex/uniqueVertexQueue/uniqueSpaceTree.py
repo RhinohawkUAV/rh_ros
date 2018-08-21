@@ -1,3 +1,4 @@
+import constants
 import numpy as np
 
 _subIndexMultipliers = np.array([1, 2, 4, 8], np.int32)
@@ -21,10 +22,11 @@ class UniqueTree:
     For efficiency this does not check for illegal values outside the range of the cell.  DON'T INSERT THESE VALUES!
     """
 
-    def __init__(self, x, y, width, height, maximumSpeed):
+    def __init__(self, x, y, width, height, maximumSpeed, coincidentDistance):
         self._minPosition = np.array([x, y, -maximumSpeed, -maximumSpeed], np.double)
         self._dims = np.array([width, height, 2.0 * maximumSpeed, 2.0 * maximumSpeed], np.double)
         self._root = None
+        self._coincidentDistanceSquared = coincidentDistance * coincidentDistance
 
     def insert(self, position):
         """
@@ -37,9 +39,34 @@ class UniqueTree:
             self._root = createRoot(self._minPosition, self._dims, 1.0, position)
             return 1.0
 
-        return self._root.insert(position)
+        return self.insertRecurse(self._root, position)
 
+    def insertRecurse(self, node, position):
+        subIndices = node.calcSubIndices(position)
+        index = _calcIndex(subIndices)
+        child = node._children[index]
+        # If the slot is empty just insert the position there
+        if child is None:
+            return node.createLeaf(subIndices, index, position).uniqueness
+        
+        if child.isLeaf():
+            if self.isCoincident(child._leafPosition, position):
+                return 0.0
+            child.convertToNonLeaf()
 
+        return self.insertRecurse(child, position)
+
+    def isCoincident(self, position, position2):
+        """
+        Determines if value stored in this leaf matches the given position
+        :return:
+        """
+        diff = position2 - position
+        diff /= self._dims
+        return np.dot(diff, diff) < self._coincidentDistanceSquared
+
+        
+#         return (self._leafPosition == position).sum() == 4
 def createRoot(minPosition, dims, uniqueness, position):
     root = UniqueNode(minPosition, dims, uniqueness)
     root._children = [None] * 16
@@ -65,21 +92,6 @@ class UniqueNode:
         self._halfDims = self._dims / 2.0  # type: np.ndarray
         self.uniqueness = uniqueness
 
-    def insert(self, position):
-        subIndices = self.calcSubIndices(position)
-        index = _calcIndex(subIndices)
-        child = self._children[index]
-        # If the slot is empty just insert the position there
-        if child is None:
-            return self.createLeaf(subIndices, index, position).uniqueness
-        
-        if child.isLeaf():
-            if child.isCoincident(position):
-                return 0.0
-            child.convertToNonLeaf()
-
-        return child.insert(position)
-
     def createLeaf(self, subIndices, index, position):
         subCellPosition = self._minPosition + subIndices * self._halfDims
         childUniqueness = self.uniqueness * 0.5
@@ -97,14 +109,6 @@ class UniqueNode:
 
     def isLeaf(self):
         return self._children is None
-
-    # TODO: Add cutoff value for coincidence
-    def isCoincident(self, position):
-        """
-        Determines if value stored in this leaf matches the given position
-        :return:
-        """
-        return (self._leafPosition == position).sum() == 4
 
     def calcSubIndices(self, position):
         """

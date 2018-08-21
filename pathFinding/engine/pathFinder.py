@@ -21,7 +21,7 @@ class PathFinder:
         self._params = params
         self._vehicle = vehicle
 
-        #TODO: Obstacle course should probably be passed in
+        # TODO: Obstacle course should probably be passed in
         pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzTargetOffset)
 #         pathSegmentFinder = LineSegmentFinder(params.nfzTargetOffset)
         pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth)
@@ -87,7 +87,6 @@ class PathFinder:
                 self._findPathsTime += time.time()
                 for pathSegment in self._pathSegments:
                     timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
-        
                     newVertex = Vertex(position=pathSegment.endPoint,
                                        startSpeed=pathSegment.endSpeed,
                                        unitVelocity=pathSegment.endUnitVelocity,
@@ -99,7 +98,6 @@ class PathFinder:
                                        pathSegment=pathSegment)
         
                     self._vertexQueue.push(newVertex)
-                    pathSegment.debug = newVertex.uniqueness
                 return False
         except QueueEmptyException:
             return True
