@@ -30,6 +30,17 @@ class PyPathIntersectionDetector(PathIntersectionDetector):
     def setDynamicNoFlyZones(self, dynamicNoFlyZones):
         self.circularObstacles = list(map(lambda d: CircularObstacle(d.center, d.radius + self.bufferWidth, d.velocity), dynamicNoFlyZones))
     
+    def testStraightPathIntersections(self, points, times):
+        for i in range(0, len(points) - 1):
+            time = times[i + 1] - times[i]
+            
+            if self.testStraightPathIntersection(startTime=times[i],
+                                                startPoint=points[i],
+                                                velocity=(points[i + 1] - points[i]) / time,
+                                                time=time):
+                return True
+        return False 
+        
     @profile.accumulate("Collision Detection")
     def testStraightPathIntersection(self, startTime, startPoint, velocity, time):
         for obstacleLine in self.obstacleLines:
