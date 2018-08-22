@@ -1,17 +1,15 @@
-from fileinput import filename
 from numpy.random.mtrand import np
 import os
 import tkFileDialog
 
 from constants import COURSE_DIM
-import constants
 from engine import interface
 import engine
 from engine.geometry import calcs
 from engine.interface.fileUtils import SCENARIO_KEY
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.scenario import Scenario
-from engine.interface.vehicle import Vehicle, DEFAULT_VEHICLE
+from engine.interface.vehicle import DEFAULT_VEHICLE
 from gui.pathFinder.pathFinderListener import PathFinderListener
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 from gui.visualizer import Visualizer
@@ -73,7 +71,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
                           (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
                           (COURSE_DIM / 2.0, COURSE_DIM / 2.0), (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)]
 
-        dynamicNoFlyZones = engine.utils.genRandomDynamicNoFlyZoneInputsHard(25,
+        dynamicNoFlyZones = engine.utils.genRandomCircularNoFlyZoneInputsHard(25,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,

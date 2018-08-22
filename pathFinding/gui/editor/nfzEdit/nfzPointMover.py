@@ -4,7 +4,6 @@ from gui import Drawable
 class NFZPointMover(Drawable):
 
     def __init__(self):
-#         self._obstacleCourseEdit = obstacleCourseEdit
         self._pointIndex = None
         self._noFlyZone = None
         self._alteredNoFlyZone = None

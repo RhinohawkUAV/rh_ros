@@ -1,6 +1,4 @@
-from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
-from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
-from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
+from engine.geometry.obstacle import obstacleCourse
 from engine.geometry.obstacle.pathSegment import calcSegmentsPointDebug
 from gui import Drawable
 import gui
@@ -10,13 +8,8 @@ class PathFindDrawable(Drawable):
 
     def __init__(self, params, vehicle, scenario):
         self.scenario = scenario
-        
-        pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzTargetOffset)
-        pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth)
-        self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
-        self._obstacleCourse.setState(scenario.boundaryPoints,
-                                      scenario.noFlyZones,
-                                      scenario.dynamicNoFlyZones)
+        self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
+        self._obstacleCourse.setScenarioState(scenario)
 
         self._pastPathSegments = []
         self._futurePathSegments = []

@@ -35,7 +35,7 @@ def genRandomDynamicNoFlyZoneInputs(numNoFlyZones, x, y, width, height, minRadFr
     return noFlyZones
 
 
-def genRandomDynamicNoFlyZoneInputsHard(numNoFlyZones, x, y, width, height, minRadFraction, maxRadFraction, minSpeed, maxSpeed, startPoint, endPoint, averageSpeed):
+def genRandomCircularNoFlyZoneInputsHard(numNoFlyZones, x, y, width, height, minRadFraction, maxRadFraction, minSpeed, maxSpeed, startPoint, endPoint, averageSpeed):
 
     """Generates a random Geometry object with certain properties for testing"""
     travelLine = LineSegment(startPoint, endPoint)

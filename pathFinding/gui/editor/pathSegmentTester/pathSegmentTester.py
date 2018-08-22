@@ -1,7 +1,5 @@
 from engine.geometry import calcs
-from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
-from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
-from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
+from engine.geometry.obstacle import obstacleCourse
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.vehicle import DEFAULT_VEHICLE
@@ -43,16 +41,8 @@ class PathSegmentTester(SubGUI):
 
     def onSwitch(self, inputDict):
         SubGUI.onSwitch(self, inputDict)
-        
-        pathSegmentFinder = ArcSegmentFinder(DEFAULT_VEHICLE.acceleration, DEFAULT_PARAMS.nfzTargetOffset)
-#         pathSegmentFinder = LineSegmentFinder(DEFAULT_PARAMS.nfzTargetOffset)
-        pathIntersectionDetector = PyPathIntersectionDetector(DEFAULT_PARAMS.nfzBufferWidth)
-
-        self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
-
-        self._obstacleCourse.setState(self._inputDict[SCENARIO_KEY].boundaryPoints,
-                                                  self._inputDict[SCENARIO_KEY].noFlyZones,
-                                                  self._inputDict[SCENARIO_KEY].dynamicNoFlyZones)
+        self._obstacleCourse = obstacleCourse.createObstacleCourse(DEFAULT_PARAMS, DEFAULT_VEHICLE)
+        self._obstacleCourse.setScenarioState(self._inputDict[SCENARIO_KEY])
         self._pathFinderDrawable = PathFindDrawable(DEFAULT_PARAMS, DEFAULT_VEHICLE, self._inputDict[SCENARIO_KEY])
 
     def updateDrawable(self):

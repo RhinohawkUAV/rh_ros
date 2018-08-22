@@ -1,10 +1,7 @@
 import math
 import time
 
-from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
-from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
-from engine.geometry.obstacle.lineFinder.lineSegmentFinder import LineSegmentFinder
-from engine.geometry.obstacle.obstacleCourse import ObstacleCourse
+from engine.geometry.obstacle import obstacleCourse
 from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
@@ -20,14 +17,8 @@ class PathFinder:
     def __init__(self, params, scenario, vehicle):
         self._params = params
         self._vehicle = vehicle
-
-        # TODO: Obstacle course should probably be passed in
-        pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzTargetOffset)
-#         pathSegmentFinder = LineSegmentFinder(params.nfzTargetOffset)
-        pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth)
-
-        self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
-        self._obstacleCourse.setState(scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
+        self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
+        self._obstacleCourse.setScenarioState(scenario)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = scenario.calcBounds()
