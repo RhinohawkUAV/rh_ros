@@ -17,16 +17,12 @@ class ArcSegmentFinder(PathSegmentFinder):
     def __init__(self, acceleration, targetOffset):
         PathSegmentFinder.__init__(self, targetOffset)
         self.acceleration = acceleration
-        self.vertexTargets = []
-        self.circularTargets = []        
 
-    def setDynamicNoFlyZones(self, dynamicNoFlyZones):
-        self.circularTargets = []
-        for dfnz in dynamicNoFlyZones:
-            self.circularTargets.append(CircularArcTarget(dfnz.center, dfnz.velocity, dfnz.radius + self.targetOffset))
-        
-    def createVertexTarget(self, point, velocity, normal, pointAngle):
-        self.vertexTargets.append(VertexArcTarget(point, velocity, normal, pointAngle))
+    def _createCircularTarget(self, center, radius, velocity):
+        return CircularArcTarget(center, velocity, radius + self.targetOffset)
+
+    def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
+        return VertexArcTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         pathSegments = []

@@ -1,7 +1,7 @@
 from engine.geometry import calcs
 from engine.geometry.obstacle.intersectionDetector.circularObstacle import CircularObstacle
 from engine.geometry.obstacle.intersectionDetector.lineSegmentObstacle import LineSegmentObstacle
-from engine.geometry.obstacle.intersectionDetector.pathInteresectionDetector import PathIntersectionDetector
+from engine.geometry.obstacle.pathInteresectionDetector import PathIntersectionDetector
 import numpy as np
 from utils import profile
 
@@ -13,22 +13,22 @@ class PyPathIntersectionDetector(PathIntersectionDetector):
         self.obstacleLines = []
         self.circularObstacles = []
 
-    def setInitialState(self, boundaryPoints, noFlyZones):
-        del self.obstacleLines[:]
-
-        for noFlyZone in noFlyZones:
-            self.createObstacleLines(noFlyZone.points, noFlyZone.velocity)
-            
+    def setState(self, boundaryPoints, polyNFZs, circularNoFlyZones):
+        self.obstacleLines = []
+        self.circularObstacles = []
         self.createObstacleLines(boundaryPoints, np.array((0, 0), np.double))
-
+        for noFlyZone in polyNFZs:
+            self.createObstacleLines(noFlyZone.points, noFlyZone.velocity)
+        
+        self.circularObstacles = list(map(lambda c: 
+                                          CircularObstacle(c.center, c.radius + self.bufferWidth, c.velocity),
+                                          circularNoFlyZones))
+        
     def createObstacleLines(self, points, velocity):
         shell = calcs.calcShell(points, self.bufferWidth)
         for i in range(len(shell)):
             self.obstacleLines.append(
                 LineSegmentObstacle(shell[i - 1], shell[i], velocity))
-
-    def setDynamicNoFlyZones(self, dynamicNoFlyZones):
-        self.circularObstacles = list(map(lambda d: CircularObstacle(d.center, d.radius + self.bufferWidth, d.velocity), dynamicNoFlyZones))
     
     def testStraightPathIntersections(self, points, times):
         for i in range(0, len(points) - 1):

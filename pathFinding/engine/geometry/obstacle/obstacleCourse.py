@@ -1,29 +1,15 @@
-class ObstacleCourse:
+from gui.core import Drawable
+
+
+class ObstacleCourse(Drawable):
 
     def __init__(self, pathSegmentFinder, pathIntersectionDetector):
         self.pathSegmentFinder = pathSegmentFinder
         self.pathIntersectionDetector = pathIntersectionDetector
 
-    def setInitialState(self, boundaryPoints, noFlyZones):
-        """
-        Set the state of the static obstacle data.
-        :param boundaryPoints:
-        :param noFlyZones:
-        :return:
-        """
-        self.pathSegmentFinder.setInitialState(boundaryPoints, noFlyZones)
-        self.pathIntersectionDetector.setInitialState(boundaryPoints, noFlyZones)
-       
-    def setDynamicNoFlyZones(self, dynamicNoFlyZones):
-        """
-        Set the state of the dynamic obstacle data at time=0.0.
-        :param dynamicNoFlyZones:
-        :return:
-        """
-        
-        self.dynamicNoFlyZones = dynamicNoFlyZones
-        self.pathSegmentFinder.setDynamicNoFlyZones(dynamicNoFlyZones)
-        self.pathIntersectionDetector.setDynamicNoFlyZones(dynamicNoFlyZones)
+    def setState(self, boundaryPoints, polyNFZs, circularNoFlyZones):
+        self.pathSegmentFinder.setState(boundaryPoints, polyNFZs, circularNoFlyZones)
+        self.pathIntersectionDetector.setState(boundaryPoints, polyNFZs, circularNoFlyZones)
 
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         """
@@ -65,3 +51,8 @@ class ObstacleCourse:
             else:
                 unfilteredPathSegments.append(pathSegment)
         return (unfilteredPathSegments, filteredPathSegments)   
+
+    def draw(self, canvas, time=0.0, **kwargs):
+        self.pathSegmentFinder.draw(canvas, time=time, **kwargs)
+        self.pathIntersectionDetector.draw(canvas, time=time, **kwargs)
+        

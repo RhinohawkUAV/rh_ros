@@ -29,16 +29,12 @@ class LineSegmentFinder(PathSegmentFinder):
 
     def __init__(self, targetOffsetLength):
         PathSegmentFinder.__init__(self, targetOffsetLength)
-        self.vertexTargets = []
-        self.circularTargets = []        
 
-    def setDynamicNoFlyZones(self, dynamicNoFlyZones):
-        self.circularTargets = []
-        for dfnz in dynamicNoFlyZones:
-            self.circularTargets.append(CircularTarget(dfnz.center, dfnz.velocity, dfnz.radius + self.targetOffset))
-        
-    def createVertexTarget(self, point, velocity, normal, pointAngle):
-        self.vertexTargets.append(VertexTarget(point, velocity, normal, pointAngle))
+    def _createCircularTarget(self, center, radius, velocity):
+        return CircularTarget(center, velocity, radius + self.targetOffset)        
+
+    def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
+        return VertexTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)

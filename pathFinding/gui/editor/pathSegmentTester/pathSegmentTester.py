@@ -50,9 +50,9 @@ class PathSegmentTester(SubGUI):
 
         self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
 
-        self._obstacleCourse.setInitialState(self._inputDict[SCENARIO_KEY].boundaryPoints,
-                                                  self._inputDict[SCENARIO_KEY].noFlyZones)
-        self._obstacleCourse.setDynamicNoFlyZones(self._inputDict[SCENARIO_KEY].dynamicNoFlyZones)
+        self._obstacleCourse.setState(self._inputDict[SCENARIO_KEY].boundaryPoints,
+                                                  self._inputDict[SCENARIO_KEY].noFlyZones,
+                                                  self._inputDict[SCENARIO_KEY].dynamicNoFlyZones)
         self._pathFinderDrawable = PathFindDrawable(DEFAULT_PARAMS, DEFAULT_VEHICLE, self._inputDict[SCENARIO_KEY])
 
     def updateDrawable(self):

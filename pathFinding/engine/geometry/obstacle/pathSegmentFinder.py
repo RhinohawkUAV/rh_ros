@@ -10,37 +10,31 @@ class PathSegmentFinder(Drawable):
     
     def __init__(self, targetOffset):
         self.targetOffset = targetOffset
+        self.vertexTargets = []
+        self.circularTargets = []
         
-    def setInitialState(self, boundaryPoints, noFlyZones):
-        """
-        Set the state of the static obstacle data.
-        :param boundaryPoints:
-        :param noFlyZones:
-        :return:
-        """
-        for nfz in noFlyZones:
-            self.createPolygonTargets(nfz.points, nfz.velocity)
+    def setState(self, boundaryPoints, polyNFZs, circularNFZs):
+        self.vertexTargets = []
+        self.circularTargets = []
+        self.appendPolygonTargets(boundaryPoints, np.array((0.0, 0.0), np.double))
+        for nfz in polyNFZs:
+            self.appendPolygonTargets(nfz.points, nfz.velocity)
+        for nfz in circularNFZs:
+            self._createCircularTarget(nfz.center, nfz.radius, nfz.velocity)
 
-        self.createPolygonTargets(boundaryPoints, np.array((0.0, 0.0), np.double))
+    def _createCircularTarget(self, center, radius, velocity):
+        pass
+
+    def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
+        pass
         
-    def setDynamicNoFlyZones(self, dynamicNoFlyZones):
-        """
-        Set the state of the dynamic obstacle data at time=0.0.
-        :param dynamicNoFlyZones:
-        :return:
-        """
-        pass 
-
-    def createPolygonTargets(self, points, velocity):
+    def appendPolygonTargets(self, points, velocity):
         points = calcs.calcShell(points, self.targetOffset)
         for i in range(-1, len(points) - 1):
-            pointAngle = calcs.calcVertexAngle(points[i - 1], points[i], points[i + 1])
-            if pointAngle <= math.pi:
-                pointNormal = calcs.calcVertexNormal(points[i - 1], points[i], points[i + 1])
-                self.createVertexTarget(points[i], velocity, pointNormal, pointAngle)
-
-    def createVertexTarget(self, point, velocity, normal, pointAngle):
-        pass
+            vertexAngle = calcs.calcVertexAngle(points[i - 1], points[i], points[i + 1])
+            if vertexAngle <= math.pi:
+                vertexNormal = calcs.calcVertexNormal(points[i - 1], points[i], points[i + 1])
+                self.vertexTargets.append(self._createVertexTarget(points[i], velocity, vertexNormal, vertexAngle))
 
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
         """

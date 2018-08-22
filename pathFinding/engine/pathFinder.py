@@ -27,8 +27,7 @@ class PathFinder:
         pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth)
 
         self._obstacleCourse = ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
-        self._obstacleCourse.setInitialState(scenario.boundaryPoints, scenario.noFlyZones)
-        self._obstacleCourse.setDynamicNoFlyZones(scenario.dynamicNoFlyZones)
+        self._obstacleCourse.setState(scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = scenario.calcBounds()
