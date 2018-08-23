@@ -10,31 +10,21 @@ class CircularArcTarget(CircularTarget, ArcTarget):
 
     def __init__(self, startPosition, velocity, radius):
         CircularTarget.__init__(self, startPosition, velocity, radius)
-        self.rotDirection = None
+        self.avoidanceRotDirection = None
         self.solutionIndex = None
-    
-    def setRotDirection(self, rotDirection):
-        # There are two ways around the circle.  This specifies which solution is being found
-        # The more clockwise (-1) or more CCW (1) solution
-        self.rotDirection = rotDirection
-        
-        if self.rotDirection == 1:
-            self.solutionIndex = 0
-        else:
-            self.solutionIndex = 1
         
     def notInitiallyReachable(self, arc):
-        if arc.rotDirection == self.rotDirection:
-            radius = arc.radius + self.radius
-        else:
+        if arc.rotDirection == self.avoidanceRotDirection:
             radius = arc.radius - self.radius
+        else:
+            radius = arc.radius + self.radius
 
         toCenter = self.position - arc.center
         
         return np.dot(toCenter, toCenter) < radius * radius
 
     def getCriticalPoints(self, arc):
-        outside = (arc.rotDirection == self.rotDirection)
+        outside = (arc.rotDirection != self.avoidanceRotDirection)
         times = calcs.movingCircleCollision(self.position, self.direction * self.speed, self.radius, arc.radius, outside)
         criticalPoints = []
         for time in times:
@@ -54,3 +44,16 @@ class CircularArcTarget(CircularTarget, ArcTarget):
             raise NoSolutionException
         angle = arc.angleOfVelocity(solution.velocity)
         return angle, solution
+
+    def setAvoidanceRotDirection(self, rotDirection):
+        # There are two ways to avoid the circle.  This sets the direction which the vehicle will be avoiding the obstacle.
+        # By navigating CW (-1) or CCW (1) around the circle.
+        self.avoidanceRotDirection = rotDirection
+        
+        if self.avoidanceRotDirection == -1.0:
+            self.solutionIndex = 0
+        else:
+            self.solutionIndex = 1
+            
+    def calcAvoidanceRotDirection(self, passingVelocity):
+        return self.avoidanceRotDirection

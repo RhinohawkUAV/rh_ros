@@ -73,7 +73,8 @@ class PathFinder:
                     startTime=self._currentVertex.timeToVertex,
                     startPoint=self._currentVertex.position,
                     startSpeed=self._currentVertex.speed,
-                    startUnitVelocity=self._currentVertex.unitVelocity)
+                    startUnitVelocity=self._currentVertex.unitVelocity,
+                    legalRotDirection=self._currentVertex.nextLegalRotDirection)
                 self._findPathsTime += time.time()
                 for pathSegment in self._pathSegments:
                     timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
@@ -102,7 +103,8 @@ class PathFinder:
                                                                  startSpeed=self._currentVertex.speed,
                                                                  startUnitVelocity=self._currentVertex.unitVelocity,
                                                                  targetPoint=self._goal,
-                                                                 velocityOfTarget=np.array((0, 0), np.double))
+                                                                 velocityOfTarget=np.array((0, 0), np.double),
+                                                                 legalRotDirection=self._currentVertex.nextLegalRotDirection)
         if len(pathSegments) == 0:
             return False
         for pathSegment in pathSegments:

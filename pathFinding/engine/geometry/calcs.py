@@ -4,6 +4,8 @@ from constants import DISTANCE_TOLERANCE_SQUARED, NFZ_MAX_NEW_VERTEX_EXPANSION_R
 import numpy as np
 from utils import quadratic
 
+# TODO: Move rotation direction constants to here and use them in code.
+
 
 # TODO: Use where appropriate
 class NoSolutionException(BaseException):

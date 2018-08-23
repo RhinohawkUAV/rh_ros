@@ -9,6 +9,7 @@ from gui.draw import DEFAULT_DASH
 import gui.draw
 from utils import profile
 
+# TODO: Move to calcs
 _rotDirections = (-1.0, 1.0)
 
 
@@ -24,28 +25,38 @@ class ArcSegmentFinder(PathSegmentFinder):
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexArcTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
-    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
+        if legalRotDirection == 0:
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration),
+                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)]
+        else:
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.acceleration)]
         pathSegments = []
         # In this case, the last 2 arguments are meaningless
         target = VertexArcTarget(targetPoint, velocityOfTarget, None, 0.0)
         target.update(startTime)
-        for arcRotDirection in _rotDirections:
+        
+        for arcFinder in arcFinders:
             try:
-                arcFinder = ArcFinder(startPoint, startSpeed, startUnitVelocity, arcRotDirection, self.acceleration)
                 pathSegments.append(arcFinder.solve(target, startTime))
             except NoSolutionException:
                 pass 
         return self.sortFilter(pathSegments)
 
-    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
-        pathSegments = self._findStaticPathSegments(startTime, startPoint, startSpeed, startUnitVelocity)
-        pathSegments.extend(self._findDynamicPathSegments(startTime, startPoint, startSpeed, startUnitVelocity))
+    # TODO: Merge logic into parent class
+    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
+        pathSegments = self._findStaticPathSegments(startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection)
+        pathSegments.extend(self._findDynamicPathSegments(startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection))
         return pathSegments
 
     @profile.accumulate("Find Arc Point")
-    def _findStaticPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
-        arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1, self.acceleration),
-                      ArcFinder(startPoint, startSpeed, startUnitVelocity, 1, self.acceleration)]
+    def _findStaticPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
+        if legalRotDirection == 0:
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration),
+                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)]
+        else:
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.acceleration)]
+            
         pathSegments = []
         for target in self.vertexTargets:
             target.update(startTime)
@@ -60,23 +71,26 @@ class ArcSegmentFinder(PathSegmentFinder):
         return self.sortFilter(pathSegments)
 
     @profile.accumulate("Find Arc Circle")
-    def _findDynamicPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
-        arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1, self.acceleration),
-                      ArcFinder(startPoint, startSpeed, startUnitVelocity, 1, self.acceleration)]
-         
+    def _findDynamicPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
+        if legalRotDirection == 0:
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration),
+                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)]
+        else:
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.acceleration)]
+                 
         pathSegments = []
         for target in self.circularTargets:
             target.update(startTime)
             for targetRotDirection in _rotDirections:
                 for arcFinder in arcFinders:
-                    target.setRotDirection(targetRotDirection)
+                    target.setAvoidanceRotDirection(targetRotDirection)
                     try:
                         pathSegments.append(arcFinder.solve(target, startTime))
                     except NoSolutionException:
                         pass
         return self.sortFilter(pathSegments)
 
-    # TODO: Use Python Filter Lambda
+    # TODO: Remove this
     def sortFilter(self, unfilteredSegments):
 #         unfilteredSegments.sort(key=lambda arc: arc.elapsedTime)
         segments = []

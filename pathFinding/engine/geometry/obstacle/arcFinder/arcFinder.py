@@ -34,16 +34,18 @@ class ArcFinder:
             if self.arc.length < 0.0:
                 raise NoSolutionException            
             elif math.fabs(angleDiff) <= MAX_ANGLE_ERROR:
-                return self.generateSolution(solution.time, starTimeOffset)
+                return self.generateSolution(target, solution, starTimeOffset)
             iteration += 1
         raise NoSolutionException
   
-    def generateSolution(self, lineTime, starTimeOffset):
+    def generateSolution(self, target, solution, starTimeOffset):
         (arcEndPoint, arcEndDirection) = self.arc.endInfo()
+        lineTime = solution.time
         return ArcPathSegment(starTimeOffset,
                          elapsedTime=lineTime + self.arc.arcTime(),
                          lineStartPoint=arcEndPoint,
                          endPoint=arcEndPoint + self.arc.speed * arcEndDirection * lineTime,
                          endSpeed=self.arc.speed,
                          endUnitVelocity=arcEndDirection,
-                         arc=self.arc.cloneArc())
+                         arc=self.arc.cloneArc(),
+                         nextLegalRotDirection=target.calcAvoidanceRotDirection(solution.velocity))

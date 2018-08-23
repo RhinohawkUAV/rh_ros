@@ -38,3 +38,16 @@ class VertexArcTarget(VertexTarget, ArcTarget):
         angle = arc.angleOfVelocity(solution.velocity)
         return angle, solution
 
+    def calcAvoidanceRotDirection(self, passingVelocity):
+        """
+        As the vehicle skirts this target, determine whether this is an avoidance in the CW (-1) or CCW (1) direction (0 == neither).
+        """
+        if self.normal is None:
+            return 0.0
+        direction = calcs.cross2(self.normal, passingVelocity)
+        if direction < 0.0:
+            return -1.0
+        elif direction > 0.0:
+            return 1.0
+        else:
+            return 0.0

@@ -3,12 +3,17 @@ from gui import Drawable
 
 class PathSegment(Drawable):
 
-    def __init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity):
+    def __init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity, nextLegalRotDirection):
         self.startTime = startTime
         self.elapsedTime = elapsedTime
         self.endPoint = endPoint
         self.endSpeed = endSpeed
         self.endUnitVelocity = endUnitVelocity
+        
+        # Tracks what direction in which direction the vehicle can be legally turn after this segment
+        # 0 == either direction, 1 == CCW, -1 == CW
+        self.nextLegalRotDirection = nextLegalRotDirection
+        
         # Field for holding whatever data is useful for debugging.
         self.debug = None
 

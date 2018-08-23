@@ -21,6 +21,11 @@ class Vertex(Drawable):
 
         # An estimated of the timeToVertex required to traverse, the best possible path from start, through this vertex, to goal
         self.estimatedTimeThroughVertex = estimatedTimeThroughVertex
+        if pathSegment is None:
+            self.nextLegalRotDirection = 0
+        else:
+            # The direction which an object was previously skirted to get here
+            self.nextLegalRotDirection = pathSegment.nextLegalRotDirection
 
         # The previous vertex which is part of the shortest path from start through this vertex
         self.previousVertex = previousVertex

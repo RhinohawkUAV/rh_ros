@@ -23,7 +23,7 @@ class ObstacleCourse(Drawable):
         self.pathSegmentFinder.setState(boundaryPoints, polyNFZs, circularNoFlyZones)
         self.pathIntersectionDetector.setState(boundaryPoints, polyNFZs, circularNoFlyZones)
 
-    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
         """
         Find legal path segments from a given starting point and velocity to the moving target, ending at finalSpeed.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
@@ -37,10 +37,10 @@ class ObstacleCourse(Drawable):
         :return: (valid,filtered)  The 1st list of valid path segments (do not intersect NFZs).  The 2nd list 
         shows path segments that were filtered, for debugging purposes.
         """
-        pathSegments = self.pathSegmentFinder.findPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget)
+        pathSegments = self.pathSegmentFinder.findPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection)
         return self._filterPathSegments(pathSegments)
 
-    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
+    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
         """
         Find legal path segments from a given starting point and velocity to vertices of no fly zones.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
@@ -51,7 +51,7 @@ class ObstacleCourse(Drawable):
         :return: (valid,filtered)  The 1st list of valid path segments (do not intersect NFZs).  The 2nd list 
         shows path segments that were filtered, for debugging purposes.
         """
-        pathSegments = self.pathSegmentFinder.findPathSegments(startTime, startPoint, startSpeed, startUnitVelocity)
+        pathSegments = self.pathSegmentFinder.findPathSegments(startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection)
         return self._filterPathSegments(pathSegments)
     
     def _filterPathSegments(self, pathSegments):

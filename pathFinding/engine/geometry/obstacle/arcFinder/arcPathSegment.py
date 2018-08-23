@@ -1,6 +1,6 @@
 import Tkinter as tk
 from constants import MAX_ARC_INTERPOLATION_ERROR
-from engine.geometry import LineSegment, calcs
+from engine.geometry import LineSegment
 from engine.geometry.obstacle.pathSegment import PathSegment
 from gui import draw
 from gui.draw import DEFAULT_COLOR, DEFAULT_DASH, DEFAULT_WIDTH
@@ -9,8 +9,8 @@ import numpy as np
 
 class ArcPathSegment(PathSegment):
 
-    def __init__(self, startTime, elapsedTime, lineStartPoint, endPoint, endSpeed, endUnitVelocity, arc):
-        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity)
+    def __init__(self, startTime, elapsedTime, lineStartPoint, endPoint, endSpeed, endUnitVelocity, arc, nextLegalRotDirection):
+        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity, nextLegalRotDirection)
         self.speed = endSpeed
 
         self.lineStartPoint = lineStartPoint

@@ -53,13 +53,15 @@ class PathSegmentTester(SubGUI):
                                                          startSpeed=startSpeed,
                                                          startUnitVelocity=startUnitVelocity,
                                                          targetPoint=self._inputDict[TEST_INPUT_KEY].targetPoint,
-                                                         velocityOfTarget=self._inputDict[TEST_INPUT_KEY].velocityOfTarget)
+                                                         velocityOfTarget=self._inputDict[TEST_INPUT_KEY].velocityOfTarget,
+                                                         legalRotDirection=0.0)
 
         if self._showPathsToPoints:
             (pathSegments, filteredPathSegments) = self._obstacleCourse.findPathSegments(startTime=0.0,
                                                                                                    startPoint=self._inputDict[TEST_INPUT_KEY].startPoint,
                                                                                                    startSpeed=startSpeed,
-                                                                                                   startUnitVelocity=startUnitVelocity)
+                                                                                                   startUnitVelocity=startUnitVelocity,
+                                                                                                   legalRotDirection=0.0)
         else:
             pathSegments = []
             filteredPathSegments = []

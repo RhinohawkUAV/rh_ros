@@ -1,3 +1,5 @@
+import math
+
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 
@@ -70,4 +72,10 @@ class ArcTarget:
         (angleToHitTarget, StraightPathSolution)
         """
         raise NoSolutionException()
-    
+
+    def calcAvoidanceRotDirection(self, passingVelocity):
+        """
+        As the vehicle skirts this target, determine whether this is an avoidance in the CW (-1.0) or CCW (1.0) direction (0.0 == neither).
+        """
+        return 0.0
+        

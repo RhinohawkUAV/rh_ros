@@ -8,8 +8,8 @@ import numpy as np
 
 class LinePathSegment(PathSegment):
 
-    def __init__(self, startTime, startPoint, startSpeed, elapsedTime, endPoint, endSpeed, endUnitVelocity):
-        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity)
+    def __init__(self, startTime, startPoint, startSpeed, elapsedTime, endPoint, endSpeed, endUnitVelocity, nextLegalRotDirection):
+        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity, nextLegalRotDirection)
         self.startPoint = startPoint
         self.startSpeed = startSpeed
         self.lineSegment = LineSegment(startPoint, endPoint)

@@ -36,16 +36,18 @@ class LineSegmentFinder(PathSegmentFinder):
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
-    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget):
+    #TODO: Account for nextLegalRotDirection
+    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
         if solution is not None and turnIsLegal(startSpeed, startUnitVelocity, solution.velocity):
             endPoint = solution.endPoint
             return [LinePathSegment(startTime, startPoint, startSpeed, solution.time, endPoint, startSpeed, solution.velocity / startSpeed)]
         return []
 
-    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
-        pathSegments = self._findStaticPathSegments(startTime, startPoint, startSpeed, startUnitVelocity)
-        pathSegments.extend(self._findDynamicPathSegments(startTime, startPoint, startSpeed, startUnitVelocity))
+    # TODO: Merge logic into parent class
+    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
+        pathSegments = self._findStaticPathSegments(startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection)
+        pathSegments.extend(self._findDynamicPathSegments(startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection))
         return pathSegments
 
     def _findStaticPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity):
