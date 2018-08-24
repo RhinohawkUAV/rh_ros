@@ -41,7 +41,7 @@ class ArcSegmentFinder(PathSegmentFinder):
                 pathSegments.append(arcFinder.solve(target, startTime))
             except NoSolutionException:
                 pass 
-        return self.sortFilter(pathSegments)
+        return pathSegments
 
     # TODO: Merge logic into parent class
     def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
@@ -68,7 +68,7 @@ class ArcSegmentFinder(PathSegmentFinder):
                             pathSegments.append(pathSegment)
                     except NoSolutionException:
                         pass 
-        return self.sortFilter(pathSegments)
+        return pathSegments
 
     @profile.accumulate("Find Arc Circle")
     def _findDynamicPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
@@ -88,17 +88,7 @@ class ArcSegmentFinder(PathSegmentFinder):
                         pathSegments.append(arcFinder.solve(target, startTime))
                     except NoSolutionException:
                         pass
-        return self.sortFilter(pathSegments)
-
-    # TODO: Remove this
-    def sortFilter(self, unfilteredSegments):
-#         unfilteredSegments.sort(key=lambda arc: arc.elapsedTime)
-        segments = []
-        for segment in unfilteredSegments:
-            if segment.arc.length < MAX_ARC_LENGTH:
-                segments.append(segment)
-                    
-        return segments
+        return pathSegments
 
     def draw(self, canvas, time=0.0, **kwargs):
         for target in self.vertexTargets:
