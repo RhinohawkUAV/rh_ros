@@ -143,7 +143,7 @@ class PathFinderManager:
         3. Can publish result through overrideable publishing methods.
         """
         # Calculate a step for the given path finder.  This takes non-zero time and is therefore not syncrhonized.
-        solutionFound = pathFinder.step()
+        stepProducedNewSolution = pathFinder.step()
         
         with self._lock:
             # If shutdown, then throw exception and exit
@@ -152,14 +152,21 @@ class PathFinderManager:
             if pathFinder is not self._activePathFinder:
                 return
             
-            # Publish and decrement number of steps
-            if solutionFound:
-                (solutionWaypoints, pathSolution) = pathFinder.getSolution()
-                finished = pathFinder.isDone()
-                self.publishSolution(solutionWaypoints, pathSolution, finished, referenceGPS)
+            if pathFinder.isDone():
+                if pathFinder.hasSolution():
+                    (solutionWaypoints, pathSolution) = pathFinder.getSolution()
+                    self.publishSolution(solutionWaypoints, pathSolution, True, referenceGPS)
+                else:
+                    # TODO: If no solution is ever found, we need to handle that case with its own signal.
+                    self.publishSolution([], [], True, referenceGPS)
             else:
-                (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
-                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments, referenceGPS)
+                # Publish and decrement number of steps
+                if stepProducedNewSolution:
+                    (solutionWaypoints, pathSolution) = pathFinder.getSolution()
+                    self.publishSolution(solutionWaypoints, pathSolution, False, referenceGPS)
+                else:
+                    (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
+                    self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments, referenceGPS)
             self._steps -= 1
 
 

@@ -50,13 +50,14 @@ class PathFinder:
         self._computeTime = 0.0
         self._findPathsTime = 0.0
         self._queueComputeTime = 0.0
+        self._isDone = False
 
     def findPath(self):
         while not self.isDone():
             self.step()
 
     def isDone(self):
-        return self._vertexQueue.isEmpty()
+        return self._isDone
     
     @profile.accumulate("step")
     def step(self):
@@ -91,6 +92,7 @@ class PathFinder:
                     self._vertexQueue.push(newVertex)
                 return False
         except QueueEmptyException:
+            self._isDone = True
             return True
             
     def checkPathToGoal(self):
@@ -142,16 +144,12 @@ class PathFinder:
         return self._solution is not None
     
     def getSolution(self):
-        if self._solution is None:
-            return ([], [])
         pathSegments = self.getPathSegments(self._solution)
         wayPoints = self.calcSolutionWaypoints(pathSegments)
 
         return (wayPoints, pathSegments)
     
     def getDebugData(self):
-        if self._currentVertex is None:
-            return ([], [], [])
         previousPathSegments = self.getPathSegments(self._currentVertex)
         return (previousPathSegments, self._pathSegments, self._filteredPathSegments)
         
