@@ -102,7 +102,6 @@ class MessageConverter:
         return pathSegments
     
     def msgToPathSegment(self, msg): 
-#         (self, startTime, elapsedTime, lineStartPoint, endPoint, endSpeed, endDirection, arc):
         endVelocity = self.msgToVector(msg.endVelocity)
         endSpeed = np.linalg.norm(endVelocity)
         endUnitVelocity = endVelocity / endSpeed
@@ -112,7 +111,9 @@ class MessageConverter:
                                      self.msgToPoint(msg.endPoint),
                                      endSpeed,
                                      endUnitVelocity,
-                                     self.msgToArc(msg.arc))
+                                     self.msgToArc(msg.arc),
+                                     # Next legal path segments are not shown in debug.  Set to 0.0 and ignored.
+                                     0.0)
                 
     def msgToArc(self, msg):
         if msg.length < 0.0:
