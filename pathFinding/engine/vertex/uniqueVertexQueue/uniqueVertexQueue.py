@@ -40,12 +40,13 @@ class UniqueVertexQueue(VertexPriorityQueue):
         self._diagnonalTime = np.math.sqrt(width * width + height * height) / maximumSpeed
 
     def push(self, vertex):
-        position = np.array([vertex.position[0], vertex.position[1], vertex.speed * vertex.unitVelocity[0], vertex.speed * vertex.unitVelocity[1]])
-        uniqueness = self._uniqueTree.insert(position)
+        vPos = vertex.getPosition()
+        vVel = vertex.getVelocity()
+        uniqueness = self._uniqueTree.insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1]]))
         
         if uniqueness == 0.0:
             return
-        priority = vertex.estimatedTimeThroughVertex / uniqueness
+        priority = vertex.getTimeThrough() / uniqueness
         
         self._heap.push(priority, vertex)
 

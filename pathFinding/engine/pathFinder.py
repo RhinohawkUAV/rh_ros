@@ -4,6 +4,7 @@ import time
 from engine.geometry.obstacle import obstacleCourse
 from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.vertex import UniqueVertexQueue
+from engine.vertex.vertex import OriginVertex
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
 from geometry import calcs
 import numpy as np
@@ -35,11 +36,7 @@ class PathFinder:
         if startSpeed == 0.0:
             return    
         
-        self._currentVertex = Vertex(position=self._start,
-                                     startSpeed=startSpeed,
-                                     unitVelocity=unitVelocity,
-                                     timeToVertex=0.0,
-                                     estimatedTimeThroughVertex=self.heuristic(self._start, startSpeed, unitVelocity))
+        self._currentVertex = OriginVertex(self._start, startSpeed, unitVelocity)
 
         self._pathSegments = []
         self._filteredPathSegments = []
@@ -63,7 +60,7 @@ class PathFinder:
     def step(self):
         try:
             self._currentVertex = self._vertexQueue.pop()
-            while self._currentVertex.estimatedTimeThroughVertex > self._bestSolutionTime:
+            while self._currentVertex.getTimeThrough() > self._bestSolutionTime:
                 self._currentVertex = self._vertexQueue.pop()
             
             if self.checkPathToGoal():
@@ -72,14 +69,10 @@ class PathFinder:
                 (self._pathSegments, self._filteredPathSegments) = self._currentVertex.skirtingPathSegments(self._obstacleCourse)
 
                 for pathSegment in self._pathSegments:
-                    timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
-                    newVertex = Vertex(position=pathSegment.endPoint,
-                                       startSpeed=pathSegment.endSpeed,
-                                       unitVelocity=pathSegment.endUnitVelocity,
-                                       timeToVertex=timeToVertex,
-                                       estimatedTimeThroughVertex=timeToVertex + self.heuristic(pathSegment.endPoint,
-                                                                                                pathSegment.endSpeed,
-                                                                                                pathSegment.endUnitVelocity),
+                    
+                    newVertex = Vertex(self.heuristic(pathSegment.endPoint,
+                                                      pathSegment.endSpeed,
+                                                      pathSegment.endUnitVelocity),
                                        previousVertex=self._currentVertex,
                                        pathSegment=pathSegment)
         
@@ -100,13 +93,9 @@ class PathFinder:
         if len(pathSegments) == 0:
             return False
         for pathSegment in pathSegments:
-            timeToGoal = self._currentVertex.timeToVertex + pathSegment.elapsedTime
+            timeToGoal = self._currentVertex.getTimeTo() + pathSegment.elapsedTime
             if timeToGoal < self._bestSolutionTime:
-                self._solution = Vertex(position=self._goal,
-                                        startSpeed=pathSegment.endSpeed,
-                                        unitVelocity=pathSegment.endUnitVelocity,
-                                        timeToVertex=timeToGoal,
-                                        estimatedTimeThroughVertex=timeToGoal,  # timeToVertex + 0
+                self._solution = Vertex(0.0,
                                         previousVertex=self._currentVertex,
                                         pathSegment=pathSegment)
 
@@ -146,12 +135,12 @@ class PathFinder:
     def getPathSegments(self, pathEndVertex):
         pathSegments = []
         currentVertex = pathEndVertex
-        previousVertex = currentVertex.previousVertex
+        previousVertex = currentVertex.getPreviousVertex()
 
         while not previousVertex is None:
             pathSegments.append(currentVertex.pathSegment)
             currentVertex = previousVertex
-            previousVertex = currentVertex.previousVertex
+            previousVertex = currentVertex.getPreviousVertex()
         
         # We traced the path backwards, so reverse
         pathSegments.reverse()
