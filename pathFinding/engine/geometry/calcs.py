@@ -147,36 +147,40 @@ class StraightPathSolution:
         self.endPoint = endPoint
 
 
-def hitTargetCircleAtSpeed(vehicleStart, vehicleSpeed, center, velocity, radius):
+def passTargetCircleAtSpeed(point, speed, center, velocity, radius, targetRadius):
     """
-    Solves the problem of hitting a target circle, given a starting position and speed.
+    Solves the problem of burshing a target circle's tangent, given a starting position and speed.
+    
+    This will brush the circle at radius, but continue past the circle and end at distance targetRadius from the circle.  
+    This passing, allows a circle to be navigated around by calling this several times.  Other
+    
+    
     This always results in a 2 element solution vector.  Either/both solutions may be None to signify they are not possible.
     Solutions are ordered by which point is in the CCW vs. CW direction vs. the center.
     [CCW,CW] 
     
     """
-    toCenter = center - vehicleStart
+    toCenter = center - point
     (toCenterUnit, distance) = unitAndLength(toCenter)
     
     # Starting point inside circle
     if distance < radius:
         return (None, None)
     
-    length = math.sqrt(distance * distance - radius * radius)
-        
+    length = math.sqrt(distance * distance - radius * radius) + math.sqrt(targetRadius * targetRadius - radius * radius)
+    
     toCenterPerp = CCWNorm(toCenterUnit)
  
     y = radius / distance
     x = math.sqrt(1 - y * y)
-     
-    targetPoint1 = vehicleStart + (x * toCenterUnit + y * toCenterPerp) * length
-    targetPoint2 = vehicleStart + (x * toCenterUnit - y * toCenterPerp) * length
-     
-    solution1 = hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetPoint1, velocity)
-    solution2 = hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetPoint2, velocity)
+    
+    tangentPoint1 = point + (x * toCenterUnit + y * toCenterPerp) * length
+    tangentPoint2 = point + (x * toCenterUnit - y * toCenterPerp) * length
+    solution1 = hitTargetAtSpeed(point, speed, tangentPoint1, velocity)
+    solution2 = hitTargetAtSpeed(point, speed, tangentPoint2, velocity)
     return (solution1, solution2)
 
-    
+
 def hitTargetAtSpeed(vehicleStart, vehicleSpeed, targetStartPoint, targetVelocity):
     """
     Solves the following problem:

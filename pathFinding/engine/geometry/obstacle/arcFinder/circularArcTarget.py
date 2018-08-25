@@ -8,8 +8,8 @@ import numpy as np
 
 class CircularArcTarget(CircularTarget, ArcTarget):
 
-    def __init__(self, startPosition, velocity, radius):
-        CircularTarget.__init__(self, startPosition, velocity, radius)
+    def __init__(self, startPosition, velocity, radius, offset):
+        CircularTarget.__init__(self, startPosition, velocity, radius, offset)
         self.avoidanceRotDirection = None
         self.solutionIndex = None
         
@@ -38,7 +38,13 @@ class CircularArcTarget(CircularTarget, ArcTarget):
         endAngleVec = calcs.unitVectorOfAngle(endAngle, arc.rotDirection)
         arcEndPoint = arc.center + arc.radius * endAngleVec
  
-        solutions = calcs.hitTargetCircleAtSpeed(arcEndPoint, arc.speed, self.getPosition(arc.arcTime()), self.velocity, self.radius)
+        solutions = calcs.passTargetCircleAtSpeed(arcEndPoint,
+                                                 arc.speed,
+                                                 self.getPosition(arc.arcTime()),
+                                                 self.velocity,
+                                                 self.radius,
+                                                 self.outerRadius)
+
         solution = solutions[self.solutionIndex]
         if solution is None:
             raise NoSolutionException

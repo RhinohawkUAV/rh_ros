@@ -20,7 +20,7 @@ class ArcSegmentFinder(PathSegmentFinder):
         self.acceleration = acceleration
 
     def _createCircularTarget(self, center, radius, velocity):
-        return CircularArcTarget(center, velocity, radius + self.targetOffset)
+        return CircularArcTarget(center, velocity, radius, self.targetOffset)
 
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexArcTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
@@ -97,4 +97,4 @@ class ArcSegmentFinder(PathSegmentFinder):
             
         for target in self.circularTargets:
             target.update(time)
-            gui.draw.drawCircle(canvas, target.position, target.radius, dash=DEFAULT_DASH)
+            gui.draw.drawCircle(canvas, target.position, target.outerRadius, dash=DEFAULT_DASH)

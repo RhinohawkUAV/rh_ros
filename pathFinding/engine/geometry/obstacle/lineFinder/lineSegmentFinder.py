@@ -31,12 +31,11 @@ class LineSegmentFinder(PathSegmentFinder):
         PathSegmentFinder.__init__(self, targetOffsetLength)
 
     def _createCircularTarget(self, center, radius, velocity):
-        return CircularTarget(center, velocity, radius + self.targetOffset)        
+        return CircularTarget(center, velocity, radius, self.targetOffset)   
 
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
-    #TODO: Account for nextLegalRotDirection
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
         solution = calcs.hitTargetAtSpeed(startPoint, startSpeed, targetPoint, velocityOfTarget)
         if solution is not None and turnIsLegal(startSpeed, startUnitVelocity, solution.velocity):
@@ -68,11 +67,12 @@ class LineSegmentFinder(PathSegmentFinder):
         for target in self.circularTargets:
             target.update(startTime)
             try:
-                solutions = calcs.hitTargetCircleAtSpeed(startPoint,
+                solutions = calcs.passTargetCircleAtSpeed(startPoint,
                                                          startSpeed,
                                                          target.position,
                                                          target.velocity,
-                                                         target.radius)
+                                                         target.radius,
+                                                         target.outerRadius)
                 for solution in solutions:
                     if solution is not None:
                         endPoint = solution.endPoint
