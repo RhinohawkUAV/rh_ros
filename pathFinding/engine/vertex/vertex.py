@@ -36,6 +36,22 @@ class Vertex(Drawable):
         # Potentially holds information for debugging
         self.debug = None
 
+    def pathSegmentsToPoint(self, obstacleCourse, targetPoint, velocityOfTarget):
+        return obstacleCourse.findPathSegmentsToPoint(startTime=self.timeToVertex,
+                                                      startPoint=self.position,
+                                                      startSpeed=self.speed,
+                                                      startUnitVelocity=self.unitVelocity,
+                                                      targetPoint=targetPoint,
+                                                      velocityOfTarget=velocityOfTarget,
+                                                      legalRotDirection=self.nextLegalRotDirection)
+
+    def skirtingPathSegments(self, obstacleCourse):
+        return obstacleCourse.findPathSegments(startTime=self.timeToVertex,
+                                                      startPoint=self.position,
+                                                      startSpeed=self.speed,
+                                                      startUnitVelocity=self.unitVelocity,
+                                                      legalRotDirection=self.nextLegalRotDirection)
+
     def drawPath(self, canvas, **kwargs):
         if self.previousVertex is not None:
             self.pathSegment.draw(canvas, **kwargs)

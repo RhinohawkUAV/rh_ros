@@ -15,6 +15,7 @@ class PathFinder:
 
     @profile.accumulate("setup")
     def __init__(self, params, scenario, vehicle):
+        self._zero = np.array((0, 0), np.double)
         self._params = params
         self._vehicle = vehicle
         self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
@@ -48,7 +49,6 @@ class PathFinder:
         self._vertexQueue.push(self._currentVertex)
         self._numQueuedVertices = 1
         self._computeTime = 0.0
-        self._findPathsTime = 0.0
         self._queueComputeTime = 0.0
         self._isDone = False
 
@@ -69,14 +69,8 @@ class PathFinder:
             if self.checkPathToGoal():
                 return True
             else:
-                self._findPathsTime -= time.time()
-                (self._pathSegments, self._filteredPathSegments) = self._obstacleCourse.findPathSegments(
-                    startTime=self._currentVertex.timeToVertex,
-                    startPoint=self._currentVertex.position,
-                    startSpeed=self._currentVertex.speed,
-                    startUnitVelocity=self._currentVertex.unitVelocity,
-                    legalRotDirection=self._currentVertex.nextLegalRotDirection)
-                self._findPathsTime += time.time()
+                (self._pathSegments, self._filteredPathSegments) = self._currentVertex.skirtingPathSegments(self._obstacleCourse)
+
                 for pathSegment in self._pathSegments:
                     timeToVertex = self._currentVertex.timeToVertex + pathSegment.elapsedTime
                     newVertex = Vertex(position=pathSegment.endPoint,
@@ -100,13 +94,9 @@ class PathFinder:
         Check if there is a path from self._currentVertex to the goal.  Update the best solution if this is better.
         :return:
         """
-        (pathSegments, filteredSegments) = self._obstacleCourse.findPathSegmentsToPoint(startTime=self._currentVertex.timeToVertex,
-                                                                 startPoint=self._currentVertex.position,
-                                                                 startSpeed=self._currentVertex.speed,
-                                                                 startUnitVelocity=self._currentVertex.unitVelocity,
-                                                                 targetPoint=self._goal,
-                                                                 velocityOfTarget=np.array((0, 0), np.double),
-                                                                 legalRotDirection=self._currentVertex.nextLegalRotDirection)
+        (pathSegments, x) = self._currentVertex.pathSegmentsToPoint(self._obstacleCourse,
+                                                                    targetPoint=self._goal,
+                                                                    velocityOfTarget=self._zero)
         if len(pathSegments) == 0:
             return False
         for pathSegment in pathSegments:
