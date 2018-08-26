@@ -64,35 +64,38 @@ class PathFindViewer(Visualizer, PathFinderListener):
             profile.printAggregate()
 
     def setStateRandom(self):
-        startPoint = np.array((-COURSE_DIM / 2.0 * 0.95, -COURSE_DIM / 2.0 * 0.95), np.double)
-        endPoint = np.array((COURSE_DIM / 2.0 * 0.95, COURSE_DIM / 2.0 * 0.95), np.double)
-        startVelocity = calcs.unit(endPoint - startPoint) * self._vehicle.maxSpeed
+        startPoint = np.array((-COURSE_DIM / 2.0 * 0.8, -COURSE_DIM / 2.0 * 0.8), np.double)
+        wayPoint1 = np.array((COURSE_DIM / 2.0 * 0.8, COURSE_DIM / 2.0 * 0.8), np.double)
+        wayPoint2 = np.array((-COURSE_DIM / 2.0 * 0.8, COURSE_DIM / 2.0 * 0.8), np.double)
+        wayPoint3 = np.array((COURSE_DIM / 2.0 * 0.8, -COURSE_DIM / 2.0 * 0.8), np.double)
+        
+        startVelocity = calcs.unit(wayPoint1 - startPoint) * self._vehicle.maxSpeed
         boundaryPoints = [(-COURSE_DIM / 2.0, -COURSE_DIM / 2.0),
                           (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
                           (COURSE_DIM / 2.0, COURSE_DIM / 2.0), (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)]
 
-        dynamicNoFlyZones = engine.utils.genRandomCircularNoFlyZoneInputsHard(8,
+        dynamicNoFlyZones = engine.utils.genRandomCircularNoFlyZoneInputsHard(15,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     0.01, 0.1,
                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
-                                                                    startPoint=startPoint, endPoint=endPoint,
+                                                                    startPoint=startPoint, endPoint=wayPoint1,
                                                                     averageSpeed=self._vehicle.maxSpeed)                                                                    
         
-        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(8,
+        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(15,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     - COURSE_DIM / 2.0 * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     COURSE_DIM * 0.9,
                                                                     0.01, 0.1,
                                                                     minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
-                                                                    startPoint=startPoint, endPoint=endPoint,
+                                                                    startPoint=startPoint, endPoint=wayPoint1,
                                                                     averageSpeed=self._vehicle.maxSpeed)
          
         roads = []
-        wayPoints = [endPoint]
+        wayPoints = [wayPoint1, wayPoint2, wayPoint3]
         scenario = Scenario(boundaryPoints, noFlyZones, dynamicNoFlyZones, roads, startPoint, startVelocity, wayPoints)
         self.setScenario(scenario)
          

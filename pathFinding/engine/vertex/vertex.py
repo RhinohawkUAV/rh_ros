@@ -7,6 +7,9 @@ TEXT_OFFSET = 3.0
 
 class BaseVertex(Drawable):
 
+    def __init__(self, waypoint):
+        self._waypoint = waypoint
+
     def getPosition(self):
         pass
 
@@ -22,22 +25,23 @@ class BaseVertex(Drawable):
     def getPreviousVertex(self):
         pass
 
-    def drawPath(self, canvas, **kwargs):
-        pass
-
-    def draw(self, canvas, **kwargs):
-        pass
-
     def pathSegmentsToPoint(self, obstacleCourse, targetPoint, velocityOfTarget):
         pass
 
     def skirtingPathSegments(self, obstacleCourse):
         pass
 
+    def drawPath(self, canvas, **kwargs):
+        pass
+
+    def draw(self, canvas, **kwargs):
+        pass
+
     
 class OriginVertex(BaseVertex):
 
-    def __init__(self, position, speed, direction):
+    def __init__(self, waypoint, position, speed, direction):
+        BaseVertex.__init__(self, waypoint)
         self._position = position
         self._direction = direction
         self._speed = speed
@@ -83,8 +87,9 @@ class OriginVertex(BaseVertex):
 
 class Vertex(BaseVertex):
 
-    def __init__(self, heuristicToGoal, previousVertex=None,
+    def __init__(self, waypoint, heuristicToGoal, previousVertex=None,
                  pathSegment=None):
+        BaseVertex.__init__(self, waypoint)
 
         # The timeToVertex from start to this vertex
         self.timeToVertex = previousVertex.getTimeTo() + pathSegment.elapsedTime
@@ -138,9 +143,10 @@ class Vertex(BaseVertex):
             self.previousVertex.drawPath(canvas, **kwargs)
 
     def draw(self, canvas, **kwargs):
-        gui.draw.drawPoint(canvas, self.position, **kwargs)
-        gui.draw.drawText(canvas, (self.position[0] + TEXT_OFFSET, self.position[1]),
+        gui.draw.drawPoint(canvas, self._position, **kwargs)
+        gui.draw.drawText(canvas, (self._position[0] + TEXT_OFFSET, self._position[1]),
                           text="{:4.2f}".format(self.timeToVertex), **kwargs)
 
     def __str__(self):
-        return "(" + str(self.position[0]) + "," + str(self.position[1]) + ") with cost: " + str(self.timeToVertex)
+        return "(" + str(self._position[0]) + "," + str(self._position[1]) + ") with cost: " + str(self.timeToVertex)
+
