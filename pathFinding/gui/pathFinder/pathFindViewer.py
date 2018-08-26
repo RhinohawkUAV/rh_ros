@@ -85,14 +85,23 @@ class PathFindViewer(Visualizer, PathFinderListener):
         generator = Generator(boundaryPoints,
                               startPoint,
                               waypoints,
-                              self._vehicle.maxSpeed * 0.9,
-                              COURSE_DIM / 10.0,
-                              COURSE_DIM / 20.0,
-                              self._vehicle.maxSpeed)
+                              (self._vehicle.maxSpeed,
+                               self._vehicle.maxSpeed * 0.9,
+                               self._vehicle.maxSpeed * 0.8))
+        generator.setGenerationInfo(COURSE_DIM / 10.0,
+                                    self._vehicle.maxSpeed,
+                                    0.0,
+                                    COURSE_DIM / 20.0)
+                                    
         generator.generate(20)
+        generator.setGenerationInfo(COURSE_DIM / 15.0,
+                                    np.array((0.0, 0.0), np.double),
+                                    0.15,
+                                    COURSE_DIM / 15.0)
+        generator.generate(10)
          
         roads = []
-        self.setScenario(Scenario(boundaryPoints, [], generator.circularNFZs, roads, startPoint, startVelocity, waypoints))
+        self.setScenario(Scenario(boundaryPoints, generator.polyNFZs, generator.circularNFZs, roads, startPoint, startVelocity, waypoints))
          
     def setScenario(self, scenario):
         self._lastScenario = scenario
