@@ -156,6 +156,7 @@ class PathFinderManager:
                 if pathFinder.hasSolution():
                     (solutionWaypoints, pathSolution) = pathFinder.getSolution()
                     self.publishSolution(solutionWaypoints, pathSolution, True, referenceGPS)
+                    print pathFinder._solutionTime
                 else:
                     # TODO: If no solution is ever found, we need to handle that case with its own signal.
                     self.publishSolution([], [], True, referenceGPS)

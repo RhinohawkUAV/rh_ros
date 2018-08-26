@@ -12,8 +12,6 @@ class Waypoint:
 
     def __init__(self, position):
         self._position = position
-        self._solutionVertex = None
-        self._solutionTime = float("inf")
 
         self._nextWayPoint = None
         # The direction which points from this waypoint directly to the next one.
@@ -53,13 +51,6 @@ class Waypoint:
         if self._nextWayPointDirection is not None:
             time += turnTime(startDirection, self._nextWayPointDirection, startSpeed, acceleration)
         return time 
-
-    def updateSolution(self, timeToWaypoint, direction, speed, acceleration):
-        time = timeToWaypoint + self.calcHeuristicFromWaypoint(direction, speed, acceleration)
-        if time < self._solutionTime:
-            self._solutionTime = time
-            return True
-        return False
 
 
 # TODO: Move to obstacleCourse
