@@ -22,16 +22,14 @@ class UniqueTree:
     For efficiency this does not check for illegal values outside the range of the cell.  DON'T INSERT THESE VALUES!
     """
 
-    def __init__(self, x, y, width, height, maximumSpeed, coincidentDistance, borderPadding=0.001):
+    def __init__(self, minPosition, dims, coincidentDistance, borderPadding=0.001):
         # Pad all dimensions so that no valid point will violate boundaries due to float round off error
-        x -= borderPadding * width
-        y -= borderPadding * height
-        width += 2.0 * width * borderPadding
-        height += 2.0 * height * borderPadding
-        #TODO: Move speed outside of class (should just take dims array)
-        maximumSpeed *= 1.0 + borderPadding
-        self._minPosition = np.array([x, y, -maximumSpeed, -maximumSpeed], np.double)
-        self._dims = np.array([width, height, 2.0 * maximumSpeed, 2.0 * maximumSpeed], np.double)
+        minPosition = np.array(minPosition, np.double)
+        dims = np.array(dims, np.double)
+
+        self._minPosition = minPosition - dims * borderPadding
+        self._dims = dims * (1.0 + borderPadding * 2.0)
+        
         self._root = None
         self._coincidentDistanceSquared = coincidentDistance * coincidentDistance
 

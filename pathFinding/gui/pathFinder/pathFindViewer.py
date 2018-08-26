@@ -116,6 +116,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
     def solution(self, solutionsWaypoints, solutionPathSegments, finished):
         self._pathFindDrawable.updateDebug([], [], [])
         self._pathFindDrawable.updateSolution(solutionsWaypoints, solutionPathSegments, finished)
+        print "Solution Time: " + str(solutionPathSegments[-1].startTime + solutionPathSegments[-1].elapsedTime)
         self.updateDisplay()
 
     def onLeftClick(self, point, event):

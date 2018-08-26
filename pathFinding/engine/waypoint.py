@@ -10,7 +10,8 @@ class Waypoint:
     Tracks information about each waypoint in a path-finding problem.
     """
 
-    def __init__(self, position):
+    def __init__(self, index, position):
+        self._index = index
         self._position = position
 
         self._nextWayPoint = None
@@ -29,28 +30,27 @@ class Waypoint:
         """
         Optimistic estimate for time to reach the end waypoint given starting conditions.  
         Cost is based on:
-            1. Time to turn and face the waypoint
+            1. The time to turn to face the waypoint
             2. Time to reach the waypoint, in a straight line after the turn (does not account the positional offset the turn introduces)
-            3. Once the waypoint is reached, the time to turn to face the next waypoint
-            4. Finally, once all this has been calculated the, precomputed, remaining cost is added
+            If this is not the last waypoint:
+                3. The, precomputed, time from waypoint to the end
+                4. Once the waypoint is reached, the time to turn to face the next waypoint (if there is another waypoint)
         """
         (directionAtWaypoint, distance) = calcs.unitAndLength(self._position - startPoint)
-        time = distance / startSpeed + turnTime(startDirection, directionAtWaypoint, startSpeed, acceleration)
-        time += self.calcHeuristicFromWaypoint(directionAtWaypoint, startSpeed, acceleration)
-        return time 
-    
-    def calcHeuristicFromWaypoint(self, startDirection, startSpeed, acceleration):
-        """
-        Optimistic estimate for time to reach the end, starting at this waypoint with a given heading and speed.
-        Cost is based on:
-            1. The time to turn to face the next waypoint
-            2. The, precomputed, time to the end
-        """
-        time = self._heuristicToEnd
-        # Add time, after reaching this waypoint to turn towards the next waypoint
+        time = turnTime(startDirection, directionAtWaypoint, startSpeed, acceleration) + \
+               distance / startSpeed
+               
         if self._nextWayPointDirection is not None:
-            time += turnTime(startDirection, self._nextWayPointDirection, startSpeed, acceleration)
+            time += self._heuristicToEnd + \
+                    turnTime(startDirection, self._nextWayPointDirection, startSpeed, acceleration)
+        
         return time 
+
+    def getIndex(self):
+        return self._index
+
+    def getNext(self):
+        return self._nextWayPoint
 
 
 # TODO: Move to obstacleCourse
@@ -62,13 +62,16 @@ def turnTime(direction, desiredDirection, speed, acceleration):
 
 
 def calcWaypoints(positions, traversalSpeed, acceleration):
+    index = 0
     queue = deque(positions)
     pathFindWaypoints = []
-    nextWayPoint = Waypoint(queue.pop())
+    nextWayPoint = Waypoint(index, queue.pop())
+    index += 1
     pathFindWaypoints.append(nextWayPoint)
     
     while len(queue) > 0:
-        wayPoint = Waypoint(queue.pop())
+        wayPoint = Waypoint(index, queue.pop())
+        index += 1
         wayPoint.setNextWaypoint(nextWayPoint, traversalSpeed, acceleration)
         pathFindWaypoints.append(wayPoint)
         nextWayPoint = wayPoint

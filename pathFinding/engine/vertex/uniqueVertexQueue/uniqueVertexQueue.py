@@ -1,4 +1,7 @@
+import math
+
 import constants
+from engine.geometry import calcs
 from engine.vertex.uniqueVertexQueue.uniqueSpaceTree import UniqueTree
 from engine.vertex.vertexPriorityQueue import VertexPriorityQueue, \
     QueueEmptyException
@@ -34,15 +37,24 @@ class UniqueVertexQueue(VertexPriorityQueue):
     2. Should uniqueness be given more or less weight compared to estimated time?
     """
 
-    def __init__(self, x, y, width, height, maximumSpeed, coincidentDistance=constants.UNIQUE_TREE_COINCIDENT_DISTANCE):
+    def __init__(self, x, y, width, height, maximumSpeed, numWaypoints, coincidentDistance=constants.UNIQUE_TREE_COINCIDENT_DISTANCE):
         self._heap = MinHeap()
-        self._uniqueTree = UniqueTree(x, y, width, height, maximumSpeed, coincidentDistance)
-        self._diagnonalTime = np.math.sqrt(width * width + height * height) / maximumSpeed
+        self._uniqueTrees = []
+        for i in range(numWaypoints):
+            self._uniqueTrees.append(UniqueTree(
+                        minPosition=(x, y, -maximumSpeed, -maximumSpeed),
+                        dims=(width, height, 2.0 * maximumSpeed, 2.0 * maximumSpeed),
+                        coincidentDistance=coincidentDistance))
+#        self._diagonal = calcs.length(np.array((width, height), np.double))
 
     def push(self, vertex):
         vPos = vertex.getPosition()
         vVel = vertex.getVelocity()
-        uniqueness = self._uniqueTree.insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1]]))
+        treeIndex = vertex.getWaypoint().getIndex()
+        uniqueness = self._uniqueTrees[treeIndex].insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1]]))
+
+#         length = 1.0 + calcs.length(vertex.getWaypoint()._position - vPos) / self._diagonal
+#         distBias = math.pow(length, 0.25)
         
         if uniqueness == 0.0:
             return

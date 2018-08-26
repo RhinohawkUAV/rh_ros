@@ -18,15 +18,15 @@ class PathFinder:
         self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
         self._obstacleCourse.setScenarioState(scenario)
 
-        # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
-        bounds = scenario.calcBounds()
-        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1], vehicle.maxSpeed)
-
         self._start = scenario.startPoint
         velocity = np.array(scenario.startVelocity, np.double)
         startSpeed = np.linalg.norm(velocity)
         unitVelocity = velocity / startSpeed        
         self._waypoints = waypoint.calcWaypoints(scenario.wayPoints, startSpeed, vehicle.acceleration)
+
+        # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
+        bounds = scenario.calcBounds()
+        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1], vehicle.maxSpeed, len(self._waypoints))
 
         # No solution possible, will never put anything in the vertex queue or start any calculations.
         if startSpeed == 0.0:
@@ -58,16 +58,15 @@ class PathFinder:
 
             self._currentVertex = self._nextVertex()
             
-            if self._currentVertex._waypoint._nextWayPoint is None:
+            nextWaypoint = self._currentVertex.getWaypoint().getNext()
+            if nextWaypoint is None:
                 self._findPathsToEnd()
             else:
                 (psegs, fpsegs) = self._currentVertex.pathSegmentsToWaypoint(self._obstacleCourse)
-
-                nextWaypoint = self._currentVertex._waypoint._nextWayPoint
                 self._addSegments(psegs, fpsegs, nextWaypoint)
                     
             (psegs, fpsegs) = self._currentVertex.skirtingPathSegments(self._obstacleCourse)
-            self._addSegments(psegs, fpsegs, self._currentVertex._waypoint)
+            self._addSegments(psegs, fpsegs, self._currentVertex.getWaypoint())
         except QueueEmptyException:
             self._isDone = True
 
@@ -78,6 +77,7 @@ class PathFinder:
         return self._solutionUpdated
     
     def getSolution(self):
+        self._solutionUpdated = False
         pathSegments = self._getPathSegments(self._solution)
         wayPoints = self._calcSolutionWaypoints(pathSegments)
         return (wayPoints, pathSegments)

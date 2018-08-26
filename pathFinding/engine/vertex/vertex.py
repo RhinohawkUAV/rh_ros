@@ -12,6 +12,9 @@ class BaseVertex(Drawable):
     def __init__(self, waypoint):
         self._waypoint = waypoint
 
+    def getWaypoint(self):
+        return self._waypoint
+
     def getPosition(self):
         pass
 
