@@ -28,11 +28,13 @@ class PathFindDrawable(Drawable):
         self._solutionPathSegments = solutionPathSegments
         self._finished = finished
         
-    def findClosestPointOnPath(self, point, snapDistance):
+    def findClosestPointOnPath(self, point, snapDistance, showFiltered):
         pathSegments = []
         pathSegments.extend(self._pastPathSegments)
         pathSegments.extend(self._futurePathSegments)
         pathSegments.extend(self._solutionPathSegments)
+        if showFiltered:
+            pathSegments.extend(self._filteredPathSegments)
         (closestSegmentIndex, closestPoint, minimumDistance, closestTime) = calcSegmentsPointDebug(point, pathSegments,
                                                                                                    snapDistance)
         if closestSegmentIndex is not None:
@@ -51,7 +53,7 @@ class PathFindDrawable(Drawable):
         if pointOfInterest is None:
             drawTime = 0.0
         else:
-            (pointOfInterest, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance)
+            (pointOfInterest, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance, showFiltered)
             
         gui.draw.drawScenario(canvas, self.scenario, time=drawTime)
         self._obstacleCourse.draw(canvas, time=drawTime)

@@ -5,7 +5,7 @@ from numpy.random.mtrand import np
 from engine.geometry import calcs
 
 
-class PathFindWaypoint:
+class Waypoint:
     """
     Tracks information about each waypoint in a path-finding problem.
     """
@@ -70,15 +70,15 @@ def turnTime(direction, desiredDirection, speed, acceleration):
     return turnAngle * speed / acceleration
 
 
-def calcWaypointGoals(wayPoints, speed, acceleration):
-    queue = deque(wayPoints)
+def calcWaypoints(positions, traversalSpeed, acceleration):
+    queue = deque(positions)
     pathFindWaypoints = []
-    nextWayPoint = PathFindWaypoint(queue.pop())
+    nextWayPoint = Waypoint(queue.pop())
     pathFindWaypoints.append(nextWayPoint)
     
     while len(queue) > 0:
-        wayPoint = PathFindWaypoint(queue.pop())
-        wayPoint.setNextWaypoint(nextWayPoint, speed, acceleration)
+        wayPoint = Waypoint(queue.pop())
+        wayPoint.setNextWaypoint(nextWayPoint, traversalSpeed, acceleration)
         pathFindWaypoints.append(wayPoint)
         nextWayPoint = wayPoint
     

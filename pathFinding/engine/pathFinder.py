@@ -1,4 +1,4 @@
-from engine import pathFindWaypoint
+from engine import waypoint
 from engine.geometry.obstacle import obstacleCourse
 from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.vertex import UniqueVertexQueue
@@ -27,13 +27,13 @@ class PathFinder:
         velocity = np.array(scenario.startVelocity, np.double)
         startSpeed = np.linalg.norm(velocity)
         unitVelocity = velocity / startSpeed        
-        self._wayPoints = pathFindWaypoint.calcWaypointGoals(scenario.wayPoints, startSpeed, vehicle.acceleration)
+        self._waypoints = waypoint.calcWaypoints(scenario.wayPoints, startSpeed, vehicle.acceleration)
 
         # No solution possible, will never put anything in the vertex queue or start any calculations.
         if startSpeed == 0.0:
             return    
         
-        self._currentVertex = OriginVertex(self._wayPoints[0], self._start, startSpeed, unitVelocity)
+        self._currentVertex = OriginVertex(self._waypoints[0], self._start, startSpeed, unitVelocity)
 
         self._pathSegments = []
         self._filteredPathSegments = []
@@ -99,7 +99,7 @@ class PathFinder:
                                                             self._vehicle.acceleration):
                 
                 waypointVertex = Vertex(self._currentVertex._waypoint._nextWayPoint,
-                                        0.0,
+                                        self._currentVertex._waypoint._solutionTime,
                                         previousVertex=self._currentVertex,
                                         pathSegment=pathSegment)
                 if waypointVertex._waypoint is not None:

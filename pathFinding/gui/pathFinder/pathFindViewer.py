@@ -7,6 +7,7 @@ from engine import interface
 import engine
 from engine.geometry import calcs
 from engine.interface.fileUtils import SCENARIO_KEY
+from engine.interface.generator import Generator
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.scenario import Scenario
 from engine.interface.vehicle import DEFAULT_VEHICLE
@@ -23,6 +24,8 @@ class PathFindViewer(Visualizer, PathFinderListener):
 
     def __init__(self, pathFinderInterface, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
+        self._lastScenario = None
+        self._showFiltered = False
         self._params = DEFAULT_PARAMS
         self._vehicle = DEFAULT_VEHICLE
         self._pointOfInterest = None
@@ -33,6 +36,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self.bindWithTransform('<Key>', self.onKeyPressed)
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Button-1>', self.onLeftClick)
+        self.bindWithTransform('<Button-3>', self.onRightClick)
 
     def onKeyPressed(self, point, event):
         key = event.keysym
@@ -62,44 +66,36 @@ class PathFindViewer(Visualizer, PathFinderListener):
         elif key == "t":
             print profile.result()
             profile.printAggregate()
+        elif key == "z":
+            self._showFiltered = not self._showFiltered
+            self.updateDisplay()
 
     def setStateRandom(self):
-        startPoint = np.array((-COURSE_DIM / 2.0 * 0.8, -COURSE_DIM / 2.0 * 0.8), np.double)
-        wayPoint1 = np.array((COURSE_DIM / 2.0 * 0.8, COURSE_DIM / 2.0 * 0.8), np.double)
-        wayPoint2 = np.array((-COURSE_DIM / 2.0 * 0.8, COURSE_DIM / 2.0 * 0.8), np.double)
-        wayPoint3 = np.array((COURSE_DIM / 2.0 * 0.8, -COURSE_DIM / 2.0 * 0.8), np.double)
+        boundaryPoints = np.array([(-COURSE_DIM / 2.0, -COURSE_DIM / 2.0),
+                                  (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
+                                  (COURSE_DIM / 2.0, COURSE_DIM / 2.0),
+                                  (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)], np.double)
+        startPoint = boundaryPoints[0] * 0.8
+        waypoints = []
+        waypoints.append(boundaryPoints[2] * 0.8)
+        waypoints.append(boundaryPoints[1] * 0.8)
+        waypoints.append(boundaryPoints[3] * 0.8)
+        startVelocity = calcs.unit(waypoints[0] - startPoint) * self._vehicle.maxSpeed
         
-        startVelocity = calcs.unit(wayPoint1 - startPoint) * self._vehicle.maxSpeed
-        boundaryPoints = [(-COURSE_DIM / 2.0, -COURSE_DIM / 2.0),
-                          (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
-                          (COURSE_DIM / 2.0, COURSE_DIM / 2.0), (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)]
-
-        dynamicNoFlyZones = engine.utils.genRandomCircularNoFlyZoneInputsHard(15,
-                                                                    - COURSE_DIM / 2.0 * 0.9,
-                                                                    - COURSE_DIM / 2.0 * 0.9,
-                                                                    COURSE_DIM * 0.9,
-                                                                    COURSE_DIM * 0.9,
-                                                                    0.01, 0.1,
-                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
-                                                                    startPoint=startPoint, endPoint=wayPoint1,
-                                                                    averageSpeed=self._vehicle.maxSpeed)                                                                    
-        
-        noFlyZones = engine.utils.genRandomPolyNoFlyZoneInputsHard(15,
-                                                                    - COURSE_DIM / 2.0 * 0.9,
-                                                                    - COURSE_DIM / 2.0 * 0.9,
-                                                                    COURSE_DIM * 0.9,
-                                                                    COURSE_DIM * 0.9,
-                                                                    0.01, 0.1,
-                                                                    minSpeed=0.0, maxSpeed=self._vehicle.maxSpeed,
-                                                                    startPoint=startPoint, endPoint=wayPoint1,
-                                                                    averageSpeed=self._vehicle.maxSpeed)
+        generator = Generator(boundaryPoints,
+                              startPoint,
+                              waypoints,
+                              self._vehicle.maxSpeed * 0.9,
+                              COURSE_DIM / 10.0,
+                              COURSE_DIM / 20.0,
+                              self._vehicle.maxSpeed)
+        generator.generate(20)
          
         roads = []
-        wayPoints = [wayPoint1, wayPoint2, wayPoint3]
-        scenario = Scenario(boundaryPoints, noFlyZones, dynamicNoFlyZones, roads, startPoint, startVelocity, wayPoints)
-        self.setScenario(scenario)
+        self.setScenario(Scenario(boundaryPoints, [], generator.circularNFZs, roads, startPoint, startVelocity, waypoints))
          
     def setScenario(self, scenario):
+        self._lastScenario = scenario
         # Show a slight extra buffer around the border
         bounds = scenario.calcBounds()
         centerX = (bounds[0] + bounds[2]) / 2.0
@@ -124,11 +120,15 @@ class PathFindViewer(Visualizer, PathFinderListener):
 
     def onLeftClick(self, point, event):
         self._pathFinderInterface.stepProblem()
-
+        
+    def onRightClick(self, point, event):
+        if self._lastScenario is not None:
+            self.setScenario(self._lastScenario)
+        
     def onMouseMotion(self, point, event):
         self._pointOfInterest = point
         self.updateDisplay()
 
     def updateDisplay(self):
         if self._pathFindDrawable is not None:
-            self.drawToCanvas(self._pathFindDrawable, pointOfInterest=self._pointOfInterest, snapDistance=120.0)
+            self.drawToCanvas(self._pathFindDrawable, pointOfInterest=self._pointOfInterest, snapDistance=120.0, showFiltered=self._showFiltered)
