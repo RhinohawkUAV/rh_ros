@@ -15,22 +15,21 @@ _rotDirections = (-1.0, 1.0)
 
 class ArcSegmentFinder(PathSegmentFinder):
 
-    def __init__(self, acceleration, targetOffset):
-        PathSegmentFinder.__init__(self, targetOffset)
-        self.acceleration = acceleration
+    def __init__(self, params, vehicle):
+        PathSegmentFinder.__init__(self, params, vehicle)
 
     def _createCircularTarget(self, center, radius, velocity):
-        return CircularArcTarget(center, velocity, radius, self.targetOffset)
+        return CircularArcTarget(center, velocity, radius, self.params.nfzBufferWidth, self.params.nfzTargetOffset)
 
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexArcTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
         if legalRotDirection == 0:
-            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration),
-                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)]
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.vehicle.acceleration),
+                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.vehicle.acceleration)]
         else:
-            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.acceleration)]
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.vehicle.acceleration)]
         pathSegments = []
         # In this case, the last 2 arguments are meaningless
         target = VertexArcTarget(targetPoint, velocityOfTarget, None, 0.0)
@@ -52,10 +51,10 @@ class ArcSegmentFinder(PathSegmentFinder):
     @profile.accumulate("Find Arc Point")
     def _findStaticPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
         if legalRotDirection == 0:
-            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration),
-                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)]
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.vehicle.acceleration),
+                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.vehicle.acceleration)]
         else:
-            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.acceleration)]
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.vehicle.acceleration)]
             
         pathSegments = []
         for target in self.vertexTargets:
@@ -73,10 +72,10 @@ class ArcSegmentFinder(PathSegmentFinder):
     @profile.accumulate("Find Arc Circle")
     def _findDynamicPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
         if legalRotDirection == 0:
-            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.acceleration),
-                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.acceleration)]
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.vehicle.acceleration),
+                          ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.vehicle.acceleration)]
         else:
-            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.acceleration)]
+            arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, legalRotDirection, self.vehicle.acceleration)]
                  
         pathSegments = []
         for target in self.circularTargets:
@@ -93,8 +92,8 @@ class ArcSegmentFinder(PathSegmentFinder):
     def draw(self, canvas, time=0.0, **kwargs):
         for target in self.vertexTargets:
             target.update(time)
-            gui.draw.drawPoint(canvas, target.position, 4)
+            target.draw(canvas)
             
         for target in self.circularTargets:
             target.update(time)
-            gui.draw.drawCircle(canvas, target.position, target.outerRadius, dash=DEFAULT_DASH)
+            target.draw(canvas)

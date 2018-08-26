@@ -8,8 +8,8 @@ import numpy as np
 
 class CircularArcTarget(CircularTarget, ArcTarget):
 
-    def __init__(self, startPosition, velocity, radius, offset):
-        CircularTarget.__init__(self, startPosition, velocity, radius, offset)
+    def __init__(self, startPosition, velocity, radius, nfzBufferWidth, nfzTargetOffset):
+        CircularTarget.__init__(self, startPosition, velocity, radius, nfzBufferWidth, nfzTargetOffset)
         self.avoidanceRotDirection = None
         self.solutionIndex = None
         
@@ -43,7 +43,7 @@ class CircularArcTarget(CircularTarget, ArcTarget):
                                                  self.getPosition(arc.arcTime()),
                                                  self.velocity,
                                                  self.radius,
-                                                 self.outerRadius)
+                                                 self.targetRadius)
 
         solution = solutions[self.solutionIndex]
         if solution is None:

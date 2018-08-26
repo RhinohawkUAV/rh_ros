@@ -27,11 +27,11 @@ def turnIsLegal(speed, unitVelocity, velocity2):
 
 class LineSegmentFinder(PathSegmentFinder):
 
-    def __init__(self, targetOffsetLength):
-        PathSegmentFinder.__init__(self, targetOffsetLength)
+    def __init__(self, params, vehicle):
+        PathSegmentFinder.__init__(self, params, vehicle)
 
     def _createCircularTarget(self, center, radius, velocity):
-        return CircularTarget(center, velocity, radius, self.targetOffset)   
+        return CircularTarget(center, velocity, radius, self.params.nfzBufferWidth, self.params.nfzTargetOffset)   
 
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
@@ -72,7 +72,7 @@ class LineSegmentFinder(PathSegmentFinder):
                                                          target.position,
                                                          target.velocity,
                                                          target.radius,
-                                                         target.outerRadius)
+                                                         target.targetRadius)
                 for solution in solutions:
                     if solution is not None:
                         endPoint = solution.endPoint

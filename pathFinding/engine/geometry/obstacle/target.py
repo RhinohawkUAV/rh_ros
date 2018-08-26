@@ -1,7 +1,8 @@
 from engine.geometry import calcs
+from gui.core import Drawable
 
 
-class Target:
+class Target(Drawable):
 
     def __init__(self, startPosition, velocity):
         self._startPosition = startPosition

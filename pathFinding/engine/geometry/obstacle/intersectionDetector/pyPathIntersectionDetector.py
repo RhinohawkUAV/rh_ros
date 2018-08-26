@@ -8,8 +8,8 @@ from utils import profile
 
 class PyPathIntersectionDetector(PathIntersectionDetector):
     
-    def __init__(self, bufferWidth):
-        self.bufferWidth = bufferWidth
+    def __init__(self, params, vehicle):
+        PathIntersectionDetector.__init__(self, params, vehicle)
         self.obstacleLines = []
         self.circularObstacles = []
 
@@ -21,11 +21,11 @@ class PyPathIntersectionDetector(PathIntersectionDetector):
             self.createObstacleLines(noFlyZone.points, noFlyZone.velocity)
         
         self.circularObstacles = list(map(lambda c: 
-                                          CircularObstacle(c.center, c.radius + self.bufferWidth, c.velocity),
+                                          CircularObstacle(c.center, c.radius + self.params.nfzBufferWidth, c.velocity),
                                           circularNoFlyZones))
         
     def createObstacleLines(self, points, velocity):
-        shell = calcs.calcShell(points, self.bufferWidth)
+        shell = calcs.calcShell(points, self.params.nfzBufferWidth)
         for i in range(len(shell)):
             self.obstacleLines.append(
                 LineSegmentObstacle(shell[i - 1], shell[i], velocity))

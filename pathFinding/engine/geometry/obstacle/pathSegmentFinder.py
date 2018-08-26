@@ -7,8 +7,9 @@ import numpy as np
 
 class PathSegmentFinder(Drawable):
     
-    def __init__(self, targetOffset):
-        self.targetOffset = targetOffset
+    def __init__(self, params, vehicle):
+        self.params = params
+        self.vehicle = vehicle
         self.vertexTargets = []
         self.circularTargets = []
         
@@ -28,7 +29,7 @@ class PathSegmentFinder(Drawable):
         pass
         
     def appendPolygonTargets(self, points, velocity):
-        points = calcs.calcShell(points, self.targetOffset)
+        points = calcs.calcShell(points, self.params.nfzTargetOffset)
         for i in range(-1, len(points) - 1):
             vertexAngle = calcs.calcVertexAngle(points[i - 1], points[i], points[i + 1])
             if vertexAngle <= math.pi:

@@ -4,9 +4,9 @@ from gui.core import Drawable
 
 
 def createObstacleCourse(params, vehicle):
-    pathSegmentFinder = ArcSegmentFinder(vehicle.acceleration, params.nfzTargetOffset)
-#   pathSegmentFinder = LineSegmentFinder(params.nfzTargetOffset)
-    pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth)
+    pathSegmentFinder = ArcSegmentFinder(params, vehicle)
+#   pathSegmentFinder = LineSegmentFinder(params, vehicle)
+    pathIntersectionDetector = PyPathIntersectionDetector(params, vehicle)
     return ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
 
     
