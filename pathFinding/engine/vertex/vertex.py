@@ -1,8 +1,10 @@
 from gui import Drawable
 import gui.draw
+import numpy as np
 
 DRAW_RADIUS = 0.5
 TEXT_OFFSET = 3.0
+_zero = np.array((0, 0), np.double)
 
 
 class BaseVertex(Drawable):
@@ -25,7 +27,7 @@ class BaseVertex(Drawable):
     def getPreviousVertex(self):
         pass
 
-    def pathSegmentsToPoint(self, obstacleCourse, targetPoint, velocityOfTarget):
+    def pathSegmentsToWaypoint(self, obstacleCourse):
         pass
 
     def skirtingPathSegments(self, obstacleCourse):
@@ -62,13 +64,13 @@ class OriginVertex(BaseVertex):
     def getPreviousVertex(self):
         return None
 
-    def pathSegmentsToPoint(self, obstacleCourse, targetPoint, velocityOfTarget):
+    def pathSegmentsToWaypoint(self, obstacleCourse): 
         return obstacleCourse.findPathSegmentsToPoint(startTime=0.0,
                                                       startPoint=self._position,
                                                       startSpeed=self._speed,
                                                       startUnitVelocity=self._direction,
-                                                      targetPoint=targetPoint,
-                                                      velocityOfTarget=velocityOfTarget,
+                                                      targetPoint=self._waypoint._position,
+                                                      velocityOfTarget=_zero,
                                                       legalRotDirection=0.0)
 
     def skirtingPathSegments(self, obstacleCourse):
@@ -121,13 +123,13 @@ class Vertex(BaseVertex):
     def getPreviousVertex(self):
         return self.previousVertex
     
-    def pathSegmentsToPoint(self, obstacleCourse, targetPoint, velocityOfTarget):
+    def pathSegmentsToWaypoint(self, obstacleCourse):
         return obstacleCourse.findPathSegmentsToPoint(startTime=self.timeToVertex,
                                                       startPoint=self.pathSegment.endPoint,
                                                       startSpeed=self.pathSegment.speed,
                                                       startUnitVelocity=self.pathSegment.endUnitVelocity,
-                                                      targetPoint=targetPoint,
-                                                      velocityOfTarget=velocityOfTarget,
+                                                      targetPoint=self._waypoint._position,
+                                                      velocityOfTarget=_zero,
                                                       legalRotDirection=self.pathSegment.nextLegalRotDirection)
 
     def skirtingPathSegments(self, obstacleCourse):

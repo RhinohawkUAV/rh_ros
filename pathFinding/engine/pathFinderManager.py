@@ -143,7 +143,7 @@ class PathFinderManager:
         3. Can publish result through overrideable publishing methods.
         """
         # Calculate a step for the given path finder.  This takes non-zero time and is therefore not syncrhonized.
-        stepProducedNewSolution = pathFinder.step()
+        pathFinder.step()
         
         with self._lock:
             # If shutdown, then throw exception and exit
@@ -156,18 +156,17 @@ class PathFinderManager:
                 if pathFinder.hasSolution():
                     (solutionWaypoints, pathSolution) = pathFinder.getSolution()
                     self.publishSolution(solutionWaypoints, pathSolution, True, referenceGPS)
-                    print pathFinder._solutionTime
                 else:
                     # TODO: If no solution is ever found, we need to handle that case with its own signal.
                     self.publishSolution([], [], True, referenceGPS)
             else:
                 # Publish and decrement number of steps
-                if stepProducedNewSolution:
+                if pathFinder.solutionUpdated():
                     (solutionWaypoints, pathSolution) = pathFinder.getSolution()
                     self.publishSolution(solutionWaypoints, pathSolution, False, referenceGPS)
-                else:
-                    (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
-                    self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments, referenceGPS)
+                    
+                (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
+                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments, referenceGPS)
             self._steps -= 1
 
 

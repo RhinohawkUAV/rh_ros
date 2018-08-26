@@ -13,7 +13,6 @@ class PathFinder:
 
     @profile.accumulate("setup")
     def __init__(self, params, scenario, vehicle):
-        self._zero = np.array((0, 0), np.double)
         self._params = params
         self._vehicle = vehicle
         self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
@@ -41,6 +40,7 @@ class PathFinder:
         self._vertexQueue.push(self._currentVertex)
         self._solution = None
         self._solutionTime = float("inf")
+        self._solutionUpdated = False
         self._isDone = False
 
     def findPath(self):
@@ -53,67 +53,66 @@ class PathFinder:
     @profile.accumulate("step")
     def step(self):
         try:
-            self._currentVertex = self._vertexQueue.pop()
-            while self._currentVertex.getTimeThrough() > self._solutionTime:
-                self._currentVertex = self._vertexQueue.pop()
-            
             del self._pathSegments[:]
             del self._filteredPathSegments[:]
+
+            self._currentVertex = self._nextVertex()
             
-            if self.checkPathToGoal():
-                return True
+            if self._currentVertex._waypoint._nextWayPoint is None:
+                self._findPathsToEnd()
             else:
-                (pathSegments, filteredPathSegments) = self._currentVertex.skirtingPathSegments(self._obstacleCourse)
-                self._pathSegments.extend(pathSegments)
-                self._filteredPathSegments.extend(filteredPathSegments)
-                for pathSegment in self._pathSegments:
+                (psegs, fpsegs) = self._currentVertex.pathSegmentsToWaypoint(self._obstacleCourse)
+
+                nextWaypoint = self._currentVertex._waypoint._nextWayPoint
+                self._addSegments(psegs, fpsegs, nextWaypoint)
                     
-                    newVertex = Vertex(self._currentVertex._waypoint,
-                                       self._currentVertex._waypoint.calcHeuristic(pathSegment.endPoint,
-                                                                                   pathSegment.endUnitVelocity,
-                                                                                   pathSegment.endSpeed,
-                                                                                   self._vehicle.acceleration),
-                                       previousVertex=self._currentVertex,
-                                       pathSegment=pathSegment)
-        
-                    self._vertexQueue.push(newVertex)
-                return False
+            (psegs, fpsegs) = self._currentVertex.skirtingPathSegments(self._obstacleCourse)
+            self._addSegments(psegs, fpsegs, self._currentVertex._waypoint)
         except QueueEmptyException:
             self._isDone = True
-            return True
-    
-    def pathToNextWaypoint(self):
-        (pathSegments, filteredPathSegments) = self._currentVertex.pathSegmentsToPoint(self._obstacleCourse,
-                                                                                        targetPoint=self._currentVertex._waypoint._position,
-                                                                                        velocityOfTarget=self._zero)
-        self._pathSegments.extend(pathSegments)
-        self._filteredPathSegments.extend(filteredPathSegments)
-        nextWaypoint = self._currentVertex._waypoint._nextWayPoint
-        for pathSegment in self._pathSegments:
-            heuristicToGoal = nextWaypoint.calcHeuristic(pathSegment.endPoint,
-                                                         pathSegment.endUnitVelocity,
-                                                         pathSegment.endSpeed,
-                                                         self._vehicle.acceleration)
-            waypointVertex = Vertex(nextWaypoint,
-                                    heuristicToGoal,
-                                    previousVertex=self._currentVertex,
-                                    pathSegment=pathSegment)
-            self._vertexQueue.push(waypointVertex)
 
-    def checkPathToGoal(self):
+    def hasSolution(self):
+        return self._solution is not None
+
+    def solutionUpdated(self):
+        return self._solutionUpdated
+    
+    def getSolution(self):
+        pathSegments = self._getPathSegments(self._solution)
+        wayPoints = self._calcSolutionWaypoints(pathSegments)
+        return (wayPoints, pathSegments)
+    
+    def getDebugData(self):
+        previousPathSegments = self._getPathSegments(self._currentVertex)
+        return (previousPathSegments, self._pathSegments, self._filteredPathSegments)
+
+    def _nextVertex(self):
+        vertex = self._vertexQueue.pop()
+        while vertex.getTimeThrough() > self._solutionTime:
+            vertex = self._vertexQueue.pop()
+        return vertex
+        
+    def _addSegments(self, psegs, fpsegs, waypoint):
+        self._pathSegments.extend(psegs)
+        self._filteredPathSegments.extend(fpsegs)
+        for pathSegment in psegs:
+            newVertex = Vertex(waypoint,
+                               waypoint.calcHeuristic(pathSegment.endPoint,
+                                                      pathSegment.endUnitVelocity,
+                                                      pathSegment.endSpeed,
+                                                      self._vehicle.acceleration),
+                               previousVertex=self._currentVertex,
+                               pathSegment=pathSegment)
+            self._vertexQueue.push(newVertex)
+
+    def _findPathsToEnd(self):
         """
         Check if there is a path from self._currentVertex to the goal.  Update the best solution if this is better.
         :return:
         """
-        if self._currentVertex._waypoint._nextWayPoint is not None:
-            self.pathToNextWaypoint()
-            return False
-        
-        (pathSegments, filteredPathSegments) = self._currentVertex.pathSegmentsToPoint(self._obstacleCourse,
-                                                                    targetPoint=self._currentVertex._waypoint._position,
-                                                                    velocityOfTarget=self._zero)
-        self._pathSegments.extend(pathSegments)
-        self._filteredPathSegments.extend(filteredPathSegments)
+        (psegs, fpsegs) = self._currentVertex.pathSegmentsToWaypoint(self._obstacleCourse)
+        self._pathSegments.extend(psegs)
+        self._filteredPathSegments.extend(fpsegs)
         
         for pathSegment in self._pathSegments:
             waypointVertex = Vertex(None,
@@ -121,26 +120,11 @@ class PathFinder:
                                     previousVertex=self._currentVertex,
                                     pathSegment=pathSegment)            
             if waypointVertex.getTimeThrough() < self._solutionTime:
-                # TODO: Multiple solutions possible
                 self._solutionTime = waypointVertex.getTimeThrough()
                 self._solution = waypointVertex
-                return True
-        return False
+                self._solutionUpdated = True
 
-    def hasSolution(self):
-        return self._solution is not None
-    
-    def getSolution(self):
-        pathSegments = self.getPathSegments(self._solution)
-        wayPoints = self.calcSolutionWaypoints(pathSegments)
-        
-        return (wayPoints, pathSegments)
-    
-    def getDebugData(self):
-        previousPathSegments = self.getPathSegments(self._currentVertex)
-        return (previousPathSegments, self._pathSegments, self._filteredPathSegments)
-        
-    def getPathSegments(self, pathEndVertex):
+    def _getPathSegments(self, pathEndVertex):
         pathSegments = []
         currentVertex = pathEndVertex
         previousVertex = currentVertex.getPreviousVertex()
@@ -155,7 +139,7 @@ class PathFinder:
 
         return pathSegments
 
-    def calcSolutionWaypoints(self, pathSegments):
+    def _calcSolutionWaypoints(self, pathSegments):
         solutionWaypoints = []
         for pathSegment in pathSegments:
             position = pathSegment.endPoint + pathSegment.endUnitVelocity * self._params.waypointAcceptanceRadii
