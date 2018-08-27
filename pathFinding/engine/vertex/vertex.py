@@ -24,7 +24,10 @@ class BaseVertex(Drawable):
     def getTimeTo(self):
         pass
     
-    def getTimeThrough(self):
+    def getTimeThroughAdmissible(self):
+        pass
+
+    def getTimeThroughPriority(self):
         pass
 
     def getPreviousVertex(self):
@@ -60,10 +63,14 @@ class OriginVertex(BaseVertex):
     def getTimeTo(self):
         return 0.0
     
-    def getTimeThrough(self):
+    def getTimeThroughAdmissible(self):
         # Irrelevant value as this vertex will never have any competition
         return 0.0
 
+    def getTimeThroughPriority(self):
+        # Irrelevant value as this vertex will never have any competition
+        return 0.0
+    
     def getPreviousVertex(self):
         return None
 
@@ -92,15 +99,21 @@ class OriginVertex(BaseVertex):
 
 class Vertex(BaseVertex):
 
-    def __init__(self, waypoint, heuristicToGoal, previousVertex=None,
+    def __init__(self, waypoint, priorityHeuristic, admissibleHeuristic, previousVertex=None,
                  pathSegment=None):
         BaseVertex.__init__(self, waypoint)
 
         # The timeToVertex from start to this vertex
         self.timeToVertex = previousVertex.getTimeTo() + pathSegment.elapsedTime
         
-        # An estimated of the timeToVertex required to traverse, the best possible path from start, through this vertex, to goal
-        self.timeEstimate = self.timeToVertex + heuristicToGoal
+        # Estimates of the timeToVertex required to traverse the path from start to finish through this point.
+
+        # Priority weights unknown heuristic portion higher, to prioritize vertices closer to the end
+        self.timeEstimatePriority = self.timeToVertex + priorityHeuristic
+        
+        # "Admissible" estimate is a best case time, which may not be very realistic.  
+        # A vertex is not thrown out unless the best known path is better than this
+        self.timeEstimateAdmissible = self.timeToVertex + admissibleHeuristic
         
         # The previous vertex which is part of the shortest path from start through this vertex
         self.previousVertex = previousVertex
@@ -120,8 +133,11 @@ class Vertex(BaseVertex):
     def getTimeTo(self):
         return self.timeToVertex
 
-    def getTimeThrough(self):
-        return self.timeEstimate
+    def getTimeThroughAdmissible(self):
+        return self.timeEstimateAdmissible
+
+    def getTimeThroughPriority(self):
+        return self.timeEstimatePriority
 
     def getPreviousVertex(self):
         return self.previousVertex

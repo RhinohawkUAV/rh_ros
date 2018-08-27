@@ -58,7 +58,7 @@ class UniqueVertexQueue(VertexPriorityQueue):
         
         if uniqueness == 0.0:
             return
-        priority = vertex.getTimeThrough() / uniqueness
+        priority = vertex.getTimeThroughPriority() / uniqueness
         
         self._heap.push(priority, vertex)
 

@@ -3,7 +3,6 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 """
 import math
 
-from constants import DEFAULT_NFZ_TARGET_OFFSET
 from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
 import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
@@ -24,15 +23,9 @@ class MessageConverter:
         self._gpsTransformer = GPSTransformer(gpsRef)
 
     def msgToParams(self, inputParamsMsg):
+        # TODO: Add new parameters (currently defaulted)
         return engine.interface.pathFindParams.PathFindParams(float(inputParamsMsg.waypointAcceptanceRadii),
-                                  float(inputParamsMsg.nfzBufferSize),
-                                  DEFAULT_NFZ_TARGET_OFFSET
-                                  )
-        # TODO: Add Target Offset Param and rename
-        return engine.interface.pathFindParams.PathFindParams(float(inputParamsMsg.waypointAcceptanceRadii),
-                                  float(inputParamsMsg.nfzBufferWidth),
-                                  float(inputParamsMsg.nfzTargetOffset)
-                                  )
+                                  float(inputParamsMsg.nfzBufferSize))
     
     def msgToVehicle(self, msg):
         return engine.interface.vehicle.Vehicle(float(msg.maxSpeed), float(msg.acceleration))
@@ -136,9 +129,7 @@ class MessageConverter:
         msg = pfm.Params()
         msg.waypointAcceptanceRadii = inputParams.waypointAcceptanceRadii
         msg.nfzBufferSize = inputParams.nfzBufferWidth
-        # TODO: Add Target Offset Param and rename
-#         msg.nfzBufferWidth = inputParams.nfzBufferWidth
-#         msg.nfzTargetOffset = inputParams.nfzTargetOffset
+        # TODO: Add other params
         
         return msg
     

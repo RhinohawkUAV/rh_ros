@@ -88,7 +88,7 @@ class PathFinder:
 
     def _nextVertex(self):
         vertex = self._vertexQueue.pop()
-        while vertex.getTimeThrough() > self._solutionTime:
+        while vertex.getTimeThroughAdmissible() > self._solutionTime:
             vertex = self._vertexQueue.pop()
         return vertex
         
@@ -96,11 +96,13 @@ class PathFinder:
         self._pathSegments.extend(psegs)
         self._filteredPathSegments.extend(fpsegs)
         for pathSegment in psegs:
-            newVertex = Vertex(waypoint,
-                               waypoint.calcHeuristic(pathSegment.endPoint,
+            heuristic = waypoint.calcHeuristic(pathSegment.endPoint,
                                                       pathSegment.endUnitVelocity,
                                                       pathSegment.endSpeed,
-                                                      self._vehicle.acceleration),
+                                                      self._vehicle.acceleration)
+            newVertex = Vertex(waypoint,
+                               heuristic * self._params.vertexHeuristicWeight,
+                               heuristic,
                                previousVertex=self._currentVertex,
                                pathSegment=pathSegment)
             self._vertexQueue.push(newVertex)
@@ -117,10 +119,11 @@ class PathFinder:
         for pathSegment in self._pathSegments:
             waypointVertex = Vertex(None,
                                     0.0,
+                                    0.0,
                                     previousVertex=self._currentVertex,
-                                    pathSegment=pathSegment)            
-            if waypointVertex.getTimeThrough() < self._solutionTime:
-                self._solutionTime = waypointVertex.getTimeThrough()
+                                    pathSegment=pathSegment)
+            if waypointVertex.getTimeThroughAdmissible() < self._solutionTime:
+                self._solutionTime = waypointVertex.getTimeThroughAdmissible()
                 self._solution = waypointVertex
                 self._solutionUpdated = True
 
