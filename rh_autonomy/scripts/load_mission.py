@@ -15,37 +15,40 @@ mission_filepath = sys.argv[1]
 print("Loading %s" % mission_filepath)
 
 stream = open(mission_filepath, "r")
-data = yaml.load_all(stream)
-for doc in data:
-    for k,v in doc.items():
-        print("%s -> %s" % (k,v))
-    print("\n")
+data = yaml.load(stream)
 
 m = Mission()
 
-if "geofence" in doc:
-    print("Loading geofence polygon")
-    points = []
-    for p in doc["geofence"]['points']:
-        coord = GPSCoord(p['lat'], p['lon'], p['alt'])
-        points.append(coord)
-    m.geofence.points = points
+def load_points(data):
+    if 'points' in data:
+        points = []
+        for p in data['points']:
+            coord = GPSCoord(p['lat'], p['lon'], p['alt'])
+            points.append(coord)
+    return points
 
+if 'geofence' in data:
+    geofence = data['geofence']
+    m.geofence.points = load_points(geofence)
+    print("Loaded geofence polygon with %d points" % len(m.geofence.points))
 
+if 'mission_wps' in data:
+    mission_wps = data['mission_wps']
+    m.mission_wps.points = load_points(mission_wps)
+    print("Loaded %d mission waypoints" % len(m.mission_wps.points))
 
+if 'static_nfzs' in data:
+    for static_nfz in data['static_nfzs']:
+        points = load_points(static_nfz)
+        m.static_nfzs.append(GPSCoordList(points))
+        print("Loaded static NFZ with %d points" % len(points))
 
-print(m)
-
-sys.exit(0)
-
-wps = []
-for item in data["mission"]["items"]:
-    params = item["params"]
-    lat = params[4]
-    lon = params[5]
-    print("Waypoint %s,%s" %(lat,lon))
-    wps.append(GPSCoord(lat, lon, 1))
-
+if 'roads' in data:
+    for road in data['roads']:
+        points = load_points(road)
+        m.roads.append(GPSCoordList(points))
+        print("Loaded road with %d points" % len(points))
+        
 set_mission = get_proxy('/rh/command/set_mission', SetMission)
 if set_mission(m):
     print("Successfully set mission")
