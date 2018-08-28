@@ -8,3 +8,5 @@ rhinoPathFinding*.egg
 /pathFinding/C/build
 .project
 .pydevproject
+/rhpathfinder.egg-info/
+/dist/

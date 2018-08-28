@@ -11,7 +11,7 @@ void fromPyVec(Vec2* vec,PyObject *pyVec)
 	vec->y = data[1];
 }
 
-//Build an array of LineSegments from a list of LineSegment python objects
+//Build a LineSegment from a Python LineSegment object
 void fromPyLineSegment(LineSegment* line,PyObject *pyLine)
 {
 	PyObject* pyP1 = PyObject_GetAttrString(pyLine, "p1");
@@ -43,23 +43,48 @@ void fromPyLineSegment(LineSegment* line,PyObject *pyLine)
 		line->invTan.y=0;
 	}
 }
+void fromPyCircle(Circle* circle, PyObject* pyCircle)
+{
+	PyObject* pyCenter = PyObject_GetAttrString(pyCircle, "center");
+	PyObject* pyVelocity = PyObject_GetAttrString(pyCircle, "velocity");
+	PyObject* pyRadius = PyObject_GetAttrString(pyCircle, "radius");
+	fromPyVec(&circle->center,pyCenter);
+	fromPyVec(&circle->velocity,pyVelocity);
+	double radius = PyFloat_AsDouble(pyRadius);
+	circle->radiusSquared = radius*radius;
+}
+
 //Build an array of LineSegments from a list of LineSegment python objects
 LineSegment* buildLineSegments(PyObject *lineList)
 {
-    Py_ssize_t length = PySequence_Length(lineList);
-    LineSegment* lines = malloc(length*sizeof(LineSegment));
-    LineSegment* line;
-    int i;
-	PyObject *pyLine;
-    for (i=0; i<length; i++)
+    Py_ssize_t numLineSegments = PySequence_Length(lineList);
+    LineSegment* lines;
+    if(numLineSegments > 0)
     {
-    	line = lines+i;
-    	pyLine = PyList_GetItem(lineList, i);
-    	fromPyLineSegment(line,pyLine);
+    	lines = malloc(numLineSegments*sizeof(LineSegment));
+        for (int i=0; i<numLineSegments; i++)
+        {
+        	fromPyLineSegment(lines+i,PyList_GetItem(lineList, i));
+        }
     }
     return lines;
 }
+//Build an array of Circles from a list of CircleObstacle Python objects
+Circle* buildCircles(PyObject *circleList)
+{
 
+    Py_ssize_t numCircles = PySequence_Length(circleList);
+    Circle* circles;
+    if(numCircles>0)
+    {
+    	circles = malloc(numCircles*sizeof(Circle));
+        for (int i=0; i<numCircles; i++)
+        {
+        	fromPyCircle(circles+i,PyList_GetItem(circleList, i));
+        }
+    }
+    return circles;
+}
 void addTo(Vec2* v1, Vec2* v2)
 {
 	v1->x += v2->x;
@@ -121,7 +146,7 @@ double safeQuotient(double numerator,double divisor,double zeroValue)
     then it is NOT considered an intersection (only an intersection if this will cause the vehicle to go deeper into the
     obstacle).
  */
-int intersectPathAndStaticLineC(LineSegment *lineSegment, Vec2 *pathStart, Vec2 *pathEnd)
+int testPathIntersectsStaticLine(LineSegment *lineSegment, Vec2 *pathStart, Vec2 *pathEnd)
 {
 	Vec2 p1diff;
 	Vec2 p2diff;
@@ -144,9 +169,7 @@ int intersectPathAndStaticLineC(LineSegment *lineSegment, Vec2 *pathStart, Vec2 
         return 0;
 
     //Distance to one-sided line segment, from pathEnd, in the direction of the normal.
-
     sub(&p2diff,pathEnd,&lineSegment->p1);
-    //p2diff = pathEnd - self.p1
 
     normalDistanceP2 = dot(&lineSegment->norm, &p2diff);
 
@@ -165,8 +188,6 @@ int intersectPathAndStaticLineC(LineSegment *lineSegment, Vec2 *pathStart, Vec2 
 //    As you move from pathStart towards pathEnd you approach intersection with the infinite line defined by the one-sided
 //    line segment. The crossing point will be at pathStart + pathTan * t, for some t.
 //    t is just the ratio below:
-
-
     if(pathTanNormal == 0.0)
     {
     	//This will be 0.0 if pathStart and pathEnd are the same.
@@ -174,9 +195,9 @@ int intersectPathAndStaticLineC(LineSegment *lineSegment, Vec2 *pathStart, Vec2 
     	return 0;
     }
     t = -normalDistanceP1 / pathTanNormal;
+
     //While moving towards the line perpendicularly, we also moved along the line tangentially.
     //We don't care how far we moved in absolute space, only in "tangent-unit-space".  In this space p1 is 0, p2 is 1.
-
     tanValue = (p1diff.x + pathTan.x * t) * lineSegment->invTan.x +
     		   (p1diff.y + pathTan.y * t) * lineSegment->invTan.y;
 
@@ -184,68 +205,68 @@ int intersectPathAndStaticLineC(LineSegment *lineSegment, Vec2 *pathStart, Vec2 
     return tanValue >= 0.0 && tanValue <= 1.0;
 }
 
-
-int intersectPathAndLineC(LineSegment* lineSegment, double startTime, Vec2* pathStart, Vec2* pathEnd, double speed)
+int testPathIntersectsStaticCircle(Circle* circle, Vec2* pathStart, Vec2* pathVec)
 {
-	Vec2 pathVector;
-	Vec2 velocity;
-	Vec2 newPathEnd;
-	Vec2 offset;
-	Vec2 newPathStart;
+	Vec2 fromCenter;
+	sub(&fromCenter, pathStart, &circle->center);
+	double a = dot(pathVec,pathVec);
+	double b = 2.0 * dot(pathVec,&fromCenter);
+	double c = dot(&fromCenter,&fromCenter) - circle->radiusSquared;
+    double discriminant = b * b - (4 * a * c);
+    double divisor = 2 * a;
 
-	double distance;
-	double t;
-
-//    direction = endPoint - startPoint
-//    distance = np.linalg.norm(direction)
-//    if distance == 0.0:
-//        return False
-
-	sub(&pathVector,pathEnd,pathStart);
-    distance = mag(&pathVector);
-    if(distance == 0.0)
+    if(discriminant < 0.0)
         return 0;
-
-//	# velocity vector - has magnitude in speed heading in velocity from start to end
-//	velocity = (speed / distance) * direction
-//
-//	# Offset velocity by the velocity of the no-fly-zone (pretend it is not moving)
-//	velocity -= self.velocity
-	scale(&velocity, &pathVector, speed / distance);
-    subBy(&velocity,&lineSegment->velocity);
-
-//  Time to get from pathStart to end
-//	t = distance / speed
-//
-//	# The new end point takes the same time to reach, but at a new offset heading
-//	endPoint = startPoint + velocity * t
-
-    if(speed == 0.0)
+    else if(divisor == 0.0)
     {
-    	//If moving infinitely slowly, the end of the path is the start, because the line, will have moved an infinite distance, while the
-    	//vehicle stood still.
-    	newPathEnd = *pathStart;
-    }
-    else
-    {
-        t = distance / speed;
+        if(b == 0.0)
+			return 0;
 
-        //The new end point (in the coordinate frame of the moving line) takes the same time to reach, but at a new offset heading
-        //newPathEnd = pathStart + velocity * t
-        newPathEnd.x = pathStart->x + velocity.x * t;
-        newPathEnd.y = pathStart->y + velocity.y * t;
+        double solution = -c / b;
+        return solution >= 0.0 && solution <= 1.0;
     }
 
-
-//    offset = -self.velocity * startTime
-//    return self.checkLineIntersection(startPoint + offset, endPoint + offset)
-
-    //Given the start time, this line will have moved.  We offset the pathStart and pathEnd in the opposite direction
-    scale(&offset,&lineSegment->velocity,-startTime);
-    add(&newPathStart,pathStart,&offset);
-    addTo(&newPathEnd,&offset);
-    return intersectPathAndStaticLineC(lineSegment,&newPathStart,&newPathEnd);
+    double sdiscriminant = sqrt(discriminant);
+	double solution1 = (-b - sdiscriminant) / divisor;
+	double solution2 = (-b + sdiscriminant) / divisor;
+	return (solution1 >= 0.0 && solution1 <= 1.0) || (solution2 >= 0.0 && solution2 <= 1.0);
 }
+
+void adjustPathToObstacleVelocity(Vec2* newPathStart, Vec2* newPathVec, Vec2* obstacleVelocity, double startTime, Vec2* pathStart, Vec2* pathVelocity, double pathTime)
+{
+    //velocity = pathVelocity - lineSegment.velocity
+	Vec2 velocity;
+	sub(&velocity,pathVelocity,obstacleVelocity);
+
+	scale(newPathVec,&velocity,pathTime);
+
+	//offset = -self.velocity * startTime
+	Vec2 offset;
+	scale(&offset,obstacleVelocity,-startTime);
+
+	add(newPathStart,pathStart,&offset);
+}
+int testPathIntersectsLine(LineSegment* lineSegment, double startTime, Vec2* pathStart, Vec2* pathVelocity, double pathTime)
+{
+	Vec2 newPathStart;
+	Vec2 newPathVec;
+	adjustPathToObstacleVelocity(&newPathStart,&newPathVec,&lineSegment->velocity,startTime, pathStart, pathVelocity, pathTime);
+	Vec2 newPathEnd;
+	add(&newPathEnd,&newPathStart,&newPathVec);
+	return testPathIntersectsStaticLine(lineSegment,&newPathStart,&newPathEnd);
+}
+
+
+
+int testPathIntersectsCircle(Circle* circle, double startTime, Vec2* pathStart, Vec2* pathVelocity, double pathTime)
+{
+	Vec2 newPathStart;
+	Vec2 newPathVec;
+	adjustPathToObstacleVelocity(&newPathStart,&newPathVec,&circle->velocity,startTime, pathStart, pathVelocity, pathTime);
+	return testPathIntersectsStaticCircle(circle,&newPathStart,&newPathVec);
+}
+
+
 void printVec(Vec2 *vec)
 {
 	printf("(%f,%f)",vec->x,vec->y);
