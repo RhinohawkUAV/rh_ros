@@ -31,7 +31,7 @@ from rh_msgs.srv import AbortMission, AbortMissionResponse
 from rh_msgs.srv import SetNoFlyZones, SetNoFlyZonesResponse
 from rh_autonomy.aggregator import LatchMap
 from rh_autonomy.util import waypoints_to_str, gps_dist
-from rh_autonomy import constants as rhc
+#from rh_autonomy import constants as rhc
 
 class MissionStatus:
     NOT_READY = 1
@@ -111,19 +111,30 @@ class StateNode():
         target = self.mission.mission_wps.points[self.target_mission_wp]
         gps_position = self.values.get_value(gps_topic)
         curr_pos = GPSCoord(gps_position.latitude, gps_position.longitude, 1)
-
-        #for i, point in enumerate(self.mission.mission_wps.points):
-        #    d = gps_dist(curr_pos, point)
-        #    rospy.loginfo("Goal %d - distance %f"%(i,d))
-        
-        # are we close to the goal?
         d = gps_dist(curr_pos, target)
         log("Distance from goal: %2.6fm" % d)
 
-        #if d_in_meters < rhc.WAYPOINT_ACCEPTANCE_RADIUS:
-        if d < 0.0002:
-            self.goal_reached(self.target_mission_wp)
-            self.reached_apm_wp = 0
+        if self.target_mission_wp == len(self.mission.mission_wps.points)-1:
+            # Searching for landing marker
+
+            # For SITL testing -- midway through the search, act like we found the marker
+            if self.apm_wps and self.reached_apm_wp > len(self.apm_wps)/2:
+                midpoint = self.apm_wps[self.reached_apm_wp]
+                self.landing_location = GPSCoord(midpoint.x_lat, midpoint.y_long, 0)
+                rospy.loginfo("SITL SIMULATION - Found landing marker")
+        else:
+            # Navigating toward a goal waypoint
+
+            #for i, point in enumerate(self.mission.mission_wps.points):
+            #    d = gps_dist(curr_pos, point)
+            #    rospy.loginfo("Goal %d - distance %f"%(i,d))
+            
+            # are we close to the goal?
+
+            #if d_in_meters < rhc.WAYPOINT_ACCEPTANCE_RADIUS:
+            if d < 0.0002:
+                self.goal_reached(self.target_mission_wp)
+                self.reached_apm_wp = 0
 
 
     def goal_reached(self, index):
@@ -156,16 +167,11 @@ class StateNode():
         self.apm_wps = msg.waypoints
         if self.apm_wps:
 
-            gs = ""
-            mission_goal_id = int(self.apm_wps[0].param1) - rhc.GOAL_ID_START
-            if mission_goal_id<0:
-                gs = " goal %d" % mission_goal_id
-            rospy.loginfo("Received%s waypoints (curr=%d):\n%s" % \
-                    (gs,msg.current_seq, waypoints_to_str(self.apm_wps)))
+            rospy.loginfo("Received waypoints (curr=%d):\n%s" % \
+                    (msg.current_seq, waypoints_to_str(self.apm_wps)))
 
-                
 
-            rospy.logdebug("Got waypoint list for goal %d"%mission_goal_id)
+            #rospy.logdebug("Got waypoint list for goal %d"%mission_goal_id)
 
 
     def waypoint_reached(self, msg):
@@ -176,32 +182,14 @@ class StateNode():
             return
 
         apm_wps = self.apm_wps
-        mission_goal_id = int(apm_wps[0].param1) - rhc.GOAL_ID_START
 
-        if mission_goal_id<0:
-            rospy.logwarn("Got waypoint list with no goal id")
-            return
+        if self.reached_apm_wp < msg.wp_seq:
+            log("Reached APM waypoint %s" % msg.wp_seq)
+            self.reached_apm_wp = msg.wp_seq
 
-        if mission_goal_id == self.target_mission_wp:
-            # This is the waypoint list for the current mission objective
-                
-            if self.reached_apm_wp < msg.wp_seq:
-                log("Reached APM waypoint %s" % msg.wp_seq)
-                self.reached_apm_wp = msg.wp_seq
-
-                #if msg.wp_seq in apm_wps:
-                #    waypoint = apm_wps[msg.wp_seq]
-                #else:
-                #    warn("Waypoint %d not in APM waypoints" % msg.wp_seq)
-
-                # the second to last waypoint is our current goal
-                #if msg.wp_seq >= len(apm_wps)-2:
-
-            else:
-                log("Already reached APM waypoint %s" % msg.wp_seq)
         else:
-            log("Received waypoints for goal %d, but looking for goal %d" % (mission_goal_id, self.target_mission_wp))
- 
+            log("Already reached APM waypoint %s" % msg.wp_seq)
+
 
     def mavlink_statustext(self, msg):
         #log("Got Mavlink msg: %s " % msg.text)

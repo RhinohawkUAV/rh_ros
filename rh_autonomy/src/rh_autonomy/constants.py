@@ -21,9 +21,6 @@ MAV_CMD_TAKEOFF = 84 if isQuadPlane else 22
 MAV_CMD_LAND = 85 if isQuadPlane else 21
 MAV_CMD_DO_SET_HOME = 179
 
-# Our magic number used to stash goal ids in the Mavlink WaypointList
-GOAL_ID_START = 3333
-
 # Mission cruise altitude in meters
 CRUISE_ALTITUDE = 30
 

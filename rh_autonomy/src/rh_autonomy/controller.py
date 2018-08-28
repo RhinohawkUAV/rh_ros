@@ -61,6 +61,7 @@ class ControllerNode():
         self.get_state = get_proxy('/rh/command/get_state', GetState)
         self.fly_waypoints = get_proxy('/rh/command/fly_waypoints', FlyWaypoints)
         self.search_strip_width = calculate_strip_width(rhc.SEARCH_ALTITUDE, rhc.SEARCH_STRIP_OVERLAP)
+        self.search_gcl = None
         self.cruise_alt = rhc.CRUISE_ALTITUDE
         self.wp_radius = rhc.WAYPOINT_ACCEPTANCE_RADIUS
         self.nfz_buffer_size = rhc.NOFLYZONE_BUFFER_SIZE
@@ -113,7 +114,6 @@ class ControllerNode():
 
         # current goal
         tmi = state.target_mission_wp
-        rospy.loginfo("Control to goal %d"%tmi)
 
         if tmi == len(mission_wps)-1:
             rospy.loginfo("Control to last waypoint")
@@ -136,6 +136,7 @@ class ControllerNode():
                 self.control_waypoint(state, target)
 
         elif tmi < len(mission_wps):
+            rospy.loginfo("Control to goal %d"%tmi)
             target = mission_wps[tmi]
             next_target = mission_wps[tmi+1]
             self.control_waypoint(state, target, next_target)
@@ -147,14 +148,16 @@ class ControllerNode():
         vs = state.vehicle_state
         mission_goal_id = state.target_mission_wp
         
-        search_gcl = self.generate_search_pattern(vs.position, target)
+        if not self.search_gcl:
+            # TODO: this currently generates the search pattern once per mission
+            # it needs better logic to account for dynamic nfz changes, and other recovery
+            self.search_gcl = self.generate_search_pattern(vs.position, target)
 
-        if search_gcl:
-            wps = search_gcl.points
-            rospy.logdebug("Will submit %d waypoints", len(wps))
+        if self.search_gcl:
+            rospy.logdebug("Will submit %d waypoints", len(self.search_gcl.points))
             if not self.fly_waypoints(mission_goal_id, \
                     self.cruise_alt, self.wp_radius, \
-                    search_gcl, \
+                    self.search_gcl, \
                     False, \
                     False):
                 rospy.logerr("Could not fly waypoints")
@@ -168,7 +171,7 @@ class ControllerNode():
         mission_goal_id = state.target_mission_wp
         
         wpl = GPSCoordList()
-        wpl.waypoints = [target]
+        wpl.points = [target]
         rospy.logdebug("Will submit final landing waypoint")
         if not self.fly_waypoints(mission_goal_id, \
                 self.cruise_alt, self.wp_radius, \
@@ -233,39 +236,47 @@ class ControllerNode():
         #rospy.loginfo("Submitting goal:\n%s", goal)
 
         self.pfclient.send_goal(goal)
-        result = self.pfclient.wait_for_result(rospy.Duration.from_sec(5.0))
+        result = self.pfclient.wait_for_result(rospy.Duration.from_sec(2.0))
 
         wps = [] 
 
         if not result:
-            rospy.logerr("Path finder did not return solution in time")
+            rospy.logwarn("Path finder did not return a solution in time.")
+
         else:
             solution = self.pfclient.get_result().solution
-            if solution.finished:
-                c = len(solution.solutionWaypoints)
-                if c==0:
-                    rospy.logwarn("Path finder returned no waypoints")
-                else:
-                    rospy.logdebug("Path finder returned %d solution waypoints" % c)
-                for swp in solution.solutionWaypoints:
-                    wp = swp.position
-                    rospy.logdebug("Solution waypoint: (%s,%s)" % (wp.lat, wp.lon))
-                    wps.append(GPSCoord(wp.lat, wp.lon, 1))
-            else:
+            if not solution.finished:
                 rospy.logwarn("Path finder solution is not complete")
+            
+            c = len(solution.solutionWaypoints)
+            if c==0:
+                rospy.logwarn("Path finder returned no waypoints")
+            else:
+                rospy.logdebug("Path finder returned %d solution waypoints" % c)
+            
+            for swp in solution.solutionWaypoints:
+                wp = swp.position
+                rospy.logdebug("Solution waypoint: (%s,%s)" % (wp.lat, wp.lon))
+                wps.append(GPSCoord(wp.lat, wp.lon, 1))
 
-        rospy.loginfo("Pathfinder returned %d waypoints until goal" % len(wps))
+            rospy.loginfo("Pathfinder returned %d waypoints until goal" % len(wps))
 
-        if wps:
-            rospy.logdebug("Will submit %d waypoints", len(wps))
-            if not self.fly_waypoints(mission_goal_id, \
-                    self.cruise_alt, self.wp_radius, \
-                    GPSCoordList(wps), \
-                    vs.status == VehicleStatus.GROUNDED, \
-                    next_target==None):
-                rospy.logerr("Could not fly waypoints")
-        else:
-            rospy.logdebug("No solution waypoints!")
+        if not wps:
+            rospy.logerr("No solution waypoints. Proceeding directly to goal!")
+            #wps.append(GPSCoord(target.lat, target.lon, 1))
+            wps.append(target)
+
+        if next_target:
+            # start heading in the right direction when we get to the target
+            wps.append(next_target)
+
+        rospy.logdebug("Will submit %d waypoints", len(wps))
+        if not self.fly_waypoints(mission_goal_id, \
+                self.cruise_alt, self.wp_radius, \
+                GPSCoordList(wps), \
+                vs.status == VehicleStatus.GROUNDED, \
+                next_target==None):
+            rospy.logerr("Could not fly waypoints")
 
 
     def generate_search_pattern(self, current_pos, search_target):

@@ -13,7 +13,7 @@ from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import State, Waypoint, ParamValue
 from mavros_msgs.srv import SetMode, ParamSet
 from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
-    WaypointPush, WaypointClear
+    WaypointPush, WaypointClear, WaypointSetCurrent
 
 from rh_msgs.srv import TakeOff, TakeOffResponse
 from rh_msgs.srv import Land, LandResponse
@@ -33,6 +33,7 @@ takeoff = None
 land = None
 wp_push = None
 wp_clear = None
+wp_set = None
 
 values = LatchMap()
 apm_wps = []
@@ -231,6 +232,21 @@ def push_waypoints(waypoints):
     return True
 
 
+def set_current_wp(wp_seq):
+    try:
+        ret = wp_set(wp_seq)
+    except rospy.ServiceException as e:
+        logexc("Exception setting current waypoint")
+        return False
+
+    if not ret.success:
+        rospy.logerr('Error setting current waypoint: unknown')
+        return False
+
+    return True
+    
+
+
 def waypoint(lat, lon, alt):
     w = Waypoint()
     w.frame = rhc.MAV_FRAME_GLOBAL_RELATIVE_ALT
@@ -365,8 +381,6 @@ def handle_flywaypoints(msg):
             # due to a bug in Ardupilot, we need a dummy waypoint first
             dummy = wp_home(gps_coord.lat, gps_coord.lon)
             wps.append(dummy)
-            # we also abuse this to encode the mission goal
-            dummy.param1 = float(mission_goal_id + rhc.GOAL_ID_START)
       	
         if i==0 and msg.takeoff:
             wp = wp_takeoff(gps_coord.lat, gps_coord.lon, cruise_alt)
@@ -390,21 +404,26 @@ def handle_flywaypoints(msg):
         return FlyWaypointsResponse(True)
 
     # set to GUIDED before pushing waypoints, so that mission is reset
-    set_custom_mode(rhc.MODE_GUIDED)
+    #set_custom_mode(rhc.MODE_GUIDED)
 
     if not push_waypoints(wps):
         rospy.logerr('Error pushing waypoints')
         return FlyWaypointsResponse(False)
 
+    if not set_current_wp(1):
+        rospy.logerr('Error setting current waypoint')
+        return FlyWaypointsResponse(False)
+
     apm_wps = wps
     rospy.logdebug("Pushed %d waypoints for goal %d\n%s" \
             % (len(wps), mission_goal_id, waypoints_to_str(wps)))
-
-    # wait for waypoints to be accepted
-    # TODO: this should be event driven
-    rospy.sleep(1.)
     
     if msg.takeoff:
+
+        # wait for waypoints to be accepted
+        # TODO: this should be event driven
+        rospy.sleep(1.)
+
         # because take off waypoints do not work, 
         # we have to do a manual take off
 
@@ -424,8 +443,8 @@ def handle_flywaypoints(msg):
         # wait a second
         rospy.sleep(0.5)
     
-    # now execute mission waypoints
-    set_custom_mode(rhc.MODE_AUTO)
+        # now execute mission waypoints
+        set_custom_mode(rhc.MODE_AUTO)
 
     return FlyWaypointsResponse(True)
 
@@ -435,7 +454,7 @@ def start():
     rospy.init_node(name())
     mavros.set_namespace()
 
-    global set_mode, set_param, arming, set_home, takeoff, land, wp_push, wp_clear
+    global set_mode, set_param, arming, set_home, takeoff, land, wp_push, wp_clear, wp_set
     set_mode = get_proxy('/mavros/set_mode', SetMode)
     set_param = get_proxy('/mavros/param/set', ParamSet)
     arming = get_proxy('/mavros/cmd/arming', CommandBool)
@@ -444,6 +463,7 @@ def start():
     land = get_proxy('/mavros/cmd/land', CommandTOL)
     wp_push = get_proxy('/mavros/mission/push', WaypointPush)
     wp_clear = get_proxy('/mavros/mission/clear', WaypointClear)
+    wp_set = get_proxy('/mavros/mission/set_current', WaypointSetCurrent)
 
     global gps_topic 
     gps_topic = mavros.get_topic('global_position', 'global')
