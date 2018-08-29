@@ -4,13 +4,13 @@ import actionlib
 
 from engine.pathFinder import PathFinder
 from messageConverter import MessageConverter
-from ros.rosConstants import PATHFINDER_INPUT_TOPIC, PATHFINDER_DEBUG_TOPIC, PATHFINDER_SERVER, ROS_QUEUE_SIZE
+from ros.rosConstants import PATHFINDER_INPUT_TOPIC, PATHFINDER_DEBUG_TOPIC, PATHFINDER_SERVER, ROS_QUEUE_SIZE, PATHFINDER_NODE_ID
 
 
 class RosPathFinderServer():
 
     def __init__(self):
-        rospy.init_node(PATHFINDER_SERVER,)
+        rospy.init_node(PATHFINDER_NODE_ID)
         self._activePathFinder = None
         self._pathInputPub = rospy.Publisher(PATHFINDER_INPUT_TOPIC, pfm.Scenario, queue_size=ROS_QUEUE_SIZE)
         self._pathDebugPub = rospy.Publisher(PATHFINDER_DEBUG_TOPIC, pfm.PathDebug, queue_size=ROS_QUEUE_SIZE)
