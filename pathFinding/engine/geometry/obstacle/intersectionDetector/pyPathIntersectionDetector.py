@@ -30,6 +30,7 @@ class PyPathIntersectionDetector(PathIntersectionDetector):
             self.obstacleLines.append(
                 LineSegmentObstacle(shell[i - 1], shell[i], velocity))
     
+    @profile.accumulate("Collision Detection")
     def testStraightPathIntersections(self, points, times):
         for i in range(0, len(points) - 1):
             time = times[i + 1] - times[i]
@@ -41,7 +42,6 @@ class PyPathIntersectionDetector(PathIntersectionDetector):
                 return True
         return False 
         
-    @profile.accumulate("Collision Detection")
     def testStraightPathIntersection(self, startTime, startPoint, velocity, time):
         for obstacleLine in self.obstacleLines:
             if obstacleLine.checkPathIntersectsLine(startTime, startPoint, velocity, time):

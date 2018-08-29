@@ -36,6 +36,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self.bindWithTransform('<Key>', self.onKeyPressed)
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Button-1>', self.onLeftClick)
+        self.bindWithTransform('<Control-ButtonPress-1>', self.onControlLeftPress)
         self.bindWithTransform('<Button-3>', self.onRightClick)
 
     def onKeyPressed(self, point, event):
@@ -49,9 +50,6 @@ class PathFindViewer(Visualizer, PathFinderListener):
             if isinstance(fileName, basestring) and not fileName == '':
                 self._pathFindInput = interface.loadInput(fileName)
                 scenario = self._pathFindInput[SCENARIO_KEY]
-                # TODO: Decide how we want to handle saved scenario velocities.  
-                # For now we force it to match the vehicle's max velocity
-                scenario.startVelocity = calcs.unit(scenario.startVelocity) * self._vehicle.maxSpeed
                 self.setScenario(scenario)
         if key == "s":
             # Can always find the scenarios folder relative to this file regardless of how the program is started
@@ -130,7 +128,10 @@ class PathFindViewer(Visualizer, PathFinderListener):
 
     def onLeftClick(self, point, event):
         self._pathFinderInterface.stepProblem()
-        
+    
+    def onControlLeftPress(self, point, event):
+        self._pathFinderInterface.stepProblem(10)
+    
     def onRightClick(self, point, event):
         if self._lastScenario is not None:
             self.setScenario(self._lastScenario)

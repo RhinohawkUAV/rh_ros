@@ -10,3 +10,4 @@ rhinoPathFinding*.egg
 .pydevproject
 /rhpathfinder.egg-info/
 /dist/
+/build/

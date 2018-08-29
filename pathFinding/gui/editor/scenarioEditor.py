@@ -1,3 +1,4 @@
+import os
 import tkFileDialog
 
 from boundaryBuilder import BoundaryBuilder
@@ -66,12 +67,16 @@ class ScenarioEditor(Visualizer, Drawable):
         elif key == "s":
             # Make sure current mode's state is dumped back to central data structure
             self._mode.onExit()
-            fileName = tkFileDialog.asksaveasfilename(defaultextension=".json", initialdir="scenarios")
+            root = os.path.dirname(__file__)
+            initialPath = os.path.normpath(os.path.join(root, "../../../scenarios"))            
+            fileName = tkFileDialog.asksaveasfilename(defaultextension=".json", initialdir=initialPath)
             if not fileName == '':
                 interface.saveInput(fileName, self._inputDict)
             self._mode.onSwitch(self._inputDict)
         elif key == "l":
-            fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir="scenarios")
+            root = os.path.dirname(__file__)
+            initialPath = os.path.normpath(os.path.join(root, "../../../scenarios"))                  
+            fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir=initialPath)
             if not fileName == '':
                 self._inputDict = interface.loadInput(fileName)
                 if not TEST_INPUT_KEY in self._inputDict:
