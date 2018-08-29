@@ -116,10 +116,11 @@ class StateNode():
 
         if self.target_mission_wp == len(self.mission.mission_wps.points)-1:
             # Searching for landing marker
+            #TODO: actually search!
 
             # For SITL testing -- midway through the search, act like we found the marker
             if self.apm_wps and self.reached_apm_wp > len(self.apm_wps)/2:
-                midpoint = self.apm_wps[self.reached_apm_wp]
+                midpoint = self.apm_wps[len(self.apm_wps)/2]
                 self.landing_location = GPSCoord(midpoint.x_lat, midpoint.y_long, 0)
                 rospy.loginfo("SITL SIMULATION - Found landing marker")
         else:
@@ -131,6 +132,7 @@ class StateNode():
             
             # are we close to the goal?
 
+            # TODO: get distance in meters
             #if d_in_meters < rhc.WAYPOINT_ACCEPTANCE_RADIUS:
             if d < 0.0002:
                 self.goal_reached(self.target_mission_wp)
