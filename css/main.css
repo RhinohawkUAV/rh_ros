@@ -19,6 +19,14 @@ body{
     z-index: -1;
 }
 
+
+.right{
+	float:right;
+}
+
+.left {
+	float:left;
+}
 /*******************  Telemetry *******************/
 
 .telemetryHolder {
@@ -46,9 +54,6 @@ body{
 	bottom: 70px;
 }
 
-.buttonRow{
-	bottom: 230px;
-}
 
 .telemetryRow.timingRow{
 	height: 70px;
@@ -107,18 +112,24 @@ body{
 	text-align: center;
 }
 
-.buttonRow a{
-	text-decoration: none;
-	color:#fff;
-	background: #00C1FF;
-	padding:8px 16px;
-	border-radius: 3px;
-	margin-left:12px;
-	box-shadow: 1px 1px 1px #00000059;
+
+
+#telemetry.hidden{
+	bottom: -200px;
 }
 
-.buttonRow a:first-child{
-	margin-left:24px;
+
+#timeline.hidden{
+	bottom: -100px;
+}
+
+#telemetry, #timeline, .leaflet-right{
+	 transition: all .3s;
+	 transition-timing-function: ease-out;
+}
+
+.hideControls .leaflet-right{
+	margin-right:-50px;
 }
 
 
@@ -330,28 +341,97 @@ body{
 	padding-top: 6px;
 }
 
-/*******************  NFC Pop Up *******************/
 
-.rightButton{
-	width:35px;
-    height:35px;
-    margin:10px 5px;
-    float:right;
-    clear:both;
-}
+
 
 /*******************  Define Mission *******************/
 
-.planMissionToolTip {
+
+#missionPlanner{
 	position: absolute;
-	top:10px;
+	top:-50px;
 	left:50%;
-	width:30%;
-	margin-left:-10%;
+	width:60%;
+	margin-left:-30%;
 	color:#fff;
-	background: #00C1FF95;
+	background: rgba(20,20,20,0.8);
 	border-radius: 20px;
-	padding:4px ;
+	padding:0px ;
 	text-align: center;
-	font-size:15px;
+	font-size:14px;
+	transition: all 0.3s ease;
 }
+
+#missionPlanner.show{
+	top:10px;
+}
+
+#missionPlanner span{
+	position:relative;
+}
+
+
+
+/*******************  Numbered Waypoints *******************/
+
+.leaflet-div-icon {
+	background: transparent;
+	border: none;
+}
+
+.leaflet-marker-icon .number{
+	position: relative;
+	top: -37px;
+	font-size: 12px;
+	width: 25px;
+	text-align: center;
+}
+
+.waypoint-1{
+	background-position: middle center;
+	background-image: url('../img/waypointNumbers/1.png');
+}
+
+
+
+/******************  Button Styles  ***********************/
+
+a.button_ghost, a.button_blue{
+	text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 13px;
+    padding: 2px 12px;
+    margin: 9px 18px;
+}
+
+a.button_ghost{
+	border: 1px solid #fff;
+}
+
+a.button_blue{
+	background: #4AA6E2;
+}
+
+
+a.button_green{
+	background: #0FB476;
+	width:100%;
+}
+
+
+#missionPlanNext.deactive{
+	background:#666;
+	color:#888;
+	pointer-events: none;
+}
+
+#button_defineMission {
+	transition: all .3s ease;
+}
+
+#button_defineMission.hidden{
+	opacity: 0;
+}
+

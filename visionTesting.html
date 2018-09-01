@@ -21,7 +21,9 @@
   <script src="yml/boundaryPoints.txt"></script>
   <script src="yml/missionPlan.txt"></script>
   <script type="text/javascript" src="js/main.js"></script>
-  <script src="js/js-yaml.js"></script>
+
+  <script type="text/javascript" src="js/missionDefinition.js"></script>
+    <script src="js/js-yaml.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
  <!-- <script src="js/semicircle.js"></script>-->
@@ -41,14 +43,16 @@
       <div class="col" >
         <img src="img/RhinoHawk_Logo_white.png" style="width:180px; margin:12px;"/>
       </div>
-      <div class="col-1 pull-right" style="text-align:right; pointer-events: auto;">
-         <a href="#" class="rightButton" onClick="toggleMenu();"><span id="menu-layers">Layers</span></a>
+      <div class="col-5 pull-right" style="text-align:right; pointer-events: auto; margin-top: 8px;">
+         <a href="#" class="button_layers" onClick="toggleMenu();"><span id="menu-layers">Layers</span></a>
+         <a href="#" class='button_ghost right' id="button_defineMission" onclick="startMissionDefinition();">Define Mission</a>
+
       </div>
     </div>
     <div class="row fill">
       <div class="col fill" id="mapHolder"></div>
     </div>
-    <div class="row fixed-bottom telemetryRow topRow">
+    <div class="row fixed-bottom telemetryRow topRow" id="telemetry">
       <div class="col telemetryHolder" >
         <h3 class="tel-header">Position</h3>
         <h4 class="tel-sub-header">Latitude</h4>
@@ -80,8 +84,8 @@
           <img id="aruco-image" />
        </div>
     </div>
-   </div>
-  <div class="row fixed-bottom timingRow telemetryRow">
+
+  <div class="row fixed-bottom timingRow telemetryRow" id="timeline">
       <div class="col telemetryHolder">
         <h3 class="tel-header">Mission Time</h3>
         <p class="tel-detail" id="tel-time">00:00:00</p>
@@ -90,12 +94,14 @@
         <p> timeline will go here</p>
       </div>
   </div>
-  <div class="row fixed-bottom buttonRow">
+ 
+ <!-- <div class="row fixed-bottom buttonRow">
       <div class="col">
-        <a href="#" id="missionPlanButton" onclick="startMissionPlan();">Define Mission</a>
-        <a href="#" onclick="createOutline('#DF3500', .5);">Dynamic NFZ</a>
+        <a href="#" id="missionPlanButton" onclick="createMissionObject(geofenceCoords, mission_wpsCoords, nfzs);">Define Mission</a>
+        <a href="#" onclick="startTheMission()">Dynamic NFZ</a>
       </div>
-  </div>
+  </div>-->
+</div>
   <div class="fill menu-layers">
       <ul>
         <li class="menu-section">Options</li>
@@ -119,6 +125,13 @@
         <li onClick="toggleVideo('toggle9')"><span>Video Stream</span><div id="toggle9" class="toggleOn"><div class="toggleMarker"></div></div></li>
 
       </ul>
+  </div>
+  <div id="missionPlanner" class="container-fluid">
+    <div class="row">
+      <div class="col-3"><a href='#' onClick="clearMission()" class="button_ghost left">Cancel</a></div>
+     <div class="col-6" style="padding-top:10px"><span id="missionPlanText">Click to define mission geofence</span></div>
+      <div class="col-3"><a href='#' onClick='clickNext()' class="button_blue right deactive" id="missionPlanNext">next</a></div>
+    </div>
   </div>
 
   <script type="text/javascript" src="js/gaugemin.js"></script>

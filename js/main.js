@@ -26,20 +26,17 @@ var airSpeedGauge;
 
 var imageTopic;
 
-var clickPoint;
-var drawing = false;
-var drawColor = '#ffffff';
-var missionBoundsColor = '#efefef';
-var NFZcolor = '#DF3500';
-var plannedPathColor ='#DCDCDC';
 
-var drawOpacity = .5;
-var drawType = '';
-var outlineCoords = [];
-var activeMission  = new Object();
+/*var nfz1 =  [[-35.2653204217,149.167854404],[-35.2680289162,149.172119218],[-35.2713521399,149.167857198],[-35.2710924879,149.158370304]];
+var nfz2 = [[-35.2784356099,149.157626635],[ -35.2769489533,149.160077947],[-35.2777347419,149.163702692]];
+var nfzs = [nfz1, nfz2];
+var geofenceCoords = [[-35.2669809344,149.090898914],[-35.3124370914,149.090877152],[-35.3106012238,149.169581702],[-35.2566652302,149.170834472],[-35.247926401,149.161346021],[-35.2487994608,149.094637347]];
+var mission_wpsCoords = [[-35.3003799576,149.123938597],[-35.2539580919,149.161561475]];
 
-var tempLayers;
-var missionLayers;
+*/
+
+
+
 
 
 // Connect to ROSBridge -----------------------------------------------------------------------
@@ -56,17 +53,14 @@ function connectToROS(address){
 
     tempLayers = L.layerGroup().addTo(map);
     missionLayers = L.layerGroup().addTo(map);
+
 }
   
 
 
 //  Define Icons ---------------------------------------------
  function setUpIcons(){ 
-  waypointYellowIcon = L.icon({
-      iconUrl: 'img/waypoint-yellow.png',
-      iconSize: [24,24],
-      popupAnchor: [0,-12],
-    });
+  createWaypointIcons();
 
   joePositionIcon = L.icon({
       iconUrl: 'img/joesPosition.png',
@@ -502,175 +496,9 @@ function toggleVideo(toToggle){
 }
 
 
-// Create outlined shape ---------------------------------------------
-
-function createOutline(color, opacity, type){
-  document.getElementById("mapHolder").style.cursor = "crosshair";
-  drawColor = color;
-  drawOpacity = opacity;
-  drawType = type;
-  startDrawing = true;
-  map.addEventListener("click", drawOutline);
-}
-
-function drawOutline(e){
-  outlineCoords.push(e.latlng);
-  var vertex;
-  if (startDrawing == true){
-    vertex = L.circleMarker(e.latlng, {radius: 10, color:drawColor, weight:0, fillOpacity:1});
-    tempLayers.addLayer(vertex);
-    vertex.addEventListener("click", finishOutline);
-    startDrawing = false;
-  }else{
-    vertex = L.circleMarker(e.latlng, {radius: 5, weight:0, fillColor:drawColor, fillOpacity:1});
-    tempLayers.addLayer(vertex);
-
-    var prevlatlng = outlineCoords[outlineCoords.length-2];
-    var polyline = L.polyline([prevlatlng, e.latlng], {weight:2, color: drawColor, dashArray:"2, 6 "});
-    tempLayers.addLayer(polyline);
-
-  }
-}
-
-function finishOutline(e){
-  map.removeEventListener("click", drawOutline);
-  document.getElementById("mapHolder").style.cursor = "auto";
-  
-  tempLayers.clearLayers();
-
-  if(drawType=="mission"){
-    var newOutline = L.polygon(outlineCoords, {color: missionBoundsColor, weight:2, fillOpacity:drawOpacity, interactive:false, dashArray:"2, 6 "});
-    missionLayers.addLayer(newOutline);
-  
-    setMissionStartPoint();
-    console.log('Mission bounds finished');
-    activeMission.geofence = outlineCoords;
-  }
-
-  outlineCoords = [];
-}
-
-// Draw Mission ---------------------------------------------
 
 
-function startMissionPlan(){ 
-  createOutline('#efefef', .02, 'mission');
-  var toolTip = document.createElement('p');
-  toolTip.innerHTML = "Click to define the mission bounds";
-  toolTip.setAttribute('class', 'planMissionToolTip');
-  toolTip.setAttribute('id', 'missionTT');
-  document.body.appendChild(toolTip);
-  document.getElementById('missionPlanButton').innerHTML = "In Progress...";
-  document.getElementById('missionPlanButton').setAttribute('style', 'background:#ddd; pointer-events:none;');
-}
 
-function setMissionStartPoint(){ 
-  document.getElementById('missionTT').innerHTML = "Click to define the mission start point";
-  document.getElementById("mapHolder").style.cursor = "url(img/whiteFlag.png) -17 24, auto";
-  map.addEventListener("click", catchExtraEvent);
-}
-
-function catchExtraEvent(){
-  map.removeEventListener("click", catchExtraEvent);
-  map.addEventListener("click", addStartFlag);
-}
-
-function addStartFlag(e){
-  map.removeEventListener("click", addStartFlag);
-  map.addEventListener("click", addEndFlag);
-  activeMission.startPoint = e.latlng;
-  missionLayers.addLayer(new L.marker(e.latlng, {icon:startPositionIcon, opacity: 1, title:"Mission Start" }));
-  activeMission.startPoint = e.latlng;
-
-  document.getElementById('missionTT').innerHTML = "Click to define the mission end point";
-  document.getElementById("mapHolder").style.cursor = "url(img/checkerFlag.png)  -17 24, auto";
-}
-
-function addEndFlag(e){
-  map.removeEventListener("click", addEndFlag);
-  missionLayers.addLayer(new L.marker(e.latlng, {icon:endPositionIcon, opacity: 1, title:"Mission End" }));
-  activeMission.endPoint = e.latlng;
-
-  document.getElementById('missionTT').innerHTML = "Mission Definition Complete";
-  document.getElementById("mapHolder").style.cursor = "auto";
-  document.getElementById('missionPlanButton').innerHTML = "Clear Mission";
-  document.getElementById('missionPlanButton').setAttribute('style', 'background:#00C1FF; pointer-events:auto;');
-  document.getElementById('missionPlanButton').setAttribute('onClick', 'clearMission();');
-
-
-  setTimeout(function(){document.body.removeChild(document.getElementById('missionTT'))}, 2000);
-}
-
-
-function clearMission(){
-  console.log(activeMission);
-  missionLayers.clearLayers();
-  
-
-  document.getElementById('missionPlanButton').innerHTML = "Define Mission";
-  document.getElementById('missionPlanButton').setAttribute('onClick', 'startMissionPlan()');
-
-}
-
-// Draw Arc ---------------------------------------------
-
-function drawArc(radius, latlong, startAngle, angleLength, lineStart, lineEnd){
-  var theStartBearing = startAngle
-  var theEndBearing = startAngle + angleLength;
-
-  if(angleLength<0){
-    theStartBearing = startAngle + angleLength ;
-    theEndBearing = startAngle;
-  }
-
-
-  L.arc({
-    center: latlong,
-    radius: radius,
-    startBearing: theStartBearing,
-    endBearing: theEndBearing,
-    color: plannedPathColor,
-    weight:2
-  }).addTo(map);
-  
-  L.polyline([lineStart, lineEnd],{color: plannedPathColor,weight:2} ).addTo(map)
-}
-
-// Load + Draw Mission Plan ---------------------------------------------
-
-function loadMissionPlan(){
-      var theMission = jsyaml.load(mission);
-      var theMissionPlan = jsyaml.load(missionPlan);
-      drawMissionPlan(theMission, theMissionPlan);
-}
-
-function drawMissionPlan(missionObject, missionSolution){
-
-  //Plot Mission Boundry
-  var missionBounds =   L.polygon(missionObject.boundaryPoints, {color: missionBoundsColor, weight:2, fillOpacity:0, interactive:false,dashArray:"2, 6 "}).addTo(map);
-  map.setView(missionObject.boundaryPoints[0], 13);
-
-  // PLot NFZs
-  for (var i=0; i < missionObject.noFlyZones.length; i++){
-      var newNFZ =   L.polygon(missionObject.noFlyZones[i].points, {color: NFZcolor, weight:2, fillOpacity:.2, interactive:false}).addTo(map);
-  }
-
-  //Plot Wayponts
-   for (var i=0; i < missionObject.wayPoints.length; i++){
-       var waypointMarker = new L.marker(missionObject.wayPoints[i], {icon:endPositionIcon, opacity: 1 }).addTo(map);
-  }
-
-  // Plot Solution Path
-  var pathSegs = missionSolution.solutionPathSegments;
-
-  for (var i=0; i < pathSegs.length; i++){
-      drawArc(pathSegs[i].arc.radius, pathSegs[i].arc.center, pathSegs[i].arc.start, pathSegs[i].arc.length, pathSegs[i].lineStartPoint, pathSegs[i].endPoint);
-
-  }
-}
-
-
-//Set mission
 
 
 
