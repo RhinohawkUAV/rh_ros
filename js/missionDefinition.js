@@ -24,7 +24,7 @@ var nfzs = [];
 function createWaypointIcons(){
 	for (var i=0; i<10; i++){
 		var newIcon = L.icon({
-			iconUrl: 'img/waypointNumbers/waypoint_'+(i+1)+".png",
+			iconUrl: 'img/waypointNumbers/Waypoint_'+(i+1)+".png",
 			iconSize: [20,20],
 			popupAnchor: [0,-12],
 		});	
@@ -240,18 +240,18 @@ function drawMissionPlan(missionObject, missionSolution){
 //Set mission --------------------------------------------------
 
 
-function createMissionObject(geofenceCoods, missionCoords, the_nfzs){
+function createMissionObject(geofenceCoords, missionCoords, the_nfzs){
   var theGeoFence = [];
   var theMission = [];
   var theNFZs = [];
 
-  for(var i=0; i < geofenceCoods.length; i++){
-    var coordObj = createGPSCoordMessage(geofenceCoods[i][0], geofenceCoods[i][1], 0);
+  for(var i=0; i < geofenceCoords.length; i++){
+    var coordObj = createGPSCoordMessage(geofenceCoords[i]);
     theGeoFence.push(coordObj); 
   }
 
   for(var i=0; i < missionCoords.length; i++){
-    var coordObj = createGPSCoordMessage(missionCoords[i][0], missionCoords[i][1], 0);
+    var coordObj = createGPSCoordMessage(missionCoords[i]);
     theMission.push(coordObj); 
   }
 
@@ -259,7 +259,7 @@ function createMissionObject(geofenceCoods, missionCoords, the_nfzs){
     var aNFZ = [];
    // console.log(the_nfzs[i]);
     for(var k=0; k< the_nfzs[i].length; k++){
-      var coordObj = createGPSCoordMessage(the_nfzs[i][k][0], the_nfzs[i][k][1], 0);
+      var coordObj = createGPSCoordMessage(the_nfzs[i][k]);
       aNFZ.push(coordObj);
     }
 
@@ -325,11 +325,11 @@ function startTheMission(){
 
 
 
-function createGPSCoordMessage(theLat,theLon,theAlt){
+function createGPSCoordMessage(latlng){
   var newCoordMessage = new ROSLIB.Message({
-    lat: theLat,
-    lon: theLon,
-    alt: theAlt
+    lat: latlng.lat,
+    lon: latlng.lng,
+    alt: 0
   });
 
   return newCoordMessage;

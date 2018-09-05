@@ -257,12 +257,13 @@ function connectToTopics() {
         }
 
         // for bags 6,7,8 we know the marker locations
+        /*
         mark([38.9778045974, -77.3378556003], "1");
         mark([38.9778552409, -77.3377138812], "2");
         mark([38.9777295212, -77.3376484097], "3");
         mark([38.9776844881, -77.3378142882], "4");
         mark([38.977631131,  -77.3376425288], "5");
-
+        */
       }
 
       uavPath.pushMaxLimit(coords, 5 );
