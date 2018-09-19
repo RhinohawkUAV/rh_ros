@@ -65,6 +65,9 @@ class ControllerNode():
         self.cruise_alt = rhc.CRUISE_ALTITUDE
         self.wp_radius = rhc.WAYPOINT_ACCEPTANCE_RADIUS
         self.nfz_buffer_size = rhc.NOFLYZONE_BUFFER_SIZE
+        self.nfz_target_offset = rhc.NOFLYZONE_TARGET_OFFSET
+        self.nfz_vertex_heuristic_weight = rhc.NOFLYZONE_HEURISTIC_WEIGHT
+        self.pathfinder_timeout = rhc.PATHFINDER_TIMEOUT
         self.pfclient = actionlib.SimpleActionClient("/rh/pathfinder/action", pfm.PathFinderAction)
         rospy.logdebug("Waiting for path finder server...")
         self.pfclient.wait_for_server()
@@ -95,6 +98,9 @@ class ControllerNode():
             pass
 
         elif status == MissionStatus.NOT_READY:
+            pass
+
+        elif status == MissionStatus.COMPLETE:
             pass
 
         else:
@@ -197,7 +203,10 @@ class ControllerNode():
         # set up path planner parameters
         params = pfm.Params()
         params.waypointAcceptanceRadii = self.wp_radius
-        params.nfzBufferSize = self.nfz_buffer_size
+        params.nfzBufferWidth = self.nfz_buffer_size
+        params.nfzTargetOffset = self.nfz_target_offset
+        params.vertexHeuristicWeight = self.nfz_vertex_heuristic_weight
+        params.timeout = self.pathfinder_timeout
 
         # convert to path planner messages
         pp_geofence = [pfm.GPSCoord(p.lat, p.lon) for p in geofence.points]
@@ -236,7 +245,7 @@ class ControllerNode():
         #rospy.loginfo("Submitting goal:\n%s", goal)
 
         self.pfclient.send_goal(goal)
-        result = self.pfclient.wait_for_result(rospy.Duration.from_sec(2.0))
+        result = self.pfclient.wait_for_result(rospy.Duration.from_sec(5.0))
 
         wps = [] 
 

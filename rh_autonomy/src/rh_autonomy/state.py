@@ -31,13 +31,14 @@ from rh_msgs.srv import AbortMission, AbortMissionResponse
 from rh_msgs.srv import SetNoFlyZones, SetNoFlyZonesResponse
 from rh_autonomy.aggregator import LatchMap
 from rh_autonomy.util import waypoints_to_str, gps_dist
-#from rh_autonomy import constants as rhc
+from rh_autonomy import constants as rhc
 
 class MissionStatus:
     NOT_READY = 1
     READY = 2
     RUNNING = 3
     ABORTING = 4
+    COMPLETE = 5
 
 class VehicleStatus:
     GROUNDED = 1
@@ -114,7 +115,7 @@ class StateNode():
         d = gps_dist(curr_pos, target)
         log("Distance from goal: %2.6fm" % d)
 
-        if self.target_mission_wp == len(self.mission.mission_wps.points)-1:
+        if rhc.PERFORM_SEARCH and self.target_mission_wp == len(self.mission.mission_wps.points)-1:
             # Searching for landing marker
             #TODO: actually search!
 
@@ -163,7 +164,9 @@ class StateNode():
             if self.vehicle_status != VehicleStatus.GROUNDED:
                 self.vehicle_status = VehicleStatus.GROUNDED
                 log("Landed")
-
+                if self.target_mission_wp == len(self.mission.mission_wps.points):
+                    log("MISSION COMPLETE")
+                    self.mission_status = MissionStatus.COMPLETE
 
     def waypoints_changed(self, msg):
         self.apm_wps = msg.waypoints
@@ -203,8 +206,12 @@ class StateNode():
     def handle_set_mission(self, msg):
         """ Set mission parameters
         """
+        if not msg.mission.mission_wps:
+            warn("Mission submitted with no mission waypoints")
+            return SetMissionResponse(False)
+
         self.mission = msg.mission
-        log("New mission parameters have been set")
+        log("New mission has been set:\n%s" % self.mission)
         return SetMissionResponse(True)
 
 
