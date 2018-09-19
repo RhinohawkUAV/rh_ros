@@ -38,14 +38,18 @@
 </head>
 
 <body class="fill">
+
   <div class="container-fluid fill menuClosed" id="mainHolder">
     <div class="row" style="pointer-events: none;">
       <div class="col" >
         <img src="img/RhinoHawk_Logo_white.png" style="width:180px; margin:12px;"/>
       </div>
-      <div class="col-5 pull-right" style="text-align:right; pointer-events: auto; margin-top: 8px;">
+      <div class="col-7 pull-right" style="text-align:right; pointer-events: auto; margin-top: 8px;">
          <a href="#" class="button_layers" onClick="toggleMenu();"><span id="menu-layers">Layers</span></a>
-         <a href="#" class='button_ghost right' id="button_defineMission" onclick="startMissionDefinition();">Define Mission</a>
+        <a href="#" class='button_green right' id="button_startMission" onclick="startMission();">Start Mission</a>
+        <a href="#" class='button_white right' id="button_exportMission" onclick="exportMission();">Export Mission</a>
+        <a href="#" class='button_white right' id="button_defineMission" onclick="startMissionDefinition();">New Mission</a>
+
 
       </div>
     </div>
@@ -133,6 +137,8 @@
       <div class="col-3"><a href='#' onClick='clickNext()' class="button_blue right deactive" id="missionPlanNext">next</a></div>
     </div>
   </div>
+
+ <div id="toast" class="">toast</div>
 
   <script type="text/javascript" src="js/gaugemin.js"></script>
   <script>

@@ -21,6 +21,8 @@ var geofenceCoords = [];
 var mission_wpsCoords = [];
 var nfzs = [];
 
+var activeMission;
+
 function createWaypointIcons(){
 	for (var i=0; i<10; i++){
 		var newIcon = L.icon({
@@ -57,16 +59,17 @@ function clickNext(){
 	}else if(missionPlanStep == 2){
 		map.removeEventListener("click", drawOutline);
 		document.getElementById('missionPlanText').innerHTML = "Ready to Fly";
-		document.getElementById('missionPlanNext').classList.add('button_green');
-		document.getElementById('missionPlanNext').innerHTML = 'Start Mission';
-		missionPlanStep ++;
+    document.getElementById('button_exportMission').classList.add('visible');
+    document.getElementById('button_startMission').classList.add('visible');
+    toggleControls();
+
+    createMissionObject(geofenceCoords, mission_wpsCoords, nfzs);
+
+    setTimeout(function(){
+      document.getElementById('missionPlanNext').innerHTML = 'next';
+    },2000);
 	}else if(missionPlanStep == 3){
-		createMissionObject(geofenceCoords, mission_wpsCoords, nfzs);
-		setTimeout(function(){
-			document.getElementById('missionPlanNext').classList.remove('button_green');
-			document.getElementById('missionPlanNext').innerHTML = 'next';
-		},2000);
-		toggleControls();
+		
 	}
 }
 
@@ -169,6 +172,8 @@ function clearMission(){
   mission_wpsCoords = [];
   nfzs = [];
   missionPlanStep = 0;
+  waypointNumber = 1;
+
 
   document.getElementById('missionPlanText').innerHTML = "Click to define mission geofence";
   document.getElementById("mapHolder").style.cursor = "auto";
@@ -203,7 +208,7 @@ function drawArc(radius, latlong, startAngle, angleLength, lineStart, lineEnd){
   L.polyline([lineStart, lineEnd],{color: plannedPathColor,weight:2} ).addTo(map)
 }
 
-// Load + Draw Mission Plan ---------------------------------------------
+//  + Draw Mission Plan ---------------------------------------------
 
 function loadMissionPlan(){
       var theMission = jsyaml.load(mission);
@@ -238,6 +243,28 @@ function drawMissionPlan(missionObject, missionSolution){
 
 
 //Set mission --------------------------------------------------
+
+function startMission(){
+  var setTheMission = new ROSLIB.Service({
+    ros : ros,
+    name : 'rh/command/set_mission',
+    serviceType : 'rh_msgs/SetMissionRequest'
+  });
+
+ var newRequest = new ROSLIB.ServiceRequest({
+     mission:activeMission
+  });
+
+  setTheMission.callService(newRequest, function(result) {
+    console.log(result);
+  });
+}
+
+
+function exportMission(){
+  console.log(jsyaml.dump(activeMission));
+  toast('YAML logged to console');
+}
 
 
 function createMissionObject(geofenceCoords, missionCoords, the_nfzs){
@@ -281,48 +308,14 @@ function createMissionObject(geofenceCoords, missionCoords, the_nfzs){
     points: theNFZs
   });
 
-  var newMissionObject = new ROSLIB.Message({
+  activeMission = new ROSLIB.Message({
     geofence: geoPoints,
     mission_wps: missionWaypoints,
     static_nfzs: theNFZs,
     roads: []
   });
 
-  console.log(newMissionObject);
-
-  var setTheMission = new ROSLIB.Service({
-    ros : ros,
-    name : 'rh/command/set_mission',
-    serviceType : 'rh_msgs/SetMissionRequest'
-  });
-
- var newRequest = new ROSLIB.ServiceRequest({
-     mission:newMissionObject
-  });
-
-  setTheMission.callService(newRequest, function(result) {
-    console.log(result);
-    startTheMission();
-  });
-
 }
-
-
-function startTheMission(){	
-	var startTheMission = new ROSLIB.Service({
-	    ros : ros,
-	    name : 'rh/command/start_mission',
-	    serviceType : 'rh_msgs/startMissionRequest'
-	 });
-
-	var newRequest = new ROSLIB.ServiceRequest({});
-
-	startTheMission.callService(newRequest, function(result) {
-	    console.log(result);
-	});
-}
-
-
 
 
 function createGPSCoordMessage(latlng){
@@ -339,10 +332,19 @@ function createGPSCoordMessage(latlng){
 
 function toggleControls(){
 	document.getElementById("missionPlanner").classList.toggle('show');
-
 	document.getElementById('timeline').classList.toggle('hidden');
 	document.getElementById('telemetry').classList.toggle('hidden');
 	document.getElementById('button_defineMission').classList.toggle('hidden');
-
 	document.getElementById('mapHolder').classList.toggle('hideControls');
 }
+
+function toast(message){
+  document.getElementById('toast').classList.add('show');
+  document.getElementById('toast').innerHTML = message;
+
+  setTimeout(function(){
+      document.getElementById('toast').classList.remove('show');
+    },4000);
+}
+
+
