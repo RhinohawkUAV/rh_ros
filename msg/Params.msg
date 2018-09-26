@@ -1,2 +1,5 @@
 float64 waypointAcceptanceRadii
-float64 nfzBufferSize
+float64 nfzBufferWidth
+float64 nfzTargetOffset
+float64 vertexHeuristicWeight
+

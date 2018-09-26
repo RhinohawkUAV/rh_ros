@@ -25,9 +25,6 @@ class RosPathFinderServer():
         
         messageConverter = MessageConverter(self._referenceGPS)
         params = messageConverter.msgToParams(goal.params)
-        # TODO: These parameters should not be hardcoded here, but instead should be in the params message send to the server.
-        params.nfzBufferWidth = 1.0
-        params.nfzTargetOffset = 3.0
         
         scenario = messageConverter.msgToScenario(goal.scenario)
         vehicle = messageConverter.msgToVehicle(goal.vehicle)
