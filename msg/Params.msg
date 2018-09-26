@@ -2,4 +2,4 @@ float64 waypointAcceptanceRadii
 float64 nfzBufferWidth
 float64 nfzTargetOffset
 float64 vertexHeuristicWeight
-
+float64 timeout

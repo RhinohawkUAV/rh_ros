@@ -22,7 +22,7 @@ DEFAULT_WAYPOINT_ACCEPTANCE_RADII = 120.0
 DEFAULT_NFZ_BUFFER_WIDTH = 25.0
 DEFAULT_NFZ_TARGET_OFFSET = 50.0
 DEFAULT_VERTEX_HEURISTIC_WEIGHT = 1.25
-
+DEFAULT_TIMEOUT = 3.0
 # When making a buffer around an NFZ the buffer's edges will be a configurable width away from the original buffer.
 # Vertices will be further away to create the desired width and very sharp vertice may be pushed out a lot.  This is maximum
 # ratio vertices may be pushed out, before a new vertex is created.

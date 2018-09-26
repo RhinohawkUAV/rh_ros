@@ -30,12 +30,12 @@ class MessageConverter:
         return (params, scenario, vehicle)
         
     def msgToParams(self, inputParamsMsg):
-        # TODO: Add new parameters (currently defaulted)
         return engine.interface.pathFindParams.PathFindParams(\
-                float(inputParamsMsg.waypointAcceptanceRadii),\
+                float(inputParamsMsg.waypointAcceptanceRadii), \
                 float(inputParamsMsg.nfzBufferWidth),
                 float(inputParamsMsg.nfzTargetOffset),
-                float(inputParamsMsg.vertexHeuristicWeight))
+                float(inputParamsMsg.vertexHeuristicWeight),
+                float(inputParamsMsg.timeout))
     
     def msgToVehicle(self, msg):
         return engine.interface.vehicle.Vehicle(float(msg.maxSpeed), float(msg.acceleration))
@@ -148,6 +148,7 @@ class MessageConverter:
         msg.nfzBufferWidth = inputParams.nfzBufferWidth
         msg.nfzTargetOffset = inputParams.nfzTargetOffset
         msg.vertexHeuristicWeight = inputParams.vertexHeuristicWeight
+        msg.timeout = inputParams.timeout
         return msg
     
     def vehicleToMsg(self, vehicle):
