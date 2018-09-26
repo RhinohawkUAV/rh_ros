@@ -1,8 +1,6 @@
-from threading import Thread, Condition, Lock
+from threading import Thread, Condition, RLock
 
-from engine.interface.solutionWaypoint import SolutionWaypoint
 from engine.pathFinder import PathFinder
-import numpy as np
 
 
 class PathFinderManager:
@@ -15,42 +13,22 @@ class PathFinderManager:
     """
 
     def __init__(self):
-        self._lock = Condition(Lock())
+        self._lock = Condition(RLock())
         self._steps = 0
         self._shutdown = False
         self._activePathFinder = None
-        self._referenceGPS = None
         self._thread = Thread(target=self._run)
         self._thread.start()
 
-    def publishFlightControllerSolution(self, waypoints, finished, referenceGPS):
+    def publishInput(self, params, scenario, vehicle):
         """
-        Override me.
-        Called whenever a step on the active path finder concludes with a solution.
-        This is called from within the path finder thread and should execute quickly.
-        This is intentionally behind a lock to guarantee order of operations.  
-        This will NOT publish results for an old problem.  Once a call to submitProblem()
-        concludes, no call to this method will be made for any previous problem being worked on.
-        
-        Arguments in local coordinates.  The given GPS reference can be used to convert to GPS.
-        """
-        pass
+        Called automatically with the input received from the submitProblem method, while the lock is held.
 
-    def publishSolution(self, solutionPathSegments, finished, referenceGPS):
-        """
-        Override me.
-        Called whenever a step on the active path finder concludes with a solution.
-        This is called from within the path finder thread and should execute quickly.
-        This is intentionally behind a lock to guarantee order of operations.  
-        This will NOT publish results for an old problem.  Once a call to submitProblem()
-        concludes, no call to this method will be made for any previous problem being worked on.
-        
-        Arguments in local coordinates.  The given GPS reference can be used to convert to GPS.
-        
+        Arguments in local coordinates.
         """
         pass
     
-    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments, referenceGPS):
+    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
         """
         Override me.
         Called whenever a step on the active path finder concludes with debug data.
@@ -59,7 +37,21 @@ class PathFinderManager:
         This will NOT publish results for an old problem.  Once a call to submitProblem()
         concludes, no call to this method will be made for any previous problem being worked on.
 
-        Arguments in local coordinates.  The given GPS reference can be used to convert to GPS.
+        Arguments in local coordinates.
+        """
+        pass
+    
+    def publishSolution(self, solutionPathSegments, finished):
+        """
+        Override me.
+        Called whenever a step on the active path finder concludes with a solution.
+        This is called from within the path finder thread and should execute quickly.
+        This is intentionally behind a lock to guarantee order of operations.  
+        This will NOT publish results for an old problem.  Once a call to submitProblem()
+        concludes, no call to this method will be made for any previous problem being worked on.
+        
+        Arguments in local coordinates.
+        
         """
         pass
             
@@ -78,7 +70,7 @@ class PathFinderManager:
         self.shutdown()
         self._thread.join()
 
-    def submitProblem(self, params, scenario, vehicle, referenceGPS):
+    def submitProblem(self, params, scenario, vehicle):
         """
         Submit a new path finding problem.  Will cancel any queued steps.  
         If a step is currently executing, its result will not be published.
@@ -88,8 +80,8 @@ class PathFinderManager:
         methods to convert back.
         """
         with self._lock:
+            self.publishInput(params, scenario, vehicle)
             self._activePathFinder = PathFinder(params, scenario, vehicle)
-            self._referenceGPS = referenceGPS
             self._steps = 0
             self._lock.notifyAll()
 
@@ -111,8 +103,7 @@ class PathFinderManager:
     def _run(self):
         try:
             while True:
-                (pathFinder, referenceGPS) = self._getNextStep()
-                self._performStep(pathFinder, referenceGPS)
+                self._performStep(self._getNextStep())
         except ShutdownException:
             pass
 
@@ -133,9 +124,9 @@ class PathFinderManager:
                 self._lock.wait()
                 self._checkShutdown()
 
-            return (self._activePathFinder, self._referenceGPS)
+            return self._activePathFinder
 
-    def _performStep(self, pathFinder, referenceGPS):
+    def _performStep(self, pathFinder):
         """
         Runs a step on the given path finder instance.  Afterwards one of 3 things can happen:
         1. Can throw a ShutdownException if manager was shutdown.
@@ -155,18 +146,18 @@ class PathFinderManager:
             if pathFinder.isDone():
                 if pathFinder.hasSolution():
                     (solutionWaypoints, pathSolution) = pathFinder.getSolution()
-                    self.publishSolution(solutionWaypoints, pathSolution, True, referenceGPS)
+                    self.publishSolution(solutionWaypoints, pathSolution, True)
                 else:
                     # TODO: If no solution is ever found, we need to handle that case with its own signal.
-                    self.publishSolution([], [], True, referenceGPS)
+                    self.publishSolution([], [], True)
             else:
                 # Publish and decrement number of steps
                 if pathFinder.solutionUpdated():
                     (solutionWaypoints, pathSolution) = pathFinder.getSolution()
-                    self.publishSolution(solutionWaypoints, pathSolution, False, referenceGPS)
+                    self.publishSolution(solutionWaypoints, pathSolution, False)
                     
                 (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
-                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments, referenceGPS)
+                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments)
             self._steps -= 1
 
 

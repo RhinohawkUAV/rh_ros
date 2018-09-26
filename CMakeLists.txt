@@ -61,8 +61,9 @@ add_message_files(
     PathSegment.msg
 	SolutionWaypoint.msg
     
-    PathSolution.msg
+    PathInput.msg
     PathDebug.msg
+    PathSolution.msg
 
 	Params.msg
     Vehicle.msg

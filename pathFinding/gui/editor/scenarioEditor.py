@@ -3,7 +3,7 @@ import tkFileDialog
 
 from boundaryBuilder import BoundaryBuilder
 from engine import interface
-from engine.interface.fileUtils import TEST_INPUT_KEY
+from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.scenario import Scenario
 from engine.interface.testScenario import TestScenario
 from gui.editor.nfzEdit.dnfzBuilder import DNFZBuilder
@@ -81,6 +81,13 @@ class ScenarioEditor(Visualizer, Drawable):
                 self._inputDict = interface.loadInput(fileName)
                 if not TEST_INPUT_KEY in self._inputDict:
                     self._inputDict[TEST_INPUT_KEY] = TestScenario()
+                #Scale display to loaded scenario dimensions
+                bounds = self._inputDict[SCENARIO_KEY].calcBounds()
+                centerX = (bounds[0] + bounds[2]) / 2.0
+                centerY = (bounds[1] + bounds[3]) / 2.0
+                rangeX = bounds[2] - bounds[0]
+                rangeY = bounds[3] - bounds[1]        
+                self.setView(centerX, centerY, rangeX * 1.1, rangeY * 1.1)                
             self._mode.onSwitch(self._inputDict)
             self._mode.onMotion(point)
         else:

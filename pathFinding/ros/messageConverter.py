@@ -4,6 +4,7 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 import math
 
 from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
+from engine.interface import scenario
 import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
 import engine.interface.noFlyZone
@@ -22,6 +23,12 @@ class MessageConverter:
     def __init__(self, gpsRef):
         self._gpsTransformer = GPSTransformer(gpsRef)
 
+    def msgToInput(self, inputMsg):
+        params = self.msgToParams(inputMsg.inputParams)
+        scenario = self.msgToScenario(inputMsg.scenario)
+        vehicle = self.msgToVehicle(inputMsg.vehicle)
+        return (params, scenario, vehicle)
+        
     def msgToParams(self, inputParamsMsg):
         # TODO: Add new parameters (currently defaulted)
         return engine.interface.pathFindParams.PathFindParams(float(inputParamsMsg.waypointAcceptanceRadii),
@@ -125,6 +132,13 @@ class MessageConverter:
                                       length)
     
     #**********************Path finding objects to msg objects********************
+    def inputToMsg(self, params, scenario, vehicle):
+        msg = pfm.PathInput()
+        msg.inputParams = self.paramsToMsg(params)
+        msg.scenario = self.scenarioToMsg(scenario)
+        msg.vehicle = self.vehicleToMsg(vehicle)
+        return msg
+
     def paramsToMsg(self, inputParams):
         msg = pfm.Params()
         msg.waypointAcceptanceRadii = inputParams.waypointAcceptanceRadii

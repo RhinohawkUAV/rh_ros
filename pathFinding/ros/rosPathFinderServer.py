@@ -1,6 +1,7 @@
 import actionlib
 import rospy
 
+from engine.interface import fileUtils
 from engine.pathFinder import PathFinder
 from messageConverter import MessageConverter
 import pathfinding.msg as pfm
@@ -12,6 +13,7 @@ class RosPathFinderServer():
     def __init__(self):
         rospy.init_node(PATHFINDER_NODE_ID)
         self._activePathFinder = None
+        # TODO: Should now publish the "PathInput" data type for this topic.
         self._pathInputPub = rospy.Publisher(PATHFINDER_INPUT_TOPIC, pfm.Scenario, queue_size=ROS_QUEUE_SIZE)
         self._pathDebugPub = rospy.Publisher(PATHFINDER_DEBUG_TOPIC, pfm.PathDebug, queue_size=ROS_QUEUE_SIZE)
         self.server = actionlib.SimpleActionServer(PATHFINDER_SERVER, pfm.PathFinderAction, self.execute, False)
@@ -29,35 +31,41 @@ class RosPathFinderServer():
         
         scenario = messageConverter.msgToScenario(goal.scenario)
         vehicle = messageConverter.msgToVehicle(goal.vehicle)
+# TODO: Add proper save util
+#         fileUtils.save("/home/shp/catkin_ws/src/pathfinding/scenarios/konrad.json", scenario)
+        
         self._activePathFinder = PathFinder(params, scenario, vehicle)
 
         self.solveProblem()
-        if self._activePathFinder.hasSolution():
-            (solutionWaypoints, pathSolution) = self._activePathFinder.getSolution()
-            solution = self.getSolution(solutionWaypoints, pathSolution, True)
-            self.server.set_succeeded(pfm.PathFinderResult(solution))
-        else:
-            # TODO: Decide on appropriate failure signal/result
-            self.server.set_aborted(None, "Could not find path")
             
     def solveProblem(self):
         pathFinder = self._activePathFinder
         i = 0
         (solutionWaypoints, pathSolution) = (None, None)
-        while not pathFinder.isDone():
-
+        
+        while True:
             i += 1
+            rospy.logdebug("Performing Path Step: %d" % (i))
             pathFinder.step()
-            
-            # Publish and decrement number of steps
-            if pathFinder.solutionUpdated():
-                rospy.logdebug("Step %d, solution found" % (i))
-                (solutionWaypoints, pathSolution) = pathFinder.getSolution()
-                solution = self.getSolution(solutionWaypoints, pathSolution, False)
-                self.server.publish_feedback(pfm.PathFinderFeedback(solution))
+            if pathFinder.isDone():
+                if pathFinder.hasSolution():
+                    rospy.logdebug("Finished Path Find (step %d)" % (i))
+                    (solutionWaypoints, pathSolution) = pathFinder.getSolution()
+                    solution = self.getSolution(solutionWaypoints, pathSolution, True)
+                    self.server.set_succeeded(pfm.PathFinderResult(solution))
+                else:
+                    rospy.logdebug("Aborted Path Find (step %d)" % (i))
+                    # TODO: Decide on appropriate failure signal/result
+                    self.server.set_aborted(None, "Could not find path")                    
+                return 
             else:
+                if pathFinder.solutionUpdated():
+                    (solutionWaypoints, pathSolution) = pathFinder.getSolution()
+                    solution = self.getSolution(solutionWaypoints, pathSolution, False)
+                    self.server.publish_feedback(pfm.PathFinderFeedback(solution))
+                    
                 (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
-                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments)
+                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments)                
 
     def getSolution(self, solutionWaypoints, solutionPathSegments, finished):
         messageConverter = MessageConverter(self._referenceGPS)

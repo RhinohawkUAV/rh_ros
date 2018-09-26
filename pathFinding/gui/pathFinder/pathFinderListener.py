@@ -1,10 +1,17 @@
 import gui
 
 
-class PathFinderListener(object):
+class PathFinderListener:
     """
     Anything registered to listen to the pathFinderInterface.  All signals will occur on the GUI thread.
     """
+    
+    def input(self, params, scenario, vehicle):
+        """
+        This is called, by the pathfinder interface, whenever a problem is received.  This echo, should be used,
+        to populate the GUI, in order to completely close the loop.
+        """
+        pass
     
     def debug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
         """
@@ -23,6 +30,12 @@ class PathFinderListener(object):
         """
         pass
 
+    def fireInputInGuiThread(self, params, scenario, vehicle):
+        """
+        For convenience of the pathFinderInterface.  This will call input() in the GUI thread with given arguments.
+        """
+        gui.inGUIThread(self.input, params, scenario, vehicle)
+        
     def fireDebugInGuiThread(self, pastPathSegments, futurePathSegments, filteredPathSegments):
         """
         For convenience of the pathFinderInterface.  This will call debug() in the GUI thread with given arguments.

@@ -14,6 +14,7 @@ import numpy as np
 
 INPUT_PARAMS_KEY = "params"
 SCENARIO_KEY = "scenario"
+VEHICLE_KEY = "vehicle"
 TEST_INPUT_KEY = "testScenario"
 
 
@@ -30,6 +31,12 @@ class Encoder(json.JSONEncoder):
 
 def encode(obj):
     return json.dumps(obj, cls=Encoder, indent=4)
+
+
+def save(fileName, scenario):
+    fileHandle = open(fileName, 'w')
+    json.dump({SCENARIO_KEY:scenario}, fileHandle, cls=Encoder, indent=4)
+    fileHandle.close()
 
 
 def saveInput(fileName, inputDict):

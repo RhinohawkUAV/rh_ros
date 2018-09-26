@@ -1,4 +1,4 @@
-class PathFinderInterface():
+class PathFinderInterface:
     """
     Provides an interface to a path finding process for use in the GUI.  
     This allows a local path-finder or remote, ROS, path finder to use the same GUI.
@@ -10,7 +10,7 @@ class PathFinderInterface():
     def setListener(self, listener):
         self._listener = listener
         
-    def submitProblem(self, params, scenario, vehicle):
+    def submitProblem(self, params, scenario, vehicle, gpsRef):
         """
         Start a new path finding process.  Will wipe out previous process.
         """
