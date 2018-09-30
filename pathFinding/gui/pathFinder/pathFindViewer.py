@@ -11,13 +11,12 @@ from engine.interface.generator import Generator
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.scenario import Scenario
 from engine.interface.vehicle import DEFAULT_VEHICLE
-from gui.pathFinder.pathFinderListener import PathFinderListener
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 from gui.visualizer import Visualizer
 from utils import profile
 
 
-class PathFindViewer(Visualizer, PathFinderListener):
+class PathFindViewer(Visualizer):
     """
     Visualizes the dynamic path finding process.
     """
@@ -30,7 +29,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self._vehicle = None
         self._pointOfInterest = None
         self._pathFinderInterface = pathFinderInterface
-        self._pathFinderInterface.setListener(self)
+        self._pathFinderInterface.setListeners(self.inputAccepted, self.stepPerformed)
         self._pathFindDrawable = None
         self._pathFindInput = None
         self.bindWithTransform('<Key>', self.onKeyPressed)
@@ -113,7 +112,7 @@ class PathFindViewer(Visualizer, PathFinderListener):
         scenario = Scenario(boundaryPoints, generator.polyNFZs, generator.circularNFZs, roads, startPoint, startVelocity, waypoints)
         self._pathFinderInterface.submitProblem(DEFAULT_PARAMS, scenario, DEFAULT_VEHICLE)
     
-    def input(self, params, scenario, vehicle):
+    def inputAccepted(self, params, scenario, vehicle):
         self._params = params
         self._scenario = scenario
         self._vehicle = vehicle
@@ -130,14 +129,8 @@ class PathFindViewer(Visualizer, PathFinderListener):
         self._pathFindDrawable = PathFindDrawable(params, vehicle, scenario)
         self.updateDisplay()    
 
-    def debug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
-        self._pathFindDrawable.updateDebug(pastPathSegments, futurePathSegments, filteredPathSegments)
-        self.updateDisplay()
-
-    def solution(self, solutionsWaypoints, solutionPathSegments, finished):
-        self._pathFindDrawable.updateDebug([], [], [])
-        self._pathFindDrawable.updateSolution(solutionsWaypoints, solutionPathSegments, finished)
-        print "Solution Time: " + str(solutionPathSegments[-1].startTime + solutionPathSegments[-1].elapsedTime)
+    def stepPerformed(self, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments):
+        self._pathFindDrawable.update(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
         self.updateDisplay()
 
     def onLeftClick(self, point, event):

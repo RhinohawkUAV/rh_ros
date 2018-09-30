@@ -8,6 +8,7 @@ from engine.interface import scenario
 import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
 import engine.interface.noFlyZone
+from engine.interface.outputPath import OutputPath
 import engine.interface.pathFindParams
 import engine.interface.road
 import engine.interface.scenario
@@ -84,11 +85,22 @@ class MessageConverter:
         return pointList
     
     def msgToPathDebug(self, msg):
+        isFinished = msg.isFinished
+        bestPath = self.msgToOutputPath(msg.bestPath)
         pastPathSegments = self.msgToPathSegmentList(msg.pastPathSegments)
         futurePathSegments = self.msgToPathSegmentList(msg.futurePathSegments)
         filteredPathSegments = self.msgToPathSegmentList(msg.filteredPathSegments)
-        return (pastPathSegments, futurePathSegments, filteredPathSegments)
+        return (isFinished, bestPath, pastPathSegments, futurePathSegments, filteredPathSegments)
     
+    def msgToOutputPath(self, msg):
+        solutionWaypoints = self.msgToSolutionWaypointList(msg.solutionWaypoints)
+        pathSegments = self.msgToPathSegmentList(msg.solutionPathSegments)
+        return OutputPath(solutionWaypoints, 
+                          pathSegments, 
+                          int(msg.numWaypointsCompleted), 
+                          msg.isComplete, 
+                          float(msg.estimatedTime))
+
     def msgToSolutionWaypointList(self, msg):
         solutionWaypoints = []
         for solutionWaypointMsg in msg:
@@ -203,13 +215,24 @@ class MessageConverter:
             msg.append(self.pointToMsg(point))
         return msg
     
-    def pathDebugToMsg(self, pastPathSegments, futurePathSegments, filteredPathSegments):
+    def pathDebugToMsg(self, isFinished, bestPath, pastPathSegments, futurePathSegments, filteredPathSegments):
         msg = pfm.PathDebug()
+        msg.isFinished = isFinished
+        msg.bestPath = self.outputPathToMsg(bestPath)
         msg.pastPathSegments = self.pathSegmentListToMsg(pastPathSegments)
         msg.futurePathSegments = self.pathSegmentListToMsg(futurePathSegments)
         msg.filteredPathSegments = self.pathSegmentListToMsg(filteredPathSegments)
         return msg
-    
+
+    def outputPathToMsg(self, outputPath):
+        msg = pfm.PathSolution()
+        msg.solutionWaypoints = self.solutionWaypointListToMsg(outputPath.pathWaypoints)
+        msg.solutionPathSegments = self.pathSegmentListToMsg(outputPath.pathSegments)
+        msg.numWaypointsCompleted = outputPath.numWayPointsCompleted
+        msg.isComplete = outputPath.isComplete
+        msg.estimatedTime = outputPath.estimatedTime
+        return msg
+
     def solutionWaypointListToMsg(self, solutionWaypoints):
         msg = []
         for solutionWaypoint in solutionWaypoints:

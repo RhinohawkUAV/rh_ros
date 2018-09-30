@@ -1,6 +1,7 @@
 from engine.geometry import calcs
 from engine.geometry.obstacle import obstacleCourse
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
+from engine.interface.outputPath import OutputPath
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.vehicle import DEFAULT_VEHICLE
 from gui import draw
@@ -66,8 +67,8 @@ class PathSegmentTester(SubGUI):
             pathSegments = []
             filteredPathSegments = []
         filteredPathSegments.extend(filteredGoalSegments)
-        self._pathFinderDrawable.updateDebug([], pathSegments, filteredPathSegments)
-        self._pathFinderDrawable.updateSolution([], goalSegments, False)
+        
+        self._pathFinderDrawable.update(False, OutputPath([], goalSegments, None, 0.0), [], pathSegments, filteredPathSegments)
 
     def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
         drawTime = self._pathFinderDrawable.draw(canvas,

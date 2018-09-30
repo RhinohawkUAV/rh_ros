@@ -1,4 +1,3 @@
-from _collections import deque
 import math
 from numpy.random.mtrand import np
 
@@ -51,6 +50,9 @@ class Waypoint:
 
     def getNext(self):
         return self._nextWayPoint
+    
+    def isFinal(self):
+        return self._nextWayPoint is None
 
 
 # TODO: Move to obstacleCourse
@@ -63,18 +65,11 @@ def turnTime(direction, desiredDirection, speed, acceleration):
 
 def calcWaypoints(positions, traversalSpeed, acceleration):
     index = 0
-    queue = deque(positions)
     pathFindWaypoints = []
-    nextWayPoint = Waypoint(index, queue.pop())
-    index += 1
-    pathFindWaypoints.append(nextWayPoint)
+    for index in range(len(positions)):
+        pathFindWaypoints.append(Waypoint(index, positions[index]))
     
-    while len(queue) > 0:
-        wayPoint = Waypoint(index, queue.pop())
-        index += 1
-        wayPoint.setNextWaypoint(nextWayPoint, traversalSpeed, acceleration)
-        pathFindWaypoints.append(wayPoint)
-        nextWayPoint = wayPoint
-    
-    pathFindWaypoints.reverse()
-    return pathFindWaypoints      
+    for index in range(len(pathFindWaypoints) - 1, 0, -1):
+        pathFindWaypoints[index - 1].setNextWaypoint(pathFindWaypoints[index], traversalSpeed, acceleration)
+
+    return pathFindWaypoints

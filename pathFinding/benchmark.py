@@ -13,17 +13,14 @@ from utils import profile
 if __name__ == "__main__":
     inputDict = interface.loadInput("../scenarios/veryhard.json")
     pathFinder = PathFinder(DEFAULT_PARAMS, inputDict[SCENARIO_KEY], DEFAULT_VEHICLE)
+    bestPath = pathFinder.getBestPath()
+
     start = time.time()
-    while not pathFinder.isDone():
-        pathFinder.step()
-        if pathFinder.solutionUpdated():
-            (wayPoints, pathSegments) = pathFinder.getSolution()
-            print "Solution: " + str(pathSegments[-1].startTime + pathSegments[-1].elapsedTime) + " -- found at time: " + str(time.time() - start)
-    
+    while pathFinder.step():
+        path = pathFinder.getBestPath()
+        if path.isComplete and path.timeThroughHeuristic < bestPath.timeThroughHeuristic:
+            bestPath = path
+            print "Solution: " + str(bestPath.timeThroughHeuristic) + " -- found at time: " + str(time.time() - start)
+
     profile.printAggregate()
-# profile.reset()
-# input = interface.loadInput("../scenarios/benchmark_veryhard.json")
-# pathFinder = PathFinder(DEFAULT_PARAMS, input[SCENARIO_KEY], DEFAULT_VEHICLE)
-# for i in range(25):
-#     pathFinder.step()
-# profile.printAggregate()
+

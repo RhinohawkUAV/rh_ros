@@ -11,30 +11,33 @@ class PathFindDrawable(Drawable):
         self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
         self._obstacleCourse.setScenarioState(scenario)
 
-        self._pastPathSegments = []
+        self._finished = False
+        self._bestPath = None
+        self._previousPathSegments = []
         self._futurePathSegments = []
         self._filteredPathSegments = []
-        self._solutionWaypoints = []
-        self._solutionPathSegments = []
-        self._finished = False
 
-    def updateDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
-        self._pastPathSegments = pastPathSegments
-        self._futurePathSegments = futurePathSegments
-        self._filteredPathSegments = filteredPathSegments
-
-    def updateSolution(self, solutionsWaypoints, solutionPathSegments, finished):
-        self._solutionWaypoints = solutionsWaypoints
-        self._solutionPathSegments = solutionPathSegments
+    def update(self, finished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments):
         self._finished = finished
+        self._bestPath = bestPath
+        if self._finished:
+            self._previousPathSegments = []
+            self._futurePathSegments = []
+            self._filteredPathSegments = []
+        else:
+            self._previousPathSegments = previousPathSegments
+            self._futurePathSegments = futurePathSegments
+            self._filteredPathSegments = filteredPathSegments
         
     def findClosestPointOnPath(self, point, snapDistance, showFiltered):
         pathSegments = []
-        pathSegments.extend(self._pastPathSegments)
+        pathSegments.extend(self._previousPathSegments)
         pathSegments.extend(self._futurePathSegments)
-        pathSegments.extend(self._solutionPathSegments)
         if showFiltered:
             pathSegments.extend(self._filteredPathSegments)
+        if self._bestPath is not None:
+            pathSegments.extend(self._bestPath.pathSegments)
+            
         (closestSegmentIndex, closestPoint, minimumDistance, closestTime) = calcSegmentsPointDebug(point, pathSegments,
                                                                                                    snapDistance)
         if closestSegmentIndex is not None:
@@ -68,16 +71,16 @@ class PathFindDrawable(Drawable):
                 pathSegment.draw(canvas, color=lineOfSightColor)
                 if pathSegment.debug is not None:
                     gui.draw.drawText(canvas, pathSegment.endPoint , str(pathSegment.debug) + "\n" + str(pathSegment.endPoint))  
-            for pathSegment in self._pastPathSegments:
+            for pathSegment in self._previousPathSegments:
                 pathSegment.draw(canvas, color=pathColor, width=2.0)
             solutionWidth = 2
         else:
             solutionWidth = 4
-            
-        for pathSegment in self._solutionPathSegments:
-            pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            
+        if self._bestPath is not None:
+            for pathSegment in self._bestPath.pathSegments:
+                pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            
 
-        for solutionWaypoint in self._solutionWaypoints:
-            gui.draw.drawCircle(canvas, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
+            for solutionWaypoint in self._bestPath.pathWaypoints:
+                gui.draw.drawCircle(canvas, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
         
         return drawTime

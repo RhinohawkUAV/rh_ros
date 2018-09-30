@@ -1,6 +1,8 @@
+import sys
+
 from engine import waypoint
 from engine.geometry.obstacle import obstacleCourse
-from engine.interface.solutionWaypoint import SolutionWaypoint
+from engine.interface import outputPath
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertex import OriginVertex
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
@@ -30,7 +32,7 @@ class PathFinder:
 
         # No solution possible, will never put anything in the vertex queue or start any calculations.
         if startSpeed == 0.0:
-            return    
+            return
         
         self._currentVertex = OriginVertex(self._waypoints[0], self._start, startSpeed, unitVelocity)
 
@@ -38,18 +40,13 @@ class PathFinder:
         self._filteredPathSegments = []
 
         self._vertexQueue.push(self._currentVertex)
-        self._solution = None
-        self._solutionTime = float("inf")
-        self._solutionUpdated = False
-        self._isDone = False
-
-    def findPath(self):
-        while not self.isDone():
-            self.step()
-
-    def isDone(self):
-        return self._isDone
-    
+        
+        # The best initial solution is the current vertex
+        self._bestPathVertex = self._currentVertex
+        
+        # The best completed solution time found so far.  Any vertex whose admissible estimate is worse, is rejected immediately.
+        self._pruningTime = float("inf")
+        
     @profile.accumulate("step")
     def step(self):
         try:
@@ -57,95 +54,105 @@ class PathFinder:
             del self._filteredPathSegments[:]
 
             self._currentVertex = self._nextVertex()
-            
-            nextWaypoint = self._currentVertex.getWaypoint().getNext()
-            if nextWaypoint is None:
-                self._findPathsToEnd()
+
+            (psegs, fpsegs) = self._currentVertex.pathSegmentsToWaypoint(self._obstacleCourse)
+            if self._currentVertex.getNextWaypoint().isFinal():
+                self._processSegmentsToGoal(psegs, fpsegs)
             else:
-                (psegs, fpsegs) = self._currentVertex.pathSegmentsToWaypoint(self._obstacleCourse)
-                self._addSegments(psegs, fpsegs, nextWaypoint)
+                self._processSegments(psegs, fpsegs, self._currentVertex.getNextWaypoint().getNext())
                     
             (psegs, fpsegs) = self._currentVertex.skirtingPathSegments(self._obstacleCourse)
-            self._addSegments(psegs, fpsegs, self._currentVertex.getWaypoint())
+            self._processSegments(psegs, fpsegs, self._currentVertex.getNextWaypoint())
+            
+            return True
         except QueueEmptyException:
-            self._isDone = True
+            return False
 
-    def hasSolution(self):
-        return self._solution is not None
-
-    def solutionUpdated(self):
-        return self._solutionUpdated
-    
-    def getSolution(self):
-        self._solutionUpdated = False
-        pathSegments = self._getPathSegments(self._solution)
-        wayPoints = self._calcSolutionWaypoints(pathSegments)
-        return (wayPoints, pathSegments)
-    
+    def getBestPath(self):
+        """
+        Generates a BestPath object representing the best path found so far.  The path may be
+        incomplete, in which case it represents the solution which appears to be the best.
+        """
+        if self._bestPathVertex.getNextWaypoint() is None:
+            numWaypointsCompleted = len(self._waypoints)
+            isComplete = True
+        else:
+            numWaypointsCompleted = self._bestPathVertex.getNextWaypoint().getIndex()
+            isComplete = False
+            
+        return outputPath.generatePath(self._bestPathVertex, self._params.waypointAcceptanceRadii, numWaypointsCompleted, isComplete)
+       
     def getDebugData(self):
-        previousPathSegments = self._getPathSegments(self._currentVertex)
-        return (previousPathSegments, self._pathSegments, self._filteredPathSegments)
+        """
+        Generates several useful pieces of debugging data:
+        (vertexSegments,newSegments,filteredSegments)
+        vertexSegments: The segments upto and through the current vertex
+        newSegments: The newly found segments
+        filteredSegments: Additional new segments which were considered and rejected 
+        """
+        return (self._currentVertex.generatePathSegments(), self._pathSegments, self._filteredPathSegments)
 
     def _nextVertex(self):
         vertex = self._vertexQueue.pop()
-        while vertex.getTimeThroughAdmissible() > self._solutionTime:
+        while vertex.getTimeThroughAdmissible() > self._pruningTime:
             vertex = self._vertexQueue.pop()
         return vertex
-        
-    def _addSegments(self, psegs, fpsegs, waypoint):
+
+    def _processSegments(self, psegs, fpsegs, nextWaypoint):
         self._pathSegments.extend(psegs)
         self._filteredPathSegments.extend(fpsegs)
         for pathSegment in psegs:
-            heuristic = waypoint.calcHeuristic(pathSegment.endPoint,
+            heuristic = nextWaypoint.calcHeuristic(pathSegment.endPoint,
                                                       pathSegment.endUnitVelocity,
                                                       pathSegment.endSpeed,
                                                       self._vehicle.acceleration)
-            newVertex = Vertex(waypoint,
+            newVertex = Vertex(nextWaypoint,
                                heuristic * self._params.vertexHeuristicWeight,
                                heuristic,
                                previousVertex=self._currentVertex,
                                pathSegment=pathSegment)
+            
+            # Check if this vertex is the best one found so far
+            self._updateSolution(newVertex)
             self._vertexQueue.push(newVertex)
 
-    def _findPathsToEnd(self):
-        """
-        Check if there is a path from self._currentVertex to the goal.  Update the best solution if this is better.
-        :return:
-        """
-        (psegs, fpsegs) = self._currentVertex.pathSegmentsToWaypoint(self._obstacleCourse)
+    def _processSegmentsToGoal(self, psegs, fpsegs):
         self._pathSegments.extend(psegs)
         self._filteredPathSegments.extend(fpsegs)
-        
-        for pathSegment in self._pathSegments:
+        for pathSegment in psegs:
             waypointVertex = Vertex(None,
                                     0.0,
                                     0.0,
                                     previousVertex=self._currentVertex,
                                     pathSegment=pathSegment)
-            if waypointVertex.getTimeThroughAdmissible() < self._solutionTime:
-                self._solutionTime = waypointVertex.getTimeThroughAdmissible()
-                self._solution = waypointVertex
-                self._solutionUpdated = True
-
-    def _getPathSegments(self, pathEndVertex):
-        pathSegments = []
-        currentVertex = pathEndVertex
-        previousVertex = currentVertex.getPreviousVertex()
-
-        while not previousVertex is None:
-            pathSegments.append(currentVertex.pathSegment)
-            currentVertex = previousVertex
-            previousVertex = currentVertex.getPreviousVertex()
-        
-        # We traced the path backwards, so reverse
-        pathSegments.reverse()
-
-        return pathSegments
-
-    def _calcSolutionWaypoints(self, pathSegments):
-        solutionWaypoints = []
-        for pathSegment in pathSegments:
-            position = pathSegment.endPoint + pathSegment.endUnitVelocity * self._params.waypointAcceptanceRadii
-            solutionWaypoints.append(SolutionWaypoint(position, self._params.waypointAcceptanceRadii))
             
-        return solutionWaypoints
+            self._updateSolution(waypointVertex)
+
+    def _updateSolution(self, vertex):
+        if self._checkImprovedSolution(vertex):
+            self._bestPathVertex = vertex
+            
+            # Only time for completed solutions is used to update pruning time
+            if self._bestPathVertex.isSolution():
+                self._pruningTime = self._bestPathVertex.getTimeThroughAdmissible()
+
+    def _checkImprovedSolution(self, vertex):
+        """
+        Check if the given vertex is better than the solution vertex.
+        """
+        if self._bestPathVertex.isSolution():
+            solWayPoint = sys.maxint
+        else:
+            solWayPoint = self._bestPathVertex.getNextWaypoint().getIndex()
+
+        if vertex.isSolution():
+            vxWayPoint = sys.maxint
+        else:
+            vxWayPoint = vertex.getNextWaypoint().getIndex()
+
+        # If waypoints are the same (possibly both at final waypoint) then we compare priority which is a better indicator than admissible.
+        if solWayPoint == vxWayPoint:
+            return self._bestPathVertex.getTimeThroughHeuristic() > vertex.getTimeThroughHeuristic()
+
+        return solWayPoint < vxWayPoint
+        

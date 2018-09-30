@@ -2,6 +2,7 @@ import os
 import tkFileDialog
 
 from boundaryBuilder import BoundaryBuilder
+from constants import COURSE_DIM
 from engine import interface
 from engine.interface.fileUtils import TEST_INPUT_KEY, SCENARIO_KEY
 from engine.interface.scenario import Scenario
@@ -81,8 +82,10 @@ class ScenarioEditor(Visualizer, Drawable):
                 self._inputDict = interface.loadInput(fileName)
                 if not TEST_INPUT_KEY in self._inputDict:
                     self._inputDict[TEST_INPUT_KEY] = TestScenario()
-                #Scale display to loaded scenario dimensions
+                # Scale display to loaded scenario dimensions
                 bounds = self._inputDict[SCENARIO_KEY].calcBounds()
+                if bounds[0] == float("inf"):
+                    bounds = 0, 0, COURSE_DIM, COURSE_DIM 
                 centerX = (bounds[0] + bounds[2]) / 2.0
                 centerY = (bounds[1] + bounds[3]) / 2.0
                 rangeX = bounds[2] - bounds[0]

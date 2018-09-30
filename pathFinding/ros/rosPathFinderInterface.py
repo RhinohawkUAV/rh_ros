@@ -1,12 +1,11 @@
 import rospy
 
-import constants
 from gui.pathFinder.pathFinderInterface import PathFinderInterface
 from messageConverter import MessageConverter
 import pathfinding.msg as pfm
 import pathfinding.srv as pfs
 from ros.rosConstants import SUBMIT_PROBLEM_SERVICE, STEP_PROBLEM_SERVICE, \
-    PATHFINDER_DEBUG_TOPIC, PATHFINDER_SOLUTION_TOPIC, PATHFINDER_INPUT_TOPIC
+    PATHFINDER_DEBUG_TOPIC, PATHFINDER_INPUT_TOPIC
 
 
 class RosPathFinderInterface(PathFinderInterface):
@@ -14,14 +13,14 @@ class RosPathFinderInterface(PathFinderInterface):
     Manages a remote ROS path finder for use in PathFindViewer.
     """
 
-    def __init__(self):
-        self._gpsReference = pfm.GPSCoord(constants.CANBERRA_GPS[0], constants.CANBERRA_GPS[1])
-#         rospy.Subscriber("rh/" + PATHFINDER_DEBUG_TOPIC, PathDebug, self.receiveDebug)
-#         rospy.Subscriber("rh/" + PATHFINDER_SOLUTION_TOPIC, PathSolution, self.receiveSolution)
-        rospy.Subscriber(PATHFINDER_INPUT_TOPIC, pfm.PathInput, self.receiveProblem)
-        rospy.Subscriber(PATHFINDER_DEBUG_TOPIC, pfm.PathDebug, self.receiveDebug)
-        rospy.Subscriber(PATHFINDER_SOLUTION_TOPIC, pfm.PathSolution, self.receiveSolution)
-
+    def __init__(self, gpsReference):
+        self._gpsReference = gpsReference
+        # TODO: Figure out how to interface with other namespace
+#         rospy.Subscriber("rh/" + PATHFINDER_INPUT_TOPIC, PathDebug, self.receiveDebug)
+#         rospy.Subscriber("rh/" + PATHFINDER_DEBUG_TOPIC, PathSolution, self.receiveSolution)
+        rospy.Subscriber(PATHFINDER_INPUT_TOPIC, pfm.PathInput, self.rosInputAccepted)
+        rospy.Subscriber(PATHFINDER_DEBUG_TOPIC, pfm.PathDebug, self.rosStepPerformed)
+    
     def submitProblem(self, params, scenario, vehicle):
         try:
             messageConverter = MessageConverter(self._gpsReference)
@@ -33,8 +32,8 @@ class RosPathFinderInterface(PathFinderInterface):
             func = rospy.ServiceProxy(SUBMIT_PROBLEM_SERVICE, pfs.SubmitProblem)
             func(paramsMsg, scenarioMsg, vehicleMsg, self._gpsReference)
         except rospy.ServiceException, e:
-            print "Service call failed: %s" % e    
-    
+            print "Service call failed: %s" % e
+            
     def stepProblem(self, numSteps=1):
         try:
             rospy.wait_for_service(STEP_PROBLEM_SERVICE)
@@ -42,23 +41,16 @@ class RosPathFinderInterface(PathFinderInterface):
             func(numSteps)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e    
-
+        
     def solveProblem(self, timeout):
         pass
 
-    def receiveProblem(self, pathInput):
+    def rosInputAccepted(self, pathInputMsg):
         messageConverter = MessageConverter(self._gpsReference)
-        (params, scenario, vehicle) = messageConverter.msgToInput(pathInput)
-        self._listener.fireInputInGuiThread(params, scenario, vehicle)
+        (params, scenario, vehicle) = messageConverter.msgToInput(pathInputMsg)
+        self._fireInputAccepted(params, scenario, vehicle)
         
-    def receiveDebug(self, pathDebug):
+    def rosStepPerformed(self, pathDebugMsg):
         messageConverter = MessageConverter(self._gpsReference)
-        (pastPathSegments, futurePathSegments, filteredPathSegments) = messageConverter.msgToPathDebug(pathDebug)
-        self._listener.fireDebugInGuiThread(pastPathSegments, futurePathSegments, filteredPathSegments)
-        
-    def receiveSolution(self, pathSolution):
-        messageConverter = MessageConverter(self._gpsReference)
-        solutionWaypoints = messageConverter.msgToSolutionWaypointList(pathSolution.solutionWaypoints)
-        solutionPathSegments = messageConverter.msgToPathSegmentList(pathSolution.solutionPathSegments)
-        self._listener.fireSolutionInGuiThread(solutionWaypoints, solutionPathSegments, pathSolution.finished)
-        
+        (finished, bestPath, pastPathSegments, futurePathSegments, filteredPathSegments) = messageConverter.msgToPathDebug(pathDebugMsg)
+        self._fireStepPerformed(finished, bestPath, pastPathSegments, futurePathSegments, filteredPathSegments)

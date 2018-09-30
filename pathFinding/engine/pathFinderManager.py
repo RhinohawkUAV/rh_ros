@@ -1,60 +1,48 @@
-from threading import Thread, Condition, RLock
+import copy
+from threading import Thread, Lock, Condition
 
 from engine.pathFinder import PathFinder
 
 
 class PathFinderManager:
     """
-    Manages path finding tasks in a background thread.  Provides the following abilities:
+    Manages path finding tasks in a background thread.  
+    Provides the following abilities:
     1. Submit a new path finding task.  This will cancel and previous/outstanding calculations.
     2. Request that one or more steps be performed.  Steps will stop being performed if solved.
-    3. Request that the problem be solved or a timeout occurs.
-    4. Shutdown the manager.
+    3. Shutdown the manager.
+    
+    All output is reported via the given:
+    inputReceivedListener(params, scenario, vehicle, **kwargs):
+        Informs listener that a submitted problem has been accepted.
+        **kwargs just parrots back any extra arguments you provided when submitting the problem.
+    stepPerformedListener(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments, **kwargs):
+        Informs listener of the result of the last step
+        **kwargs just parrots back any extra arguments you provided when submitting the problem.
+    Synchronization:
+    Processing is done in a background thread.  When a new problem is submitted, a previous step may be in the process of being reported.
+    Manager guarantees that if a new problem is submitted, that it will not call stepPerformedListener(), for the previous problem,
+    once it calls inputReceivedListener() for the new problem.  It will call inputReceivedListener() in a timely manner.
     """
 
     def __init__(self):
-        self._lock = Condition(RLock())
-        self._steps = 0
+        self._lock = Condition(Lock())
+        
+        self._stepsToPerform = 0
         self._shutdown = False
+        self._newInput = None
         self._activePathFinder = None
+        self._activeKWArgs = None
         self._thread = Thread(target=self._run)
         self._thread.start()
 
-    def publishInput(self, params, scenario, vehicle):
+    def setListeners(self, inputAcceptedListener, stepPerformedListener):
         """
-        Called automatically with the input received from the submitProblem method, while the lock is held.
-
-        Arguments in local coordinates.
+        Must be called before any problem is submitted!
         """
-        pass
-    
-    def publishDebug(self, pastPathSegments, futurePathSegments, filteredPathSegments):
-        """
-        Override me.
-        Called whenever a step on the active path finder concludes with debug data.
-        This is called from within the path finder thread and should execute quickly.
-        This is intentionally behind a lock to guarantee order of operations.  
-        This will NOT publish results for an old problem.  Once a call to submitProblem()
-        concludes, no call to this method will be made for any previous problem being worked on.
-
-        Arguments in local coordinates.
-        """
-        pass
-    
-    def publishSolution(self, solutionPathSegments, finished):
-        """
-        Override me.
-        Called whenever a step on the active path finder concludes with a solution.
-        This is called from within the path finder thread and should execute quickly.
-        This is intentionally behind a lock to guarantee order of operations.  
-        This will NOT publish results for an old problem.  Once a call to submitProblem()
-        concludes, no call to this method will be made for any previous problem being worked on.
+        self._inputAcceptedListener = inputAcceptedListener
+        self._stepPerformedListener = stepPerformedListener
         
-        Arguments in local coordinates.
-        
-        """
-        pass
-            
     def shutdown(self):
         """
         Shutdown the path finding manager and cancel all remaining steps.
@@ -70,7 +58,7 @@ class PathFinderManager:
         self.shutdown()
         self._thread.join()
 
-    def submitProblem(self, params, scenario, vehicle):
+    def submitProblem(self, params, scenario, vehicle, **kwArgs):
         """
         Submit a new path finding problem.  Will cancel any queued steps.  
         If a step is currently executing, its result will not be published.
@@ -80,86 +68,95 @@ class PathFinderManager:
         methods to convert back.
         """
         with self._lock:
-            self.publishInput(params, scenario, vehicle)
-            self._activePathFinder = PathFinder(params, scenario, vehicle)
-            self._steps = 0
+            # Remember input for publishing purposes
+            self._newInput = (params, scenario, vehicle)
+            self._activeKWArgs = kwArgs
+            self._stepsToPerform = 0
             self._lock.notifyAll()
 
     def stepProblem(self, numSteps=1):
         """
-        Request the path finder run until:
-        1. the given number of steps are performed
+        Queue up additional steps. Path finder perform steps until:
+        1. All queue steps have been executed
         2. A solution is found
         3. A new problem is submitted
         """
         with self._lock:
-            self._steps += numSteps
-            self._lock.notifyAll()
-
-    def solveProblem(self, timeout):
-        # TODO: Implement
-        pass
+            if self._activePathFinder is not None or self._newInput is not None:
+                self._stepsToPerform += numSteps
+                self._lock.notifyAll()
 
     def _run(self):
         try:
             while True:
-                self._performStep(self._getNextStep())
-        except ShutdownException:
+                self._processState(*self._getState())
+        except self.ShutdownException:
             pass
 
     def _checkShutdown(self):
         if self._shutdown:
-            raise ShutdownException            
+            raise self.ShutdownException            
 
-    def _getNextStep(self):
+    def _getState(self):
         """
-        Waits until there is a step to perform and returns the path finder to perform it on.  
-        May throw a ShutdownException instead if ROS is shutting down
+        Waits until there is a step to perform and returns the path finder to perform it on.
+        If a new set of a parameters was submitted a new path finder will be created and input parameters will be published.
+        May throw a ShutdownException instead if manager is shutting down
         """
         with self._lock:
             self._checkShutdown()
-            while self._activePathFinder is None or  \
-                  self._activePathFinder.isDone() or \
-                  self._steps == 0:
+            
+            while self._newInput is None and (self._stepsToPerform == 0 or self._activePathFinder is None):
                 self._lock.wait()
                 self._checkShutdown()
+            
+            # extract state to act on before exiting lock
+            newInput = self._newInput
+            if self._newInput is not None:
+                self._activePathFinder = PathFinder(*self._newInput)
+                self._newInput = None
 
-            return self._activePathFinder
-
-    def _performStep(self, pathFinder):
+            if self._stepsToPerform > 0:
+                pathFinderToStep = self._activePathFinder
+            else:
+                pathFinderToStep = None
+            kwargs = self._activeKWArgs
+            return (newInput, pathFinderToStep, kwargs)
+    
+    def _processState(self, newInput, pathFinderToStep, kwargs):
         """
         Runs a step on the given path finder instance.  Afterwards one of 3 things can happen:
         1. Can throw a ShutdownException if manager was shutdown.
-        2. Can do nothing if the path finder, the step was performed on, is no longer active (a new problem submitted)
-        3. Can publish result through overrideable publishing methods.
+        2. Can inform listener of the result of the step
+        3. Can find that a new problem was submitted while computing step, in which case the result of the step is not reported (thrown away)
         """
-        # Calculate a step for the given path finder.  This takes non-zero time and is therefore not syncrhonized.
-        pathFinder.step()
         
-        with self._lock:
-            # If shutdown, then throw exception and exit
-            self._checkShutdown()
-            # If the active path finder has changed, then do not publish.
-            if pathFinder is not self._activePathFinder:
-                return
-            
-            if pathFinder.isDone():
-                if pathFinder.hasSolution():
-                    (solutionWaypoints, pathSolution) = pathFinder.getSolution()
-                    self.publishSolution(solutionWaypoints, pathSolution, True)
+        if newInput is not None:
+            self._inputAcceptedListener(*newInput, **kwargs)
+        
+        if pathFinderToStep is not None:
+            # Calculate a step for the given path finder.  This takes non-zero time and is therefore not syncrhonized.
+            isFinished = not pathFinderToStep.step()
+        
+            with self._lock:
+                # If shutdown, then throw exception and exit
+                self._checkShutdown()
+                
+                # New input already accepted, throw away result of this step
+                if pathFinderToStep is not self._activePathFinder or self._newInput is not None:
+                    return 
+                
+                # Report the result of the step to listeners.
+                bestPath = pathFinderToStep.getBestPath()
+                (previousPathSegments, futurePathSegments, filteredPathSegments) = pathFinderToStep.getDebugData()
+                
+                if isFinished:
+                    self.steps = 0
+                    self._activePathFinder = None
                 else:
-                    # TODO: If no solution is ever found, we need to handle that case with its own signal.
-                    self.publishSolution([], [], True)
-            else:
-                # Publish and decrement number of steps
-                if pathFinder.solutionUpdated():
-                    (solutionWaypoints, pathSolution) = pathFinder.getSolution()
-                    self.publishSolution(solutionWaypoints, pathSolution, False)
-                    
-                (previousPathSegments, pathSegments, filteredPathSegments) = pathFinder.getDebugData()
-                self.publishDebug(previousPathSegments, pathSegments, filteredPathSegments)
-            self._steps -= 1
+                    self._stepsToPerform -= 1
+            
+            self._stepPerformedListener(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments, **kwargs)
 
-
-class ShutdownException(BaseException):
-    pass
+    class ShutdownException(BaseException):
+        pass

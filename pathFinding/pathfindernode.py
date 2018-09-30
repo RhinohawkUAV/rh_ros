@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from ros.rosPathFinderManager import RosPathFinderManager
+from ros.rosPathFinderServer import RosPathFinderServer
 
 if __name__ == '__main__':
-    pathFinder = RosPathFinderManager()
+    server = RosPathFinderServer()
     rospy.spin()

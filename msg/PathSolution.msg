@@ -1,3 +1,5 @@
 SolutionWaypoint[] solutionWaypoints
 PathSegment[] solutionPathSegments
-bool finished
+int64 numWaypointsCompleted
+bool isComplete
+float64 estimatedTime

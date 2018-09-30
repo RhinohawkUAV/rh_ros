@@ -1,16 +1,20 @@
+import gui
+
+
 class PathFinderInterface:
     """
     Provides an interface to a path finding process for use in the GUI.  
     This allows a local path-finder or remote, ROS, path finder to use the same GUI.
     """
 
-    def __init__(self):
-        self._listener = None
-    
-    def setListener(self, listener):
-        self._listener = listener
+    def setListeners(self, inputAcceptedListener, stepPerformedListener):
+        """
+        Sets listeners.  These will notified in GUI thread.
+        """
+        self._inputAcceptedListener = inputAcceptedListener
+        self._stepPerformedListener = stepPerformedListener
         
-    def submitProblem(self, params, scenario, vehicle, gpsRef):
+    def submitProblem(self, params, scenario, vehicle):
         """
         Start a new path finding process.  Will wipe out previous process.
         """
@@ -18,7 +22,7 @@ class PathFinderInterface:
     
     def stepProblem(self, numSteps=1):
         """
-        Perform steps of the path finding process.
+        Queue up steps to perform towards finding a path.  Steps are ignored, if path finder has concluded its search.
         """
         pass
 
@@ -27,3 +31,15 @@ class PathFinderInterface:
         Perform steps until problem is solved or timeout occurs.
         """
         pass
+
+    def _fireInputAccepted(self, params, scenario, vehicle):
+        """
+        In GUI thread: Inform listener of input being accepted for processing.
+        """
+        gui.inGUIThread(self._inputAcceptedListener, params, scenario, vehicle)
+        
+    def _fireStepPerformed(self, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments):
+        """
+        In GUI thread: Inform listener of latest step result.
+        """
+        gui.inGUIThread(self._stepPerformedListener, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)

@@ -1,3 +1,5 @@
+import copy
+
 from gui import Drawable
 import gui.draw
 import numpy as np
@@ -8,35 +10,89 @@ _zero = np.array((0, 0), np.double)
 
 
 class BaseVertex(Drawable):
+    """
+    Represents a potentially reachable state.  This is defined by:
+    elapsed time
+    position
+    velocity
+    next waypoint
+    
+    Vertices form a tree branching from the start position outwards.  Unlike many traditional graph searches, this is NOT a DAG.
+    The reason is that it is incredibly unlikely that two branches will ever lead to the same conditions (position, velocity, time, etc).
+    If any of these quantities is even slightly different they might not be able to reach the same solution set.
+    
+    NOTE:
+    A future version of this could allow for similar vertices to be "merged".  Merging will result in loss of "resolution" in the solution.
+    This means that it is possible that solutions through small gaps, or requiring exact timing, may not be found.  This could be OK as we 
+    already put buffers around NFZs, which has the same effect.  Not clear how much the "merge radius" would affect the resolution and if
+    any significant speed benefit would result from the price we would be willing to pay in terms of resolution.
+    """
 
-    def __init__(self, waypoint):
-        self._waypoint = waypoint
+    def __init__(self, _nextWaypoint):
+        self._nextWaypoint = _nextWaypoint
 
-    def getWaypoint(self):
-        return self._waypoint
+    def isSolution(self):
+        """
+        Vertex is end point of a completed solution path.
+        """
+        return self._nextWaypoint is None
+    
+    def getNextWaypoint(self):
+        """
+        The next waypoint the vehicle is seeking.  Returns None, if this vertex is an end point.
+        """
+        return self._nextWaypoint
 
     def getPosition(self):
+        """
+        The position of the vehicle.
+        """
         pass
 
     def getVelocity(self):
+        """
+        The velocity vector, of the vehicle, at this vertex.
+        """
         pass
 
     def getTimeTo(self):
+        """
+        The time required to get to this vertex from the start.
+        """
         pass
     
     def getTimeThroughAdmissible(self):
+        """
+        An optimistic estimated total time through this vertex, to the end.
+        This is more or less admissible meaning that this estimate is
+        unlikely to be worse than reality.
+        """
         pass
 
-    def getTimeThroughPriority(self):
+    def getTimeThroughHeuristic(self):
+        """
+        An estimated total time through this vertex, to the end.  This is
+        less optimistic by applying a multiplier (vertexHeuristicWeight) 
+        to the admissible (optimistic) estimated remaining time.
+        """
         pass
 
     def getPreviousVertex(self):
+        """
+        The previous vertex in this path.
+        """
         pass
 
     def pathSegmentsToWaypoint(self, obstacleCourse):
+        """
+        Query obstacle course to get a list of path segments from this vertex to the next waypoint.
+        """
         pass
 
     def skirtingPathSegments(self, obstacleCourse):
+        """
+        Query obstacle course to get a list of path segments from this vertex which skirt near obstacle boundaries.
+        """
         pass
 
     def drawPath(self, canvas, **kwargs):
@@ -44,6 +100,21 @@ class BaseVertex(Drawable):
 
     def draw(self, canvas, **kwargs):
         pass
+
+    def generatePathSegments(self):
+        pathSegments = []
+        currentVertex = self
+        previousVertex = currentVertex.getPreviousVertex()
+    
+        while not previousVertex is None:
+            pathSegments.append(copy.deepcopy(currentVertex.pathSegment))
+            currentVertex = previousVertex
+            previousVertex = currentVertex.getPreviousVertex()
+        
+        # We traced the path backwards, so reverse
+        pathSegments.reverse()
+    
+        return pathSegments
 
     
 class OriginVertex(BaseVertex):
@@ -64,12 +135,16 @@ class OriginVertex(BaseVertex):
         return 0.0
     
     def getTimeThroughAdmissible(self):
-        # Irrelevant value as this vertex will never have any competition
-        return 0.0
+        """
+        Considered the worst possible vertex, this forces it to be replaced as the best path immediately.
+        """
+        return float("inf")
 
-    def getTimeThroughPriority(self):
-        # Irrelevant value as this vertex will never have any competition
-        return 0.0
+    def getTimeThroughHeuristic(self):
+        """
+        Considered the worst possible vertex, this forces it to be replaced as the best path immediately.
+        """
+        return float("inf")
     
     def getPreviousVertex(self):
         return None
@@ -79,7 +154,7 @@ class OriginVertex(BaseVertex):
                                                       startPoint=self._position,
                                                       startSpeed=self._speed,
                                                       startUnitVelocity=self._direction,
-                                                      targetPoint=self._waypoint._position,
+                                                      targetPoint=self._nextWaypoint._position,
                                                       velocityOfTarget=_zero,
                                                       legalRotDirection=0.0)
 
@@ -103,7 +178,6 @@ class Vertex(BaseVertex):
                  pathSegment=None):
         BaseVertex.__init__(self, waypoint)
 
-        # The timeToVertex from start to this vertex
         self.timeToVertex = previousVertex.getTimeTo() + pathSegment.elapsedTime
         
         # Estimates of the timeToVertex required to traverse the path from start to finish through this point.
@@ -136,7 +210,7 @@ class Vertex(BaseVertex):
     def getTimeThroughAdmissible(self):
         return self.timeEstimateAdmissible
 
-    def getTimeThroughPriority(self):
+    def getTimeThroughHeuristic(self):
         return self.timeEstimatePriority
 
     def getPreviousVertex(self):
@@ -147,7 +221,7 @@ class Vertex(BaseVertex):
                                                       startPoint=self.pathSegment.endPoint,
                                                       startSpeed=self.pathSegment.speed,
                                                       startUnitVelocity=self.pathSegment.endUnitVelocity,
-                                                      targetPoint=self._waypoint._position,
+                                                      targetPoint=self._nextWaypoint._position,
                                                       velocityOfTarget=_zero,
                                                       legalRotDirection=self.pathSegment.nextLegalRotDirection)
 

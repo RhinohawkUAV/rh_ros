@@ -50,15 +50,12 @@ class UniqueVertexQueue(VertexPriorityQueue):
     def push(self, vertex):
         vPos = vertex.getPosition()
         vVel = vertex.getVelocity()
-        treeIndex = vertex.getWaypoint().getIndex()
+        treeIndex = vertex.getNextWaypoint().getIndex()
         uniqueness = self._uniqueTrees[treeIndex].insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1]]))
-
-#         length = 1.0 + calcs.length(vertex.getWaypoint()._position - vPos) / self._diagonal
-#         distBias = math.pow(length, 0.25)
         
         if uniqueness == 0.0:
             return
-        priority = vertex.getTimeThroughPriority() / uniqueness
+        priority = vertex.getTimeThroughHeuristic() / uniqueness
         
         self._heap.push(priority, vertex)
 

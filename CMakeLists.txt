@@ -78,7 +78,6 @@ add_service_files(
   FILES
   SubmitProblem.srv
   StepProblem.srv
-  SolveProblem.srv
 )
 
 ## Generate actions in the 'action' folder

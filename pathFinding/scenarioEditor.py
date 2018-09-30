@@ -2,6 +2,6 @@ from constants import COURSE_DIM
 import gui
 from gui.editor import ScenarioEditor
 
-ScenarioEditor(800, 800, 50, 50, COURSE_DIM, COURSE_DIM)
-
-gui.startGUI()
+if __name__ == '__main__':
+    ScenarioEditor(800, 800, 0, 0, COURSE_DIM, COURSE_DIM)
+    gui.startGUI()
