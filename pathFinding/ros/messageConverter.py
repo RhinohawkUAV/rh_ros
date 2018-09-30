@@ -4,7 +4,6 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 import math
 
 from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
-from engine.interface import scenario
 import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
 import engine.interface.noFlyZone
@@ -25,7 +24,7 @@ class MessageConverter:
         self._gpsTransformer = GPSTransformer(gpsRef)
 
     def msgToInput(self, inputMsg):
-        params = self.msgToParams(inputMsg.inputParams)
+        params = self.msgToParams(inputMsg.params)
         scenario = self.msgToScenario(inputMsg.scenario)
         vehicle = self.msgToVehicle(inputMsg.vehicle)
         return (params, scenario, vehicle)
@@ -35,8 +34,7 @@ class MessageConverter:
                 float(inputParamsMsg.waypointAcceptanceRadii), \
                 float(inputParamsMsg.nfzBufferWidth),
                 float(inputParamsMsg.nfzTargetOffset),
-                float(inputParamsMsg.vertexHeuristicWeight),
-                float(inputParamsMsg.timeout))
+                float(inputParamsMsg.vertexHeuristicMultiplier))
     
     def msgToVehicle(self, msg):
         return engine.interface.vehicle.Vehicle(float(msg.maxSpeed), float(msg.acceleration))
@@ -95,10 +93,10 @@ class MessageConverter:
     def msgToOutputPath(self, msg):
         solutionWaypoints = self.msgToSolutionWaypointList(msg.solutionWaypoints)
         pathSegments = self.msgToPathSegmentList(msg.solutionPathSegments)
-        return OutputPath(solutionWaypoints, 
-                          pathSegments, 
-                          int(msg.numWaypointsCompleted), 
-                          msg.isComplete, 
+        return OutputPath(solutionWaypoints,
+                          pathSegments,
+                          int(msg.numWaypointsCompleted),
+                          msg.isComplete,
                           float(msg.estimatedTime))
 
     def msgToSolutionWaypointList(self, msg):
@@ -149,7 +147,7 @@ class MessageConverter:
     #**********************Path finding objects to msg objects********************
     def inputToMsg(self, params, scenario, vehicle):
         msg = pfm.PathInput()
-        msg.inputParams = self.paramsToMsg(params)
+        msg.params = self.paramsToMsg(params)
         msg.scenario = self.scenarioToMsg(scenario)
         msg.vehicle = self.vehicleToMsg(vehicle)
         return msg
@@ -159,8 +157,7 @@ class MessageConverter:
         msg.waypointAcceptanceRadii = inputParams.waypointAcceptanceRadii
         msg.nfzBufferWidth = inputParams.nfzBufferWidth
         msg.nfzTargetOffset = inputParams.nfzTargetOffset
-        msg.vertexHeuristicWeight = inputParams.vertexHeuristicWeight
-        msg.timeout = inputParams.timeout
+        msg.vertexHeuristicMultiplier = inputParams.vertexHeuristicMultiplier
         return msg
     
     def vehicleToMsg(self, vehicle):

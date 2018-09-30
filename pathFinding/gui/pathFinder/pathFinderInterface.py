@@ -7,12 +7,13 @@ class PathFinderInterface:
     This allows a local path-finder or remote, ROS, path finder to use the same GUI.
     """
 
-    def setListeners(self, inputAcceptedListener, stepPerformedListener):
+    def setListeners(self, inputAcceptedListener, stepPerformedListener, solvedListener):
         """
         Sets listeners.  These will notified in GUI thread.
         """
         self._inputAcceptedListener = inputAcceptedListener
         self._stepPerformedListener = stepPerformedListener
+        self._solvedListener = solvedListener
         
     def submitProblem(self, params, scenario, vehicle):
         """
@@ -43,3 +44,9 @@ class PathFinderInterface:
         In GUI thread: Inform listener of latest step result.
         """
         gui.inGUIThread(self._stepPerformedListener, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
+
+    def _fireSolved(self, bestPath):
+        """
+        In GUI thread: Inform listener of latest step result.
+        """
+        gui.inGUIThread(self._solvedListener, bestPath)

@@ -9,7 +9,6 @@ from engine.interface.noFlyZone import NoFlyZone
 from engine.interface.road import Road
 from engine.interface.scenario import Scenario
 from engine.interface.testScenario import TestScenario
-from engine.interface.vehicle import Vehicle
 import numpy as np
 
 INPUT_PARAMS_KEY = "params"
@@ -33,9 +32,9 @@ def encode(obj):
     return json.dumps(obj, cls=Encoder, indent=4)
 
 
-def save(fileName, scenario):
+def save(fileName, params, scenario, vehicle):
     fileHandle = open(fileName, 'w')
-    json.dump({SCENARIO_KEY:scenario}, fileHandle, cls=Encoder, indent=4)
+    json.dump({INPUT_PARAMS_KEY:params, SCENARIO_KEY:scenario, VEHICLE_KEY:vehicle}, fileHandle, cls=Encoder, indent=4)
     fileHandle.close()
 
 

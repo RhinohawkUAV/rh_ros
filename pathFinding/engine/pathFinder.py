@@ -107,7 +107,7 @@ class PathFinder:
                                                       pathSegment.endSpeed,
                                                       self._vehicle.acceleration)
             newVertex = Vertex(nextWaypoint,
-                               heuristic * self._params.vertexHeuristicWeight,
+                               heuristic * self._params.vertexHeuristicMultiplier,
                                heuristic,
                                previousVertex=self._currentVertex,
                                pathSegment=pathSegment)

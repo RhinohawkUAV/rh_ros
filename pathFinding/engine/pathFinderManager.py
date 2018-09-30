@@ -86,6 +86,17 @@ class PathFinderManager:
                 self._stepsToPerform += numSteps
                 self._lock.notifyAll()
 
+    def cancel(self):
+        """
+        Cancel all queued steps.
+        """
+        with self._lock:
+            self._stepsToPerform = 0
+            self._lock.notifyAll()
+    
+    def getStepsRemaining(self):
+        return self._stepsToPerform
+    
     def _run(self):
         try:
             while True:

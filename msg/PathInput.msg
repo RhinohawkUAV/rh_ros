@@ -1,3 +1,3 @@
-Params inputParams
+Params params
 Scenario scenario
 Vehicle vehicle

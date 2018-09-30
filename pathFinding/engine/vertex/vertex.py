@@ -72,7 +72,7 @@ class BaseVertex(Drawable):
     def getTimeThroughHeuristic(self):
         """
         An estimated total time through this vertex, to the end.  This is
-        less optimistic by applying a multiplier (vertexHeuristicWeight) 
+        less optimistic by applying a multiplier (vertexHeuristicMultiplier) 
         to the admissible (optimistic) estimated remaining time.
         """
         pass

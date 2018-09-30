@@ -29,7 +29,7 @@ class PathFindViewer(Visualizer):
         self._vehicle = None
         self._pointOfInterest = None
         self._pathFinderInterface = pathFinderInterface
-        self._pathFinderInterface.setListeners(self.inputAccepted, self.stepPerformed)
+        self._pathFinderInterface.setListeners(self.inputAccepted, self.stepPerformed, self.solved)
         self._pathFindDrawable = None
         self._pathFindInput = None
         self.bindWithTransform('<Key>', self.onKeyPressed)
@@ -70,9 +70,11 @@ class PathFindViewer(Visualizer):
                 interface.saveInput(fileName, self._pathFindInput)
         elif key == "r":
             self.setStateRandom()
-        elif key == "t":
+        elif key == "p":
             print profile.result()
             profile.printAggregate()
+        elif key == "y":
+            self._pathFinderInterface.solveProblem(self._lastParams, self._lastScenario, self._lastVehicle, 2.0)
         elif key == "z":
             self._showFiltered = not self._showFiltered
             self.updateDisplay()
@@ -131,6 +133,10 @@ class PathFindViewer(Visualizer):
 
     def stepPerformed(self, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments):
         self._pathFindDrawable.update(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
+        self.updateDisplay()
+
+    def solved(self, bestPath):
+        self._pathFindDrawable.update(True, bestPath, [], [], [])
         self.updateDisplay()
 
     def onLeftClick(self, point, event):

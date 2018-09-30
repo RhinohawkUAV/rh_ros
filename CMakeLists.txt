@@ -76,14 +76,14 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  SubmitProblem.srv
-  StepProblem.srv
+  SubmitPathProblem.srv
+  StepPathProblem.srv
 )
 
 ## Generate actions in the 'action' folder
 add_action_files(
   FILES
-  PathFinder.action
+  SolvePathProblem.action
 )
 
 ## Generate added messages and services with any dependencies listed here

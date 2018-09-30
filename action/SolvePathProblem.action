@@ -1,0 +1,14 @@
+# Input
+Params params
+Scenario scenario
+Vehicle vehicle
+#Will not exceed timeout, by much, when solving
+float64 timeout
+#If true, debug messages are published through ROS
+bool emitDebug
+---
+# Final result
+PathSolution bestPath
+---
+# Intermediate result
+PathSolution bestPath
