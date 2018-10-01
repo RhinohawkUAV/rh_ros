@@ -11,16 +11,17 @@ from engine.pathFinder import PathFinder
 from utils import profile
 
 if __name__ == "__main__":
+
     inputDict = interface.loadInput("../scenarios/veryhard.json")
     pathFinder = PathFinder(DEFAULT_PARAMS, inputDict[SCENARIO_KEY], DEFAULT_VEHICLE)
     bestPath = pathFinder.getBestPath()
-
+ 
     start = time.time()
     while pathFinder.step():
         path = pathFinder.getBestPath()
-        if path.isComplete and path.timeThroughHeuristic < bestPath.timeThroughHeuristic:
+        if path.quality >= 2 and path.estimatedTime < bestPath.estimatedTime:
             bestPath = path
-            print "Solution: " + str(bestPath.timeThroughHeuristic) + " -- found at time: " + str(time.time() - start)
-
+            print "Solution: " + str(bestPath.estimatedTime) + " -- found at time: " + str(time.time() - start)
+ 
     profile.printAggregate()
 
