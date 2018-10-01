@@ -40,22 +40,7 @@ class RosPathFinderServer:
         self.server = actionlib.SimpleActionServer(PATHFINDER_SERVER, pfm.SolvePathProblemAction, self._rosSolveRequested, False)
         self.server.start()
 
-    def _publishPathFinderState(self, isFinished, pathFinder, messageConverter):
-        bestPath = pathFinder.getBestPath()
-        (previousPathSegments, futurePathSegments, filteredPathSegments) = pathFinder.getDebugData()
-        pathDebugMsg = messageConverter.pathDebugToMsg(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
-        self._stepPerfomredPub.publish(pathDebugMsg)
-        
-    def _publishInputAccepted(self, params, scenario, vehicle, refGPS=None):
-        messageConverter = MessageConverter(refGPS)
-        inputMsg = messageConverter.inputToMsg(params, scenario, vehicle)
-        self._inputAcceptedPub.publish(inputMsg)
-
-    def _publishStepPerformed(self, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments, refGPS=None):
-        messageConverter = MessageConverter(refGPS)
-        pathDebugMsg = messageConverter.pathDebugToMsg(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
-        self._stepPerfomredPub.publish(pathDebugMsg)
-
+#******************************Serivce/action calls to server*******************************
     def _rosInputReceived(self, inputMsg):
         with self._lock:
             if self.solving:
@@ -134,7 +119,24 @@ class RosPathFinderServer:
         # Don't know Python's exact memory protocol regarding this kind of situation
         with self._lock:
             self.solving = False
+
+#******************************Methods to Publishon ROS topics*******************************
+    def _publishPathFinderState(self, isFinished, pathFinder, messageConverter):
+        bestPath = pathFinder.getBestPath()
+        (previousPathSegments, futurePathSegments, filteredPathSegments) = pathFinder.getDebugData()
+        pathDebugMsg = messageConverter.pathDebugToMsg(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
+        self._stepPerfomredPub.publish(pathDebugMsg)
         
+    def _publishInputAccepted(self, params, scenario, vehicle, refGPS=None):
+        messageConverter = MessageConverter(refGPS)
+        inputMsg = messageConverter.inputToMsg(params, scenario, vehicle)
+        self._inputAcceptedPub.publish(inputMsg)
+
+    def _publishStepPerformed(self, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments, refGPS=None):
+        messageConverter = MessageConverter(refGPS)
+        pathDebugMsg = messageConverter.pathDebugToMsg(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
+        self._stepPerfomredPub.publish(pathDebugMsg)
+
     def _rosShutdown(self, shutdownMessage):
         rospy.loginfo("ROS is shutting down pathfinder, because: " + shutdownMessage)
         rospy.loginfo("Shutting down path finder manager...")

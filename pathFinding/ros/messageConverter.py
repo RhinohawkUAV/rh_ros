@@ -95,8 +95,8 @@ class MessageConverter:
         pathSegments = self.msgToPathSegmentList(msg.solutionPathSegments)
         return OutputPath(solutionWaypoints,
                           pathSegments,
+                          int(msg.quality),
                           int(msg.numWaypointsCompleted),
-                          msg.isComplete,
                           float(msg.estimatedTime))
 
     def msgToSolutionWaypointList(self, msg):
@@ -225,8 +225,8 @@ class MessageConverter:
         msg = pfm.PathSolution()
         msg.solutionWaypoints = self.solutionWaypointListToMsg(outputPath.pathWaypoints)
         msg.solutionPathSegments = self.pathSegmentListToMsg(outputPath.pathSegments)
+        msg.quality = outputPath.quality
         msg.numWaypointsCompleted = outputPath.numWayPointsCompleted
-        msg.isComplete = outputPath.isComplete
         msg.estimatedTime = outputPath.estimatedTime
         return msg
 

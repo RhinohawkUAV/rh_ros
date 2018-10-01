@@ -75,12 +75,16 @@ class PathFinder:
         """
         if self._bestPathVertex.getNextWaypoint() is None:
             numWaypointsCompleted = len(self._waypoints)
-            isComplete = True
+            quality = 2
+            if self._vertexQueue.isEmpty():
+                quality += 1
         else:
             numWaypointsCompleted = self._bestPathVertex.getNextWaypoint().getIndex()
-            isComplete = False
+            quality = 1
+            if self._vertexQueue.isEmpty():
+                quality -= 1
             
-        return outputPath.generatePath(self._bestPathVertex, self._params.waypointAcceptanceRadii, numWaypointsCompleted, isComplete)
+        return outputPath.generatePath(self._bestPathVertex, self._params.waypointAcceptanceRadii, quality, numWaypointsCompleted)
        
     def getDebugData(self):
         """
