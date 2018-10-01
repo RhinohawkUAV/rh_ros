@@ -95,7 +95,8 @@ class PathFinderManager:
             self._lock.notifyAll()
     
     def getStepsRemaining(self):
-        return self._stepsToPerform
+        with self._lock:
+            return self._stepsToPerform
     
     def _run(self):
         try:
@@ -162,7 +163,7 @@ class PathFinderManager:
                 (previousPathSegments, futurePathSegments, filteredPathSegments) = pathFinderToStep.getDebugData()
                 
                 if isFinished:
-                    self.steps = 0
+                    self._stepsToPerform = 0
                     self._activePathFinder = None
                 else:
                     self._stepsToPerform -= 1

@@ -1,5 +1,5 @@
 from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
-# from engine.geometry.obstacle.intersectionDetector.cPathIntersectionDetector import CPathIntersectionDetector
+from engine.geometry.obstacle.intersectionDetector.cPathIntersectionDetector import CPathIntersectionDetector
 from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from gui.core import Drawable
 
@@ -7,8 +7,8 @@ from gui.core import Drawable
 def createObstacleCourse(params, vehicle):
     pathSegmentFinder = ArcSegmentFinder(params, vehicle)
 #   pathSegmentFinder = LineSegmentFinder(params, vehicle)
-    pathIntersectionDetector = PyPathIntersectionDetector(params, vehicle)
-#    pathIntersectionDetector = CPathIntersectionDetector(params, vehicle)
+#     pathIntersectionDetector = PyPathIntersectionDetector(params, vehicle)
+    pathIntersectionDetector = CPathIntersectionDetector(params, vehicle)
     return ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
 
     
