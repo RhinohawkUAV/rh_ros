@@ -50,6 +50,10 @@ for folder in root.Document.Folder:
                 coords = [float(n) for n in coord.split(",")]
                 if DEBUG: print(coords)
                 points.append(coordsToPoint(coords))
+            
+            if points[0]==points[-1]:
+                print("Removing redundant close point")
+                points = points[0:-2]
 
             m.static_nfzs.append(GPSCoordList(points))
 
@@ -84,6 +88,10 @@ for folder in root.Document.Folder:
             if DEBUG: print(coords)
             points.append(coordsToPoint(coords))
 
+        if points[0]==points[-1]:
+            print("Removing redundant close point")
+            points = points[0:-2]
+            
         m.geofence.points = points
 
     else:
