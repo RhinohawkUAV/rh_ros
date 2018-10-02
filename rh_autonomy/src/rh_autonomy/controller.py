@@ -68,7 +68,7 @@ class ControllerNode():
         self.nfz_target_offset = rhc.NOFLYZONE_TARGET_OFFSET
         self.nfz_vertex_heuristic_weight = rhc.NOFLYZONE_HEURISTIC_WEIGHT
         self.pathfinder_timeout = rhc.PATHFINDER_TIMEOUT
-        self.pfclient = actionlib.SimpleActionClient("/rh/pathfinder/action", pfm.PathFinderAction)
+        self.pfclient = actionlib.SimpleActionClient("/rh/pathfinder/action", pfm.SolvePathProblemAction)
         rospy.logdebug("Waiting for path finder server...")
         self.pfclient.wait_for_server()
         rospy.logdebug("Connection to path finder established.")
@@ -205,8 +205,7 @@ class ControllerNode():
         params.waypointAcceptanceRadii = self.wp_radius
         params.nfzBufferWidth = self.nfz_buffer_size
         params.nfzTargetOffset = self.nfz_target_offset
-        params.vertexHeuristicWeight = self.nfz_vertex_heuristic_weight
-        params.timeout = self.pathfinder_timeout
+        params.vertexHeuristicMultiplier = self.nfz_vertex_heuristic_weight
 
         # convert to path planner messages
         pp_geofence = [pfm.GPSCoord(p.lat, p.lon) for p in geofence.points]
@@ -237,10 +236,12 @@ class ControllerNode():
         vehicle.maxSpeed = 10.0
         vehicle.acceleration = 2.0
 
-        goal = pfm.PathFinderGoal()
+        goal = pfm.SolvePathProblemGoal()
         goal.params = params
         goal.scenario = scenario
         goal.vehicle = vehicle
+        goal.timeout = self.pathfinder_timeout
+        goal.emitDebug = True
 
         #rospy.loginfo("Submitting goal:\n%s", goal)
 
@@ -253,16 +254,20 @@ class ControllerNode():
             rospy.logwarn("Path finder did not return a solution in time.")
 
         else:
-            solution = self.pfclient.get_result().solution
-            if not solution.finished:
-                rospy.logwarn("Path finder solution is not complete")
-            
-            c = len(solution.solutionWaypoints)
-            if c==0:
-                rospy.logwarn("Path finder returned no waypoints")
-            else:
-                rospy.logdebug("Path finder returned %d solution waypoints" % c)
-            
+            solution = self.pfclient.get_result().bestPath
+        
+            q = solution.quality
+            if q==0:
+                rospy.logwarn("Path finder failed to find solution")
+            elif q==1:
+                rospy.loginfo("Path finder returned incomplete solution")
+            elif q==3:
+                rospy.loginfo("Path finder found optimal solution")
+
+            if q>0:
+                rospy.loginfo("Path finder solution: numWaypointsCompleted=%d, estimatedTime=%f" % \
+                        (solution.numWaypointsCompleted, solution.estimatedTime))
+
             for swp in solution.solutionWaypoints:
                 wp = swp.position
                 rospy.logdebug("Solution waypoint: (%s,%s)" % (wp.lat, wp.lon))
@@ -272,7 +277,6 @@ class ControllerNode():
 
         if not wps:
             rospy.logerr("No solution waypoints. Proceeding directly to goal!")
-            #wps.append(GPSCoord(target.lat, target.lon, 1))
             wps.append(target)
 
         if next_target:

@@ -441,7 +441,7 @@ def handle_flywaypoints(msg):
             return FlyWaypointsResponse(False)
          
         # wait a second
-        rospy.sleep(0.5)
+        rospy.sleep(2.0)
     
         # now execute mission waypoints
         set_custom_mode(rhc.MODE_AUTO)
