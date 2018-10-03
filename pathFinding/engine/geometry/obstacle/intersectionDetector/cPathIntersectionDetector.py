@@ -7,6 +7,7 @@ import numpy as np
 from utils import profile
 
 
+# TODO: Add cleanup/deallocation step to surounding code 
 class CPathIntersectionDetector(PathIntersectionDetector):
     
     def __init__(self, params, vehicle):

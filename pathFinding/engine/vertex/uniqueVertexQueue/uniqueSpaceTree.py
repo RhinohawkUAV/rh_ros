@@ -1,4 +1,3 @@
-import constants
 import numpy as np
 
 _subIndexMultipliers = np.array([1, 2, 4, 8], np.int32)
