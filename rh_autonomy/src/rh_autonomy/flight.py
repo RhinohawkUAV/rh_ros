@@ -12,7 +12,7 @@ import mavros
 from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import State, Waypoint, ParamValue
 from mavros_msgs.srv import SetMode, ParamSet
-from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, \
+from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, CommandLong, \
     WaypointPush, WaypointClear, WaypointSetCurrent
 
 from rh_msgs.srv import TakeOff, TakeOffResponse
@@ -30,6 +30,7 @@ set_mode = None
 arming = None
 set_home = None
 takeoff = None
+command = None
 land = None
 wp_push = None
 wp_clear = None
@@ -124,6 +125,30 @@ def set_custom_mode(custom_mode):
         clean()
 
     return success
+
+
+def set_airspeed(airspeed):
+    """ Sets the airspeed in m/s
+    """
+
+    rospy.loginfo("Setting desired airspeed to %2.2f m/s" % airspeed)
+    try:
+        ret = command(
+                command=rhc.MAV_CMD_DO_CHANGE_SPEED, \
+                confirmation=0, \
+                param1=0, \
+                param2=airspeed, \
+                param3=-1, \
+                param4=0)
+    except rospy.ServiceException as e:
+        logexc('Error setting airspeed')
+        return False
+
+    if not ret.success:
+        rospy.logerr('Error setting airspeed: unknown')
+        return False
+
+    return True
 
 
 def do_takeoff_cur_gps(min_pitch, yaw, altitude):
@@ -454,11 +479,12 @@ def start():
     rospy.init_node(name())
     mavros.set_namespace()
 
-    global set_mode, set_param, arming, set_home, takeoff, land, wp_push, wp_clear, wp_set
+    global set_mode, set_param, arming, set_home, takeoff, command, land, wp_push, wp_clear, wp_set
     set_mode = get_proxy('/mavros/set_mode', SetMode)
     set_param = get_proxy('/mavros/param/set', ParamSet)
     arming = get_proxy('/mavros/cmd/arming', CommandBool)
     set_home = get_proxy('/mavros/cmd/set_home', CommandHome)
+    command = get_proxy('/mavros/cmd/command', CommandLong)
     takeoff = get_proxy('/mavros/cmd/takeoff', CommandTOL)
     land = get_proxy('/mavros/cmd/land', CommandTOL)
     wp_push = get_proxy('/mavros/mission/push', WaypointPush)
@@ -478,6 +504,8 @@ def start():
     rospy.sleep(2)
     rospy.loginfo("Clearing waypoints")
     wp_clear()
+
+    set_airspeed(rhc.CRUISE_SPEED)
 
     rospy.loginfo("Flight controller ready.")
     rospy.spin()

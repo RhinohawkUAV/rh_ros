@@ -19,10 +19,14 @@ MAV_CMD_WAYPOINT = 16
 MAV_CMD_RTL = 20
 MAV_CMD_TAKEOFF = 84 if isQuadPlane else 22
 MAV_CMD_LAND = 85 if isQuadPlane else 21
+MAV_CMD_DO_CHANGE_SPEED = 178
 MAV_CMD_DO_SET_HOME = 179
 
 # Mission cruise altitude in meters
 CRUISE_ALTITUDE = 30
+
+# Mission cruise speed in meters/second
+CRUISE_SPEED = 50
 
 # Should we search for a target, or just land?
 PERFORM_SEARCH = False
