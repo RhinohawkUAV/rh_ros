@@ -45,9 +45,9 @@ for folder in root.Document.Folder:
 
             points = []
             print("Loading no fly zone '%s'" % placemark.name)
-            coordStr = placemark.Polygon.outerBoundaryIs.LinearRing.coordinates.pyval.strip()
-            for coord in coordStr.split(" "):
-                coords = [float(n) for n in coord.split(",")]
+            coordStrList = placemark.Polygon.outerBoundaryIs.LinearRing.coordinates.pyval.strip()
+            for coordStr in coordStrList.split(" "):
+                coords = [float(n) for n in coordStr.split(",")]
                 if DEBUG: print(coords)
                 points.append(coordsToPoint(coords))
             
@@ -84,7 +84,7 @@ for folder in root.Document.Folder:
             pname = placemark.name.pyval.lower()
             print("Loading geofence waypoint '%s'" % pname)
             coordStr = placemark.Point.coordinates.pyval.strip()
-            coords = [float(n) for n in coord.split(",")]
+            coords = [float(n) for n in coordStr.split(",")]
             if DEBUG: print(coords)
             points.append(coordsToPoint(coords))
 
