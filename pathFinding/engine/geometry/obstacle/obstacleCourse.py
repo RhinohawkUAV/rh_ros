@@ -1,14 +1,15 @@
 from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
-# from engine.geometry.obstacle.intersectionDetector.cPathIntersectionDetector import CPathIntersectionDetector
+from engine.geometry.obstacle.intersectionDetector.cPathIntersectionDetector import CPathIntersectionDetector
 from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from gui.core import Drawable
 
 
-def createObstacleCourse(params, vehicle):
+def createObstacleCourse(params, vehicle, scenario):
     pathSegmentFinder = ArcSegmentFinder(params, vehicle)
+    pathSegmentFinder.setState(scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)    
 #   pathSegmentFinder = LineSegmentFinder(params, vehicle)
-    pathIntersectionDetector = PyPathIntersectionDetector(params, vehicle)
-#    pathIntersectionDetector = CPathIntersectionDetector(params, vehicle)
+    pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
+#     pathIntersectionDetector = CPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
     return ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
 
     
@@ -18,14 +19,7 @@ class ObstacleCourse(Drawable):
         self.pathSegmentFinder = pathSegmentFinder
         self.pathIntersectionDetector = pathIntersectionDetector
 
-    def setScenarioState(self, scenario):
-        self.setState(scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)   
-        
-    def setState(self, boundaryPoints, polyNFZs, circularNoFlyZones):
-        self.pathSegmentFinder.setState(boundaryPoints, polyNFZs, circularNoFlyZones)
-        self.pathIntersectionDetector.setState(boundaryPoints, polyNFZs, circularNoFlyZones)
-
-    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
+    def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection, ignoreBuffers=False):
         """
         Find legal path segments from a given starting point and velocity to the moving target, ending at finalSpeed.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
@@ -39,10 +33,16 @@ class ObstacleCourse(Drawable):
         :return: (valid,filtered)  The 1st list of valid path segments (do not intersect NFZs).  The 2nd list 
         shows path segments that were filtered, for debugging purposes.
         """
-        pathSegments = self.pathSegmentFinder.findPathSegmentsToPoint(startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection)
-        return self._filterPathSegments(pathSegments)
+        pathSegments = self.pathSegmentFinder.findPathSegmentsToPoint(startTime,
+                                                                      startPoint,
+                                                                      startSpeed,
+                                                                      startUnitVelocity,
+                                                                      targetPoint,
+                                                                      velocityOfTarget,
+                                                                      legalRotDirection)
+        return self._filterPathSegments(pathSegments, ignoreBuffers=ignoreBuffers)
 
-    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection):
+    def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection, ignoreBuffers=False):
         """
         Find legal path segments from a given starting point and velocity to vertices of no fly zones.
         This takes into account the time at which this query is made, which will affect the position of DNFZs.
@@ -54,9 +54,9 @@ class ObstacleCourse(Drawable):
         shows path segments that were filtered, for debugging purposes.
         """
         pathSegments = self.pathSegmentFinder.findPathSegments(startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection)
-        return self._filterPathSegments(pathSegments)
+        return self._filterPathSegments(pathSegments, ignoreBuffers=ignoreBuffers)
     
-    def _filterPathSegments(self, pathSegments):
+    def _filterPathSegments(self, pathSegments, ignoreBuffers):
         unfilteredPathSegments = []
         filteredPathSegments = []
         for pathSegment in pathSegments:

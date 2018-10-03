@@ -8,8 +8,7 @@ class PathFindDrawable(Drawable):
 
     def __init__(self, params, vehicle, scenario):
         self.scenario = scenario
-        self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
-        self._obstacleCourse.setScenarioState(scenario)
+        self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle, scenario)
 
         self._finished = False
         self._bestPath = None

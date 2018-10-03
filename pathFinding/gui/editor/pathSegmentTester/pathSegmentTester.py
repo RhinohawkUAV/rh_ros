@@ -42,8 +42,7 @@ class PathSegmentTester(SubGUI):
 
     def onSwitch(self, inputDict):
         SubGUI.onSwitch(self, inputDict)
-        self._obstacleCourse = obstacleCourse.createObstacleCourse(DEFAULT_PARAMS, DEFAULT_VEHICLE)
-        self._obstacleCourse.setScenarioState(self._inputDict[SCENARIO_KEY])
+        self._obstacleCourse = obstacleCourse.createObstacleCourse(DEFAULT_PARAMS, DEFAULT_VEHICLE, self._inputDict[SCENARIO_KEY])
         self._pathFinderDrawable = PathFindDrawable(DEFAULT_PARAMS, DEFAULT_VEHICLE, self._inputDict[SCENARIO_KEY])
 
     def updateDrawable(self):

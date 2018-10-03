@@ -17,8 +17,7 @@ class PathFinder:
     def __init__(self, params, scenario, vehicle):
         self._params = params
         self._vehicle = vehicle
-        self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle)
-        self._obstacleCourse.setScenarioState(scenario)
+        self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle, scenario)
 
         self._start = scenario.startPoint
         velocity = np.array(scenario.startVelocity, np.double)
