@@ -18,7 +18,7 @@ from ros.rosConstants import PATHFINDER_NODE_ID, SUBMIT_PROBLEM_SERVICE, \
     PATHFINDER_INPUT_TOPIC, PATHFINDER_SERVER
 
 # Keep dumps of the last 20 solved problems
-MAX_FILE_DUMPS = 20
+MAX_FILE_DUMPS = 1000
 
 
 class RosPathFinderServer:

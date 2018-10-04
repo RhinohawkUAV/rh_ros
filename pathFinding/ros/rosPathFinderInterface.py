@@ -15,9 +15,8 @@ class RosPathFinderInterface(PathFinderInterface):
     Manages a remote ROS path finder for use in PathFindViewer.
     """
 
-    def __init__(self, gpsReference):
-        self._gpsReference = gpsReference
-        self._messageConverter = MessageConverter(self._gpsReference)
+    def __init__(self, outgoingGPSConversion):
+        self._outgoingGPSConversion = outgoingGPSConversion
         # TODO: Figure out how to interface with other namespace
 #         rospy.Subscriber("rh/" + PATHFINDER_INPUT_TOPIC, PathDebug, self.receiveDebug)
 #         rospy.Subscriber("rh/" + PATHFINDER_DEBUG_TOPIC, PathSolution, self.receiveSolution)
@@ -29,13 +28,14 @@ class RosPathFinderInterface(PathFinderInterface):
     
     def submitProblem(self, params, scenario, vehicle):
         try:
-            paramsMsg = self._messageConverter.paramsToMsg(params)
-            scenarioMsg = self._messageConverter.scenarioToMsg(scenario)
-            vehicleMsg = self._messageConverter.vehicleToMsg(vehicle)
+            outgoingMessageConverter = MessageConverter(self._outgoingGPSConversion)
+            paramsMsg = outgoingMessageConverter.paramsToMsg(params)
+            scenarioMsg = outgoingMessageConverter.scenarioToMsg(scenario)
+            vehicleMsg = outgoingMessageConverter.vehicleToMsg(vehicle)
             # TODO: Do we need to do this every time?  Not in GUI thread.  Need to handle below as well.
             rospy.wait_for_service(SUBMIT_PROBLEM_SERVICE)
             func = rospy.ServiceProxy(SUBMIT_PROBLEM_SERVICE, pfs.SubmitPathProblem)
-            func(paramsMsg, scenarioMsg, vehicleMsg, self._gpsReference)
+            func(paramsMsg, scenarioMsg, vehicleMsg, self._outgoingGPSConversion)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
             
@@ -48,9 +48,10 @@ class RosPathFinderInterface(PathFinderInterface):
             print "Service call failed: %s" % e    
         
     def solveProblem(self, params, scenario, vehicle, timeout):
-        paramsMsg = self._messageConverter.paramsToMsg(params)
-        scenarioMsg = self._messageConverter.scenarioToMsg(scenario)
-        vehicleMsg = self._messageConverter.vehicleToMsg(vehicle)
+        outgoingMessageConverter = MessageConverter(self._outgoingGPSConversion)
+        paramsMsg = outgoingMessageConverter.paramsToMsg(params)
+        scenarioMsg = outgoingMessageConverter.scenarioToMsg(scenario)
+        vehicleMsg = outgoingMessageConverter.vehicleToMsg(vehicle)
         self._solveAction.wait_for_server()
         goal = pfm.SolvePathProblemGoal()
         goal.params = paramsMsg
@@ -76,10 +77,10 @@ class RosPathFinderInterface(PathFinderInterface):
 
     def _rosInputAccepted(self, pathInputMsg):
 
+        self._messageConverter = MessageConverter(pathInputMsg.scenario.startPoint)        
         (params, scenario, vehicle) = self._messageConverter.msgToInput(pathInputMsg)
         self._fireInputAccepted(params, scenario, vehicle)
         
     def _rosStepPerformed(self, pathDebugMsg):
-
         (finished, bestPath, pastPathSegments, futurePathSegments, filteredPathSegments) = self._messageConverter.msgToPathDebug(pathDebugMsg)
         self._fireStepPerformed(finished, bestPath, pastPathSegments, futurePathSegments, filteredPathSegments)
