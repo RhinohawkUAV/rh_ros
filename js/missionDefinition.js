@@ -8,6 +8,7 @@ var drawType = '';
 var clickPoint;
 var drawing = false;
 var plannedPathColor ='#DCDCDC';
+var missionBoundsColor = '#ffffff'
 
 var waypointIcons = [];
 
@@ -16,6 +17,7 @@ var outlineCoords = [];
 
 var tempLayers;
 var missionLayers;
+var pathPlanLayer;
 
 var geofenceCoords = [];
 var mission_wpsCoords = [];
@@ -216,29 +218,56 @@ function loadMissionPlan(){
       drawMissionPlan(theMission, theMissionPlan);
 }
 
-function drawMissionPlan(missionObject, missionSolution){
+function drawMissionPlan(missionObject){
+  missionLayers.clearLayers();
+  waypointNumber = 1;
 
   //Plot Mission Boundry
-  var missionBounds =   L.polygon(missionObject.boundaryPoints, {color: missionBoundsColor, weight:2, fillOpacity:0, interactive:false,dashArray:"2, 6 "}).addTo(map);
-  map.setView(missionObject.boundaryPoints[0], 13);
+  var theGeofence = [];
+  for (var i=0; i<missionObject.geofence.points.length; i++ ){
+    theGeofence.push([missionObject.geofence.points[i].lat,missionObject.geofence.points[i].lon] )
+  }
+  missionLayers.addLayer(new L.polygon(theGeofence, {color: '#ffffff', weight:2, fillOpacity:0, interactive:false,dashArray:"2, 6 "}));
+ // map.setView(missionObject.boundaryPoints[0], 13);
 
   // PLot NFZs
-  for (var i=0; i < missionObject.noFlyZones.length; i++){
-      var newNFZ =   L.polygon(missionObject.noFlyZones[i].points, {color: NFZcolor, weight:2, fillOpacity:.2, interactive:false}).addTo(map);
+  var nfzCoords = [];
+
+  for (var i=0; i < missionObject.static_nfzs.length; i++){
+
+    for (var k=0; k<missionObject.static_nfzs[i].points.length; k++){
+      nfzCoords.push([missionObject.static_nfzs[i].points[k].lat, missionObject.static_nfzs[i].points[k].lon]);
+    }
+    missionLayers.addLayer(new L.polygon(nfzCoords, {color: '#DF3500', weight:1, fillOpacity:.2, interactive:false}));
   }
+
 
   //Plot Wayponts
-   for (var i=0; i < missionObject.wayPoints.length; i++){
-       var waypointMarker = new L.marker(missionObject.wayPoints[i], {icon:endPositionIcon, opacity: 1 }).addTo(map);
+
+   for (var i=0; i < missionObject.mission_wps.points.length; i++){
+
+    if(waypointNumber < 11){
+      missionLayers.addLayer(new L.marker([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon], {icon:waypointIcons[waypointNumber-1], title: "Waypoint "+waypointNumber}));
+    }else{
+      missionLayers.addLayer(new L.circleMarker([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon], {radius: 10, stroke:false, color:'#FFCB00', fillOpacity:1, title: "Waypoint "+waypointNumber}));
+    }
+    
+    mission_wpsCoords.push([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon]);
+    waypointNumber += 1;
+
   }
+
+}
+
+function drawMissionSolution(missionSolution){
 
   // Plot Solution Path
-  var pathSegs = missionSolution.solutionPathSegments;
+  //var pathSegs = missionSolution.solutionPathSegments;
 
-  for (var i=0; i < pathSegs.length; i++){
+ /*for (var i=0; i < pathSegs.length; i++){
       drawArc(pathSegs[i].arc.radius, pathSegs[i].arc.center, pathSegs[i].arc.start, pathSegs[i].arc.length, pathSegs[i].lineStartPoint, pathSegs[i].endPoint);
 
-  }
+  }*/
 }
 
 

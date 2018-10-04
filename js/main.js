@@ -27,6 +27,7 @@ var airSpeedGauge;
 var imageTopic;
 
 
+
 /*var nfz1 =  [[-35.2653204217,149.167854404],[-35.2680289162,149.172119218],[-35.2713521399,149.167857198],[-35.2710924879,149.158370304]];
 var nfz2 = [[-35.2784356099,149.157626635],[ -35.2769489533,149.160077947],[-35.2777347419,149.163702692]];
 var nfzs = [nfz1, nfz2];
@@ -53,6 +54,7 @@ function connectToROS(address){
 
     tempLayers = L.layerGroup().addTo(map);
     missionLayers = L.layerGroup().addTo(map);
+    pathPlanLayer = L.layerGroup().addTo(map);
 
 }
   
@@ -133,189 +135,48 @@ var gaugeTopSpeed = 20;
 
 
 function connectToTopics() {
-
-  //Set Up Topics -------------------------------------------------------------------------------
-
-    var compassTopic = new ROSLIB.Topic({
-        ros: ros,
-        name: '/mavros/global_position/compass_hdg',
-        messageType: 'std_msgs/Float64'
-      });
-
-    var altitudeTopic = new ROSLIB.Topic({
-        ros: ros,
-        name: '/mavros/global_position/local',
-        messageType: 'nav_msgs/Odometry'
-      });
-
-    var navSatTopic = new ROSLIB.Topic({
-        ros: ros,
-        name: '/mavros/global_position/raw/fix',
-        messageType: 'sensor_msgs/NavSatFix'
-      });
-
-    var groundSpeedTopic = new ROSLIB.Topic({
-        ros: ros,
-        name: '/mavros/global_position/raw/gps_vel',
-        messageType: 'geometry_msgs/TwistStamped'
-      });
-
-    imageTopic = new ROSLIB.Topic({
-        ros : ros,
-        name : '/gopro/aruco_marker/compressed',
-        messageType : 'sensor_msgs/CompressedImage'
-      });
-
-    var clockTopic = new ROSLIB.Topic({
-          ros : ros,
-          name : '/mavros/time_reference',
-          messageType : 'sensor_msgs/TimeReference'
-      });
-
-    var waypoints = new ROSLIB.Topic({
-          ros : ros,
-          name : '/mavros/mission/waypoints',
-          messageType : 'mavros_msgs/WaypointList'
-      });
-
-    var targetLocationTopic = new ROSLIB.Topic({
-        ros : ros,
-        name : '/gopro/target_position_local',
-        messageType : 'geometry_msgs/PointStamped'
+  console.log("connect to topics");
+  var vehicleState = new ROSLIB.Topic({
+      ros: ros,
+      name: '/rh/state',
+      messageType: 'rh_msgs/State'
     });
 
-    var batteryTopic = new ROSLIB.Topic({
-        ros : ros,
-        name : '/mavros/battery',
-        messageType : 'sensor_msgs/BatteryState'
-    });
+  vehicleState.subscribe(function(message) {
+    //console.log(message);
 
-    
-  //Subscribe to Topics -------------------------------------------------------------------------------
+    //position
+    var coords = [message.vehicle_state.position.lat, message.vehicle_state.position.lon];
+    document.getElementById("tel-lat").innerHTML= coords[0];
+    document.getElementById("tel-long").innerHTML= coords[1];
+    uavPath.pushMaxLimit(coords, 5 );
+    if(uavPath.length > 1){
+      updateMapPath();
+    }else{
+      map.setView(coords, 18);
+    }
 
-    compassTopic.subscribe(function(message) {
-      compass = message.data;
-      document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.data+'deg'+');');
-      document.getElementById("compass-direction").innerHTML = getDirection(message.data);
-    });
+    //compass heading
+    document.getElementById("compass-pointer").setAttribute('style', 'transform: rotate('+message.vehicle_state.heading+'deg'+');');
+    document.getElementById("compass-direction").innerHTML = getDirection(message.vehicle_state.heading);
 
-    imageTopic.subscribe(function(message) {
-      if (counter == 15){
-        currentImg = "data:image/png;base64," + message.data;
-        document.getElementById( 'aruco-image' ).setAttribute( 'src', currentImg );
-        counter = 0;
-      }else {
-        counter ++;
-      }
-      
-    });
+    //altitude
+    document.getElementById("tel-altitude").innerHTML= Math.round(message.vehicle_state.position.alt);
 
-    altitudeTopic.subscribe(function(message) {
-      var altitudeMeters = message.pose.pose.position.z;
-      msgStr = "";
-      msgStr += `<p class='tel-detail' id='altitude-feet'>${ Math.round( altitudeMeters * 3.28084 ) }<span> FT</span></p>`
-      msgStr += `<p class='tel-detail' id='altitude-meters'>${ Math.round( altitudeMeters ) }<span> M</span></p>`
-      document.getElementById("tel-altitude").innerHTML= msgStr;
-    });
+    //speed
+    document.getElementById("tel-airSpeed").innerHTML= Math.round(message.vehicle_state.airspeed) + "<span> M/S</span>";
 
-    groundSpeedTopic.subscribe(function(message) {
-      document.getElementById("tel-speed").innerHTML= getGroundVelocity(message.twist).toFixed(1) + "<span> M/S</span>";
-      groundSpeedGauge.set(getGroundVelocity(message.twist));
-      airSpeedGauge.set(0);
-    });
+    var pathPlan = [];
+    pathPlan.push(coords);
+    for (var i=0; i<message.apm_wps.length; i++){
+      pathPlan.push([message.apm_wps[i].x_lat, message.apm_wps[i].y_long]);
+    }
+    pathPlanLayer.clearLayers();
+    pathPlanLayer.addLayer(new L.polyline(pathPlan, {color: '#eeeeee', opacity: .4}));
 
-    batteryTopic.subscribe(function(message) {
-      //console.log( message );
-    });
+     drawMissionPlan(message.mission);
 
-    clockTopic.subscribe(function(message){     
-      var theDate = new Date();
-      theDate.setTime(message.time_ref.secs*1000);
-      //console.log(theDate.getSeconds());
-      
-      document.getElementById("tel-time").innerHTML = theDate.getHours()+":"+theDate.getMinutes()+":"+theDate.getSeconds();
-    });
-
-    waypoints.subscribe(function(message){
-        //console.log("waypoint:" + message[0].x_lat);
-    });
-
-    navSatTopic.subscribe(function(message) {
-
-      coords = [message.latitude, message.longitude];
-
-      if (message != null && home == null) {
-        home = coords;
-        console.log("Got home coordinates: "+ home[0] + "," + home[1]);
-        //L.circle(home, {radius: 4, color: '#00ff00'}).addTo(map);
-        L.marker(home,{icon: startPositionIcon}).addTo(map);
-
-        function mark(coords, label) {
-          var marker = new L.marker(coords, {icon:knowPositionIcon, opacity: 1, title:label });
-          marker.addTo(map);
-          L.circle(coords, 10, {stroke: false, color:'#fff', fill: true, fillOpacity:.3, className: 'knownLocation'}).addTo(map);
-        }
-
-        // for bags 6,7,8 we know the marker locations
-        /*
-        mark([38.9778045974, -77.3378556003], "1");
-        mark([38.9778552409, -77.3377138812], "2");
-        mark([38.9777295212, -77.3376484097], "3");
-        mark([38.9776844881, -77.3378142882], "4");
-        mark([38.977631131,  -77.3376425288], "5");
-        */
-      }
-
-      uavPath.pushMaxLimit(coords, 5 );
-
-      // If uavPath was populated before, update it.
-      // Else, 
-      if(uavPath.length > 1){
-        updateMapPath();
-      }else{
-        map.setView(coords, 18);
-      }
-
-      document.getElementById("tel-lat").innerHTML= message.latitude;
-      document.getElementById("tel-long").innerHTML= message.longitude;
-    });
-
- // Marker Location in image stream ---------------------------------------------
-
-    var markerLocation = new ROSLIB.Topic({
-        ros: ros,
-        name: '/gopro/landing_box_location',
-        messageType: 'geometry_msgs/PointStamped'
-      });
-    
-    markerLocation.subscribe(function(message) {
-      pointInImage = [message.point.x, message.point.y];
-    });
-  
-
- // Target Location ---------------------------------------------
-  
-    targetLocationTopic.subscribe(function(message) {
-      if (showArucos) {
-        if (message.point != null) {
-            dx = message.point.x;
-            dy = message.point.y;
-            //console.log("Got local target position: "+dx+","+dy)
-            // Formula from https://stackoverflow.com/questions/2839533/adding-distance-to-a-gps-coordinate
-            lat = home[0] + (180/Math.PI) * (dy/6378137);
-            lon = home[1] + (180/Math.PI) * (dx/6378137) / Math.cos(home[1]);
-            //console.log("    Global target position: "+lat+","+lon)
-            var newAruco = L.marker([lat, lon],{icon: arucoIcon}).addTo(map);
-            newAruco.bindPopup("<div class='aruco-popup-img-holder'><img src='"+currentImg+"' style='top:"+-(pointInImage[1]-50)+"px; left:"+-(pointInImage[0]-50)+"px;' class='aruco-popup-img'></div>", {className:"aruco-popup"});
-            targetLoc = [lat, lon];
-        }
-      }
-    });
-
-
-    // Add placeholder icons to map, to be updated with real data -------------------
-    //addJoe([38.977810, -77.338848]);
-    //addWaypoint([38.977290, -77.338628]);
+  });
 }
 
 
