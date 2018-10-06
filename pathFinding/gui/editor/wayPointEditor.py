@@ -14,17 +14,17 @@ class WayPointEditor(SubGUI):
         self._offset = None
         self._dragIndex = None
 
-    def onSwitch(self, inputDict):
-        SubGUI.onSwitch(self, inputDict)
-        self._points = [inputDict[SCENARIO_KEY].startPoint]
-        self._startVelocity = inputDict[SCENARIO_KEY].startVelocity
-        self._points.extend(inputDict[SCENARIO_KEY].wayPoints)
+    def onSwitch(self, params, scenario, vehicle, testInput):
+        SubGUI.onSwitch(self, params, scenario, vehicle, testInput)
+        self._points = [self._scenario.startPoint]
+        self._startVelocity = self._scenario.startVelocity
+        self._points.extend(self._scenario.wayPoints)
     
     def sync(self):
-        self._inputDict[SCENARIO_KEY].startPoint = self._points[0]
-        self._inputDict[SCENARIO_KEY].startVelocity = self._startVelocity
+        self._scenario.startPoint = self._points[0]
+        self._scenario.startVelocity = self._startVelocity
         if len(self._points) > 1:
-            self._inputDict[SCENARIO_KEY].wayPoints = self._points[1:]
+            self._scenario.wayPoints = self._points[1:]
     
     def onLeftPress(self, point, control=False):
         if control:

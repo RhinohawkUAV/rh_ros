@@ -4,16 +4,13 @@ Benchmarks running the path-finder.
 import time
 
 from engine import interface
-from engine.interface.fileUtils import SCENARIO_KEY
-from engine.interface.pathFindParams import DEFAULT_PARAMS
-from engine.interface.vehicle import DEFAULT_VEHICLE
 from engine.pathFinder import PathFinder
 from utils import profile
 
 if __name__ == "__main__":
 
-    inputDict = interface.loadInput("../scenarios/veryhard.json")
-    pathFinder = PathFinder(DEFAULT_PARAMS, inputDict[SCENARIO_KEY], DEFAULT_VEHICLE)
+    (params, scenario, vehicle) = interface.load("../scenarios/veryhard.json")
+    pathFinder = PathFinder(params, scenario, vehicle)
     bestPath = pathFinder.getBestPath()
  
     start = time.time()

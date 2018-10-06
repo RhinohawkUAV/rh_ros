@@ -8,7 +8,7 @@ class BoundaryBuilder(PolyBuilder):
         PolyBuilder.__init__(self)
 
     def _polyBuilt(self, points):
-        self._inputDict[SCENARIO_KEY].boundaryPoints = points
+        self._scenario.boundaryPoints = points
 
     def draw(self, canvas, color="red", **kwargs):
         PolyBuilder.draw(self, canvas, color=color)

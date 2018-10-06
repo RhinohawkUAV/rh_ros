@@ -10,5 +10,5 @@ class NFZBuilder(PolyBuilder):
         PolyBuilder.__init__(self)
 
     def _polyBuilt(self, points):
-        self._inputDict[SCENARIO_KEY].noFlyZones.append(NoFlyZone(points, (0.0, 0.0)))
+        self._scenario.noFlyZones.append(NoFlyZone(points, (0.0, 0.0)))
 

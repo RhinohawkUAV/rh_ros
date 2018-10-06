@@ -5,6 +5,7 @@ import tkFileDialog
 from constants import COURSE_DIM
 from engine import interface
 from engine.geometry import calcs
+from engine.interface import scenario
 from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY, \
     INPUT_PARAMS_KEY
 from engine.interface.generator import Generator
@@ -23,15 +24,14 @@ class PathFindViewer(Visualizer):
 
     def __init__(self, pathFinderInterface, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
-        self._lastScenario = None
         self._showFiltered = False
         self._params = None
         self._vehicle = None
+        self._scenario = None
         self._pointOfInterest = None
         self._pathFinderInterface = pathFinderInterface
         self._pathFinderInterface.setListeners(self.inputAccepted, self.stepPerformed, self.solved)
         self._pathFindDrawable = None
-        self._pathFindInput = None
         self.bindWithTransform('<Key>', self.onKeyPressed)
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Button-1>', self.onLeftClick)
@@ -47,18 +47,7 @@ class PathFindViewer(Visualizer):
             fileName = tkFileDialog.askopenfilename(defaultextension=".json", initialdir=initialPath)
             
             if isinstance(fileName, basestring) and not fileName == '':
-                self._pathFindInput = interface.loadInput(fileName)
-                scenario = self._pathFindInput[SCENARIO_KEY]
-                if self._pathFindInput.has_key(VEHICLE_KEY):
-                    vehicle = self._pathFindInput[VEHICLE_KEY]
-                else:
-                    vehicle = DEFAULT_VEHICLE
-
-                if self._pathFindInput.has_key(INPUT_PARAMS_KEY):
-                    params = self._pathFindInput[INPUT_PARAMS_KEY]
-                else:
-                    params = DEFAULT_PARAMS                    
-
+                (params, scenario, vehicle) = interface.load(fileName)
                 self._pathFinderInterface.submitProblem(params, scenario, vehicle)
         elif key == "s":
             # Can always find the scenarios folder relative to this file regardless of how the program is started
@@ -67,14 +56,14 @@ class PathFindViewer(Visualizer):
             fileName = tkFileDialog.asksaveasfilename(defaultextension=".json", initialdir=initialPath)
             
             if isinstance(fileName, basestring) and not fileName == '':
-                interface.saveInput(fileName, self._pathFindInput)
+                interface.save(fileName, self._params, self._scenario, self._vehicle)
         elif key == "r":
             self.setStateRandom()
         elif key == "p":
             print profile.result()
             profile.printAggregate()
         elif key == "y":
-            self._pathFinderInterface.solveProblem(self._lastParams, self._lastScenario, self._lastVehicle, 2.0)
+            self._pathFinderInterface.solveProblem(self._params, self._scenario, self._vehicle, 2.0)
         elif key == "z":
             self._showFiltered = not self._showFiltered
             self.updateDisplay()
@@ -118,9 +107,7 @@ class PathFindViewer(Visualizer):
         self._params = params
         self._scenario = scenario
         self._vehicle = vehicle
-        self._lastParams = self._params
-        self._lastScenario = self._scenario
-        self._lastVehicle = self._vehicle
+        
         # Show a slight extra buffer around the border
         bounds = scenario.calcBounds()
         centerX = (bounds[0] + bounds[2]) / 2.0
@@ -146,8 +133,8 @@ class PathFindViewer(Visualizer):
         self._pathFinderInterface.stepProblem(10)
     
     def onRightClick(self, point, event):
-        if self._lastScenario is not None:
-            self._pathFinderInterface.submitProblem(self._lastParams, self._lastScenario, self._lastVehicle)
+        if self._scenario is not None:
+            self._pathFinderInterface.submitProblem(self._params, self._scenario, self._vehicle)
         
     def onMouseMotion(self, point, event):
         self._pointOfInterest = point

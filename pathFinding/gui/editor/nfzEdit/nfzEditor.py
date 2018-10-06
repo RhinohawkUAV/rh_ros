@@ -15,13 +15,13 @@ class NFZEditor(SubGUI):
         self._mover = NoFlyMover()
         self._velocityChanger = NFZVelocityChanger()
 
-    def onSwitch(self, inputDict):
-        SubGUI.onSwitch(self, inputDict)
-        self._nfzEdit = EditableNoFlyZoneList(inputDict[SCENARIO_KEY].noFlyZones)
-        inputDict[SCENARIO_KEY].noFlyZones = []
+    def onSwitch(self, params, scenario, vehicle, testInput):
+        SubGUI.onSwitch(self, params, scenario, vehicle, testInput)
+        self._nfzEdit = EditableNoFlyZoneList(self._scenario.noFlyZones)
+        self._scenario.noFlyZones = []
     
     def onExit(self):
-        self._inputDict[SCENARIO_KEY].noFlyZones = self._nfzEdit.asInput()
+        self._scenario.noFlyZones = self._nfzEdit.asInput()
         
     def onLeftPress(self, point, control=False):
         if control:

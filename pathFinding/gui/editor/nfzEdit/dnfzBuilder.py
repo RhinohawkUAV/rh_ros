@@ -24,7 +24,7 @@ class DNFZBuilder(SubGUI):
             self._inputMode += 1
         else:
             dnfz = DynamicNoFlyZone(self._previewCenter, self._previewRadius, self._previewVelocity)
-            self._inputDict[SCENARIO_KEY].dynamicNoFlyZones.append(dnfz)
+            self._scenario.dynamicNoFlyZones.append(dnfz)
             self._previewCenter = None
             self._previewRadius = 0.0
             self._previewVelocity = np.array((0, 0), np.double)
@@ -42,10 +42,10 @@ class DNFZBuilder(SubGUI):
     def onKey(self, point, key, ctrl=False):
         if key == "Delete":
             keepDNFZs = []
-            for dnfz in self._inputDict[SCENARIO_KEY].dynamicNoFlyZones:
+            for dnfz in self._scenario.dynamicNoFlyZones:
                 if not calcs.isPointInCircle(dnfz.center, dnfz.radius, point):
                     keepDNFZs.append(dnfz)
-            self._inputDict[SCENARIO_KEY].dynamicNoFlyZones = keepDNFZs
+            self._scenario.dynamicNoFlyZones = keepDNFZs
     
     def draw(self, canvas, **kwargs):
         SubGUI.draw(self, canvas, **kwargs)

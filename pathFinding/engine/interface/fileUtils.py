@@ -6,15 +6,16 @@ import json
 from engine.interface import testScenario
 from engine.interface.dynamicNoFlyZone import DynamicNoFlyZone
 from engine.interface.noFlyZone import NoFlyZone
+from engine.interface.pathFindParams import PathFindParams
 from engine.interface.road import Road
 from engine.interface.scenario import Scenario
 from engine.interface.testScenario import TestScenario
+from engine.interface.vehicle import Vehicle
 import numpy as np
 
 INPUT_PARAMS_KEY = "params"
 SCENARIO_KEY = "scenario"
 VEHICLE_KEY = "vehicle"
-TEST_INPUT_KEY = "testScenario"
 
 
 class Encoder(json.JSONEncoder):
@@ -32,24 +33,29 @@ def encode(obj):
     return json.dumps(obj, cls=Encoder, indent=4)
 
 
-def save(fileName, params, scenario, vehicle):
+def saveDict(fileName, dataDict):
     fileHandle = open(fileName, 'w')
-    json.dump({INPUT_PARAMS_KEY:params, SCENARIO_KEY:scenario, VEHICLE_KEY:vehicle}, fileHandle, cls=Encoder, indent=4)
+    json.dump(dataDict, fileHandle, cls=Encoder, indent=4)
     fileHandle.close()
 
 
-def saveInput(fileName, inputDict):
-    fileHandle = open(fileName, 'w')
-    json.dump(inputDict, fileHandle, cls=Encoder, indent=4)
-    fileHandle.close()
-
-
-def loadInput(fileName):
+def loadDict(fileName):
     fileHandle = open(fileName, 'r')
     fileDict = json.load(fileHandle)
     fileHandle.close()
+    return fileDict
+
     
-    inputDict = {}
+def save(fileName, params, scenario, vehicle):
+    saveDict(fileName, {INPUT_PARAMS_KEY:params, SCENARIO_KEY:scenario, VEHICLE_KEY:vehicle})
+
+
+def load(fileName):
+    fileDict = loadDict(fileName)
+    params = PathFindParams(fileDict[INPUT_PARAMS_KEY]["waypointAcceptanceRadii"],
+                             fileDict[INPUT_PARAMS_KEY]["nfzBufferWidth"],
+                             fileDict[INPUT_PARAMS_KEY]["nfzTargetOffset"],
+                             fileDict[INPUT_PARAMS_KEY]["vertexHeuristicMultiplier"])
     
     scenarioDict = fileDict[SCENARIO_KEY]
     
@@ -65,22 +71,15 @@ def loadInput(fileName):
     for roadDict in scenarioDict["roads"]:
         roads.append(Road(roadDict["startPoint"], roadDict["endPoint"], roadDict["width"]))
 
-    scenarioInput = Scenario(scenarioDict["boundaryPoints"],
+    scenario = Scenario(scenarioDict["boundaryPoints"],
                                   noFlyZones,
                                   dynamicNoFlyZones,
                                   roads,
                                   scenarioDict["startPoint"],
                                   scenarioDict["startVelocity"],
                                   scenarioDict["wayPoints"])
-    
-    inputDict[SCENARIO_KEY] = scenarioInput
+        
+    vehicle = Vehicle(fileDict[VEHICLE_KEY]["maxSpeed"],
+                      fileDict[VEHICLE_KEY]["acceleration"])
+    return (params, scenario, vehicle)
 
-    if fileDict.has_key(TEST_INPUT_KEY):
-        testDict = fileDict[TEST_INPUT_KEY]
-        testScenario = TestScenario(testDict["startPoint"],
-                                     testDict["startVelocity"],
-                                     testDict["targetPoint"],
-                                     testDict["velocityOfTarget"])
-        inputDict[TEST_INPUT_KEY] = testScenario
-    return inputDict
-    

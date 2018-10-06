@@ -21,11 +21,14 @@ class SubGUI(Drawable):
     def onKey(self, point, key, ctrl=False):
         pass
 
-    def onSwitch(self, inputDict):
-        self._inputDict = inputDict
-    
+    def onSwitch(self, params, scenario, vehicle, testInput):
+        self._params = params
+        self._scenario = scenario
+        self._vehicle = vehicle
+        self._testInput = testInput
+
     def onExit(self):
         pass
     
     def draw(self, canvas, **kwargs):
-        draw.drawScenario(canvas, self._inputDict[SCENARIO_KEY])
+        draw.drawScenario(canvas, self._scenario)
