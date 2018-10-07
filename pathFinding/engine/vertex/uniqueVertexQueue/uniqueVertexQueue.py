@@ -1,7 +1,4 @@
-import math
-
 import constants
-from engine.geometry import calcs
 from engine.vertex.uniqueVertexQueue.uniqueSpaceTree import UniqueTree
 from engine.vertex.vertexPriorityQueue import VertexPriorityQueue, \
     QueueEmptyException

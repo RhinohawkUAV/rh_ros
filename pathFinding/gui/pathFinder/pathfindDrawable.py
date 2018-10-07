@@ -72,9 +72,9 @@ class PathFindDrawable(Drawable):
                     gui.draw.drawText(canvas, pathSegment.endPoint , str(pathSegment.debug) + "\n" + str(pathSegment.endPoint))  
             for pathSegment in self._previousPathSegments:
                 pathSegment.draw(canvas, color=pathColor, width=2.0)
-            solutionWidth = 2
+            solutionWidth = 3
         else:
-            solutionWidth = 4
+            solutionWidth = 5
         if self._bestPath is not None:
             for pathSegment in self._bestPath.pathSegments:
                 pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            

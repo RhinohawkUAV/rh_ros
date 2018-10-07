@@ -1,5 +1,3 @@
-import math
-
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 

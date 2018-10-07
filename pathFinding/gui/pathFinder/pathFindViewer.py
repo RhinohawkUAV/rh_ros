@@ -6,8 +6,6 @@ from constants import COURSE_DIM
 from engine import interface
 from engine.geometry import calcs
 from engine.interface import scenario
-from engine.interface.fileUtils import SCENARIO_KEY, VEHICLE_KEY, \
-    INPUT_PARAMS_KEY
 from engine.interface.generator import Generator
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.scenario import Scenario

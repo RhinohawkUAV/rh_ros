@@ -1,5 +1,3 @@
-from Tkinter import Canvas
-
 import Tkinter as tk
 
 root = tk.Tk()

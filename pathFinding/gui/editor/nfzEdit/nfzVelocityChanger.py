@@ -1,6 +1,5 @@
 from gui import Drawable
 from gui.draw import VELOCITY_SCALE
-import numpy as np
 
 
 class NFZVelocityChanger(Drawable):

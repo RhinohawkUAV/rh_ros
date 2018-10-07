@@ -1,12 +1,9 @@
-from constants import MAX_ARC_LENGTH
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
 from engine.geometry.obstacle.arcFinder.arcFinder import ArcFinder
 from engine.geometry.obstacle.arcFinder.circularArcTarget import CircularArcTarget
 from engine.geometry.obstacle.arcFinder.vertexArcTarget import VertexArcTarget
 from engine.geometry.obstacle.pathSegmentFinder import PathSegmentFinder
-from gui.draw import DEFAULT_DASH
-import gui.draw
 from utils import profile
 
 # TODO: Move to calcs

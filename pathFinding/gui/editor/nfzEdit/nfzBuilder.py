@@ -1,6 +1,4 @@
-from engine.interface.fileUtils import SCENARIO_KEY
 from engine.interface.noFlyZone import NoFlyZone
-from gui import Drawable
 from gui.editor.polyBuilder import PolyBuilder
 
 

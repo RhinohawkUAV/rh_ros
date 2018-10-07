@@ -3,13 +3,11 @@ Utilities related to loading/saving/generating scenarios.
 """
 import json
 
-from engine.interface import testScenario
 from engine.interface.dynamicNoFlyZone import DynamicNoFlyZone
 from engine.interface.noFlyZone import NoFlyZone
 from engine.interface.pathFindParams import PathFindParams
 from engine.interface.road import Road
 from engine.interface.scenario import Scenario
-from engine.interface.testScenario import TestScenario
 from engine.interface.vehicle import Vehicle
 import numpy as np
 
