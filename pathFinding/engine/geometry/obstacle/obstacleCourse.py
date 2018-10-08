@@ -54,7 +54,9 @@ class ObstacleCourse(Drawable):
                                                                       targetPoint,
                                                                       velocityOfTarget,
                                                                       legalRotDirection)
-        return self._filterPathSegments(pathSegments, ignoreBuffers=ignoreBuffers)
+        (valid, filtered) = self._filterPathSegments(pathSegments, ignoreBuffers=ignoreBuffers)
+        self.pathSegmentFinder.sortPathSegments(valid)
+        return (valid, filtered)
 
     def findPathSegments(self, startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection, ignoreBuffers=False):
         """
@@ -68,8 +70,10 @@ class ObstacleCourse(Drawable):
         shows path segments that were filtered, for debugging purposes.
         """
         pathSegments = self.pathSegmentFinder.findPathSegments(startTime, startPoint, startSpeed, startUnitVelocity, legalRotDirection)
-        return self._filterPathSegments(pathSegments, ignoreBuffers=ignoreBuffers)
-    
+        (valid, filtered) = self._filterPathSegments(pathSegments, ignoreBuffers=ignoreBuffers)
+        self.pathSegmentFinder.sortPathSegments(valid)
+        return (valid, filtered)
+
     def _filterPathSegments(self, pathSegments, ignoreBuffers):
         unfilteredPathSegments = []
         filteredPathSegments = []

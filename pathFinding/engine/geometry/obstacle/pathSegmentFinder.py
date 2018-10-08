@@ -36,6 +36,13 @@ class PathSegmentFinder(Drawable):
                 vertexNormal = calcs.calcVertexNormal(points[i - 1], points[i], points[i + 1])
                 self.vertexTargets.append(self._createVertexTarget(points[i], velocity, vertexNormal, vertexAngle))
 
+    # TODO: Should probably be called by PathFinder itself at some point
+    def sortPathSegments(self, pathSegments):
+        """
+        Sort path segments in guessed order that they should be added to vertex queue.  Order matters due to uniqueness.
+        """
+        pass
+        
     def stall(self, startTime, startPoint, startSpeed, startUnitVelocity, stallTime):
         """
         Find legal path segments for use in a stall manuever.  Stall is a way to waste time, for wasting time's sake!  This

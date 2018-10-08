@@ -45,7 +45,7 @@ if __name__ == "__main__":
                          startVelocity=startVelocity,
                          wayPoints=waypoints)
  
-    for i in range(50):
+    for i in range(100):
         bestPath = solve(params, scenario, vehicle)
         
         generator = ObstacleGenerator(params, scenario, vehicle)

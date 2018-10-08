@@ -24,6 +24,9 @@ class ArcSegmentFinder(PathSegmentFinder):
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexArcTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
+    def sortPathSegments(self, pathSegments):
+        pathSegments.sort(key=lambda pathSegment: pathSegment.arc.length)
+        
     def stall(self, startTime, startPoint, startSpeed, startUnitVelocity, stallTime):
         # How far to loop (angle) is based on the requested stall time, speed and acceleration
         loopLength = stallTime * self.vehicle.acceleration / startSpeed
@@ -55,7 +58,7 @@ class ArcSegmentFinder(PathSegmentFinder):
             try:
                 pathSegments.append(arcFinder.solve(target, startTime))
             except NoSolutionException:
-                pass 
+                pass
         return pathSegments
 
     # TODO: Merge logic into parent class
