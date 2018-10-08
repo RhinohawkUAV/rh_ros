@@ -110,7 +110,8 @@ print("Base location: %f,%f" % (base[1], base[0]))
 
 print("Setting mission...")
 set_mission = get_proxy('/rh/command/set_mission', SetMission)
-if set_mission(m):
+res = set_mission(m)
+if res and res.success:
     print("Successfully set mission")
     sys.exit(0)
 else:

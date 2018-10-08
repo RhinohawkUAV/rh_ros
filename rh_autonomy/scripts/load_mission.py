@@ -50,7 +50,8 @@ if 'roads' in data:
         print("Loaded road with %d points" % len(points))
         
 set_mission = get_proxy('/rh/command/set_mission', SetMission)
-if set_mission(m):
+res = set_mission(m)
+if res and res.success:
     print("Successfully set mission")
     sys.exit(0)
 else:
