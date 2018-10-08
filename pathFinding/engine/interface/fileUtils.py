@@ -3,6 +3,7 @@ Utilities related to loading/saving/generating scenarios.
 """
 import json
 
+from engine.interface import pathFindParams
 from engine.interface.dynamicNoFlyZone import DynamicNoFlyZone
 from engine.interface.noFlyZone import NoFlyZone
 from engine.interface.pathFindParams import PathFindParams
@@ -50,10 +51,7 @@ def save(fileName, params, scenario, vehicle):
 
 def load(fileName):
     fileDict = loadDict(fileName)
-    params = PathFindParams(fileDict[INPUT_PARAMS_KEY]["waypointAcceptanceRadii"],
-                             fileDict[INPUT_PARAMS_KEY]["nfzBufferWidth"],
-                             fileDict[INPUT_PARAMS_KEY]["nfzTargetOffset"],
-                             fileDict[INPUT_PARAMS_KEY]["vertexHeuristicMultiplier"])
+    params = pathFindParams.fromDict(fileDict[INPUT_PARAMS_KEY])
     
     scenarioDict = fileDict[SCENARIO_KEY]
     

@@ -7,12 +7,14 @@ from engine import interface
 from engine.pathFinder import PathFinder
 from utils import profile
 
-if __name__ == "__main__":
 
-    (params, scenario, vehicle) = interface.load("../scenarios/veryhard.json")
+def benchmarkScenario(fileName):
+    
+    (params, scenario, vehicle) = interface.load(fileName)
     pathFinder = PathFinder(params, scenario, vehicle)
     bestPath = pathFinder.getBestPath()
  
+    print "Benchmarking: " + fileName
     start = time.time()
     while pathFinder.step():
         path = pathFinder.getBestPath()
@@ -21,4 +23,11 @@ if __name__ == "__main__":
             print "Solution: " + str(bestPath.estimatedTime) + " -- found at time: " + str(time.time() - start)
  
     profile.printAggregate()
+
+
+if __name__ == "__main__":
+    benchmarkScenario("../scenarios/unnecessary_loop_simple.json")
+    benchmarkScenario("../scenarios/dynamic1.json")
+    benchmarkScenario("../scenarios/dynamic2.json")
+    benchmarkScenario("../scenarios/occluded.json")
 

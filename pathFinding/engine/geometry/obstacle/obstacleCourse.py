@@ -8,8 +8,8 @@ def createObstacleCourse(params, vehicle, scenario):
     pathSegmentFinder = ArcSegmentFinder(params, vehicle)
     pathSegmentFinder.setState(scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)    
 #   pathSegmentFinder = LineSegmentFinder(params, vehicle)
-    pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
-#     pathIntersectionDetector = CPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
+#     pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
+    pathIntersectionDetector = CPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
     return ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
 
     

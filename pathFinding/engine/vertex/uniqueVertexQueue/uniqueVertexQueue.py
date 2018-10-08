@@ -6,8 +6,7 @@ import numpy as np
 from utils.minheap import MinHeap
 
 
-# TODO: Remove high number of 0 uniqueness points
-# TODO: Is diagonal length useful?
+# TODO: Handle uniqueness of 0.0 (throw away at this point)?
 class UniqueVertexQueue(VertexPriorityQueue):
     """
     This VertexPriorityQueue uses several criteria to determine priority:
@@ -34,21 +33,20 @@ class UniqueVertexQueue(VertexPriorityQueue):
     2. Should uniqueness be given more or less weight compared to estimated time?
     """
 
-    def __init__(self, x, y, width, height, maximumSpeed, numWaypoints, coincidentDistance=constants.UNIQUE_TREE_COINCIDENT_DISTANCE):
+    def __init__(self, x, y, width, height, maximumSpeed, maximumTime, numWaypoints, coincidentDistance=constants.UNIQUE_TREE_COINCIDENT_DISTANCE):
         self._heap = MinHeap()
         self._uniqueTrees = []
         for i in range(numWaypoints):
             self._uniqueTrees.append(UniqueTree(
-                        minPosition=(x, y, -maximumSpeed, -maximumSpeed),
-                        dims=(width, height, 2.0 * maximumSpeed, 2.0 * maximumSpeed),
+                        minPosition=(x, y, -maximumSpeed, -maximumSpeed, 0.0),
+                        dims=(width, height, 2.0 * maximumSpeed, 2.0 * maximumSpeed, maximumTime),
                         coincidentDistance=coincidentDistance))
-#        self._diagonal = calcs.length(np.array((width, height), np.double))
 
     def push(self, vertex):
         vPos = vertex.getPosition()
         vVel = vertex.getVelocity()
         treeIndex = vertex.getNextWaypoint().getIndex()
-        uniqueness = self._uniqueTrees[treeIndex].insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1]]))
+        uniqueness = self._uniqueTrees[treeIndex].insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1], vertex.getTimeTo()]))
         
         if uniqueness == 0.0:
             return

@@ -27,7 +27,7 @@ class PathFinder:
 
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = scenario.calcBounds()
-        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1], vehicle.maxSpeed, len(self._waypoints))
+        self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1], vehicle.maxSpeed, params.maximumTime, len(self._waypoints))
 
         # TODO: Eject starting conditions which are out of bounds (position outside boundaries or initial speed too high)
         # No solution possible, will never put anything in the vertex queue or start any calculations.
