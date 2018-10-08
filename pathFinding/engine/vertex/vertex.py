@@ -219,7 +219,7 @@ class Vertex(BaseVertex):
     def pathSegmentsToWaypoint(self, obstacleCourse):
         return obstacleCourse.findPathSegmentsToPoint(startTime=self.timeToVertex,
                                                       startPoint=self.pathSegment.endPoint,
-                                                      startSpeed=self.pathSegment.speed,
+                                                      startSpeed=self.pathSegment.endSpeed,
                                                       startUnitVelocity=self.pathSegment.endUnitVelocity,
                                                       targetPoint=self._nextWaypoint._position,
                                                       velocityOfTarget=_zero,
@@ -228,7 +228,7 @@ class Vertex(BaseVertex):
     def skirtingPathSegments(self, obstacleCourse):
         return obstacleCourse.findPathSegments(startTime=self.timeToVertex,
                                                       startPoint=self.pathSegment.endPoint,
-                                                      startSpeed=self.pathSegment.speed,
+                                                      startSpeed=self.pathSegment.endSpeed,
                                                       startUnitVelocity=self.pathSegment.endUnitVelocity,
                                                       legalRotDirection=self.pathSegment.nextLegalRotDirection)
 

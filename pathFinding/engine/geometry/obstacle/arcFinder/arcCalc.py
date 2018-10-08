@@ -4,17 +4,21 @@ from engine.geometry import calcs
 from engine.geometry.arc import Arc
 
 
+def create(startPoint, speed, unitVelocity, rotDirection, acceleration):
+    arcRadius = speed * speed / acceleration
+    fromCenterDir = -rotDirection * calcs.CCWNorm(unitVelocity)
+    fromCenterToStart = fromCenterDir * arcRadius
+    center = startPoint - fromCenterToStart
+    arcStart = calcs.angleOfVector(fromCenterToStart, rotDirection)
+    return ArcCalc(rotDirection, arcRadius, center, arcStart, 0.0, speed, speed / arcRadius)
+
+
 class ArcCalc(Arc):
 
-    def __init__(self, startPoint, speed, unitVelocity, rotDirection, acceleration):
-        arcRadius = speed * speed / acceleration
-        fromCenterDir = -rotDirection * calcs.CCWNorm(unitVelocity)
-        fromCenterToStart = fromCenterDir * arcRadius
-        center = startPoint - fromCenterToStart
-        arcStart = calcs.angleOfVector(fromCenterToStart, rotDirection)
-        Arc.__init__(self, rotDirection, arcRadius, center, arcStart, 0.0)
+    def __init__(self, rotDirection, radius, center, start, length, speed, angularSpeed):
+        Arc.__init__(self, rotDirection, radius, center, start, length)
         self.speed = speed
-        self.angularSpeed = speed / self.radius        
+        self.angularSpeed = angularSpeed       
    
     def angleOfVelocity(self, velocity):
         return calcs.angleOfVector(velocity, self.rotDirection) - math.pi / 2.0
@@ -47,6 +51,6 @@ class ArcCalc(Arc):
         endDirection = self.rotDirection * calcs.CCWNorm(endVec)
         return (endPoint, endDirection)
 
-    def cloneArc(self):
-        return Arc(self.rotDirection, self.radius, self.center, self.start, self.length)
+    def copy(self):
+        return ArcCalc(self.rotDirection, self.radius, self.center, self.start, self.length, self.speed, self.angularSpeed)
     

@@ -9,14 +9,18 @@ import numpy as np
 
 class ArcPathSegment(PathSegment):
 
-    def __init__(self, startTime, elapsedTime, lineStartPoint, endPoint, endSpeed, endUnitVelocity, arc, nextLegalRotDirection):
-        PathSegment.__init__(self, startTime, elapsedTime, endPoint, endSpeed, endUnitVelocity, nextLegalRotDirection)
-        self.speed = endSpeed
-
-        self.lineStartPoint = lineStartPoint
+    def __init__(self, startTime, arc, lineTime, nextLegalRotDirection):
+        arcTime = arc.arcTime()
+        (self.lineStartPoint, arcEndDirection) = arc.endInfo()
+        
+        PathSegment.__init__(self,
+                             startTime,
+                             elapsedTime=arcTime + lineTime,
+                             endPoint=self.lineStartPoint + arc.speed * arcEndDirection * lineTime,
+                             endSpeed=arc.speed,
+                             endUnitVelocity=arcEndDirection,
+                             nextLegalRotDirection=nextLegalRotDirection)
         self.arc = arc
-        self.arcTime = self.arc.length * self.arc.radius / self.speed
-        self.lineTime = self.elapsedTime - self.arcTime
 
         self.linearPathPoints = arc.interpolate(MAX_ARC_INTERPOLATION_ERROR)
         numArcPoints = len(self.linearPathPoints)
@@ -25,10 +29,10 @@ class ArcPathSegment(PathSegment):
                 self.linearPathTimes.append(startTime)
         else:
             for i in range(numArcPoints):
-                self.linearPathTimes.append(self.startTime + i * self.arcTime / (numArcPoints - 1))
+                self.linearPathTimes.append(self.startTime + i * arcTime / (numArcPoints - 1))
 
-        if self.lineTime > 0.0:
-            self.linearPathPoints.append(endPoint)
+        if lineTime > 0.0:
+            self.linearPathPoints.append(self.endPoint)
             self.linearPathTimes.append(self.startTime + self.elapsedTime)
         
     def draw(self, canvas, filtered=False, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
@@ -46,12 +50,14 @@ class ArcPathSegment(PathSegment):
         arcPointDebug = self.arc.getPointDebug(point)
         if linePointDebug[1] < arcPointDebug[1]:
             pointDebug = linePointDebug
-            segmentStartTime = self.arcTime
-            segmentTimeElapsed = self.lineTime
+            arcTime = self.arc.arcTime()
+            segmentStartTime = arcTime
+            # Line time is total time without arc time.
+            segmentTimeElapsed = self.elapsedTime - arcTime
         else:
             pointDebug = arcPointDebug
             segmentStartTime = 0.0
-            segmentTimeElapsed = self.arcTime
+            segmentTimeElapsed = self.arc.arcTime()
 
         timeInterp = pointDebug[2]
         if timeInterp < 0.0:

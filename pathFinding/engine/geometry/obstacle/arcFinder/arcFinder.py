@@ -2,7 +2,7 @@ import math
 
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
-from engine.geometry.obstacle.arcFinder.arcCalc import ArcCalc
+from engine.geometry.obstacle.arcFinder import arcCalc
 from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
 
 # TODO: Move to constants
@@ -22,7 +22,7 @@ class ArcFinder:
         # TODO: Should move check to higher level
         if startSpeed == 0.0 or acceleration == 0.0:
             raise NoSolutionException
-        self.arc = ArcCalc(startPoint, startSpeed, unitVelocity, rotDirection, acceleration)
+        self.arc = arcCalc.create(startPoint, startSpeed, unitVelocity, rotDirection, acceleration)
 
     def solve(self, target, starTimeOffset):
         self.arc.length = target.initialGuess(self.arc)
@@ -39,13 +39,6 @@ class ArcFinder:
         raise NoSolutionException
   
     def generateSolution(self, target, solution, starTimeOffset):
-        (arcEndPoint, arcEndDirection) = self.arc.endInfo()
         lineTime = solution.time
-        return ArcPathSegment(starTimeOffset,
-                         elapsedTime=lineTime + self.arc.arcTime(),
-                         lineStartPoint=arcEndPoint,
-                         endPoint=arcEndPoint + self.arc.speed * arcEndDirection * lineTime,
-                         endSpeed=self.arc.speed,
-                         endUnitVelocity=arcEndDirection,
-                         arc=self.arc.cloneArc(),
-                         nextLegalRotDirection=target.calcAvoidanceRotDirection(solution.velocity))
+        return ArcPathSegment(starTimeOffset, self.arc.copy(), lineTime, target.calcAvoidanceRotDirection(solution.velocity))
+    

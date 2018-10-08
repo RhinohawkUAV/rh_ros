@@ -3,6 +3,7 @@ Utilities for converting ROS messages to/from inputs to the path-finder.
 """
 import math
 
+from engine.geometry.obstacle.arcFinder.arcCalc import ArcCalc
 from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
 import engine.interface.dynamicNoFlyZone
 from engine.interface.gpsTransform.gpsTransform import GPSTransformer
@@ -115,20 +116,11 @@ class MessageConverter:
         return pathSegments
     
     def msgToPathSegment(self, msg): 
-        endVelocity = self.msgToVector(msg.endVelocity)
-        endSpeed = np.linalg.norm(endVelocity)
-        endUnitVelocity = endVelocity / endSpeed
-        return ArcPathSegment(float(msg.startTime),
-                                     float(msg.elapsedTime),
-                                     self.msgToPoint(msg.lineStartPoint),
-                                     self.msgToPoint(msg.endPoint),
-                                     endSpeed,
-                                     endUnitVelocity,
-                                     self.msgToArc(msg.arc),
-                                     # Next legal path segments are not shown in debug.  Set to 0.0 and ignored.
-                                     0.0)
+        arc = self.msgToArc(msg.arc, float(msg.speed))
+        lineTime = float(msg.elapsedTime) - arc.arcTime()
+        return ArcPathSegment(float(msg.startTime), arc, lineTime, 0.0)
                 
-    def msgToArc(self, msg):
+    def msgToArc(self, msg, speed):
         if msg.length < 0.0:
             rotDirection = 1.0
             length = -math.radians(float(msg.length))
@@ -138,11 +130,14 @@ class MessageConverter:
             
         start = self._gpsTransformer.gpsAngleToLocal(float(msg.start), rotDirection)
 
-        return engine.geometry.arc.Arc(rotDirection,
-                                      float(msg.radius),
-                                      self.msgToPoint(msg.center),
-                                      start,
-                                      length)
+        radius = float(msg.radius)
+        return ArcCalc(rotDirection,
+                       radius,
+                       self.msgToPoint(msg.center),
+                       start,
+                       length,
+                       speed,
+                       speed / radius)
     
     #**********************Path finding objects to msg objects********************
     def inputToMsg(self, params, scenario, vehicle):
@@ -253,7 +248,7 @@ class MessageConverter:
             msg = pfm.PathSegment()
             msg.startTime = pathSegment.startTime
             msg.elapsedTime = pathSegment.elapsedTime
-            msg.speed = pathSegment.speed
+            msg.speed = pathSegment.endSpeed
             msg.arc = self.arcToMsg(pathSegment.arc)
             msg.lineStartPoint = self.pointToMsg(pathSegment.lineStartPoint)
             msg.endPoint = self.pointToMsg(pathSegment.endPoint)
