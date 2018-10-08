@@ -93,6 +93,8 @@ class StateNode():
         rate = rospy.Rate(CONTROL_RATE_HZ)
         while True:
 
+            if rospy.is_shutdown(): break
+
             self.check_goal()
             
             if self.state_pub.get_num_connections() > 0:
@@ -211,6 +213,7 @@ class StateNode():
             return SetMissionResponse(False)
 
         self.mission = msg.mission
+        self.mission_status = MissionStatus.READY
         log("New mission has been set:\n%s" % self.mission)
         return SetMissionResponse(True)
 
@@ -222,11 +225,11 @@ class StateNode():
             rospy.loginfo("No mission waypoints defined")
             return StartMissionResponse(False)
 
-        # TODO: elsewhere, set status=READY once we're ready to fly
+        if self.mission_status != MissionStatus.READY:
+            rospy.loginfo("Status not ready. Cannot begin mission.")
+            return StartMissionResponse(False)
 
-        # TODO: check for status==READY
-
-        # TODO: check to see if mission controller is spinning (?)
+        # TODO: verify that mission controller is spinning
 
         self.mission_status = MissionStatus.RUNNING
         log("STARTING MISSION")

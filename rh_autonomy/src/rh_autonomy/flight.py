@@ -9,7 +9,7 @@ from functools import partial
 import rospy
 
 import mavros
-from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import NavSatFix, Imu
 from mavros_msgs.msg import State, Waypoint, ParamValue
 from mavros_msgs.srv import SetMode, ParamSet
 from mavros_msgs.srv import CommandBool, CommandHome, CommandTOL, CommandLong, \
@@ -23,8 +23,10 @@ from rh_autonomy.aggregator import LatchMap
 from rh_autonomy.util import get_proxy, waypoints_to_str, wp_lists_equal, logexc
 from rh_autonomy import constants as rhc
 
-gps_topic = None
+ready = False # TODO: modify all services to respect this flag
 mode_sub = None
+imu_sub = None
+gps_topic = None
 set_param = None
 set_mode = None
 arming = None
@@ -176,6 +178,7 @@ def do_takeoff_cur_gps(min_pitch, yaw, altitude):
         rospy.logerr('Error taking off: unknown')
         return False
 
+    rospy.loginfo("Take-off command accepted")
     return True
 
 
@@ -361,6 +364,9 @@ def handle_flyto(req):
 
     rospy.loginfo("Successfully pushed %d waypoints", len(wps))
 
+    # cannot arm in AUTO mode
+    set_custom_mode(rhc.MODE_GUIDED)
+
     # wait for waypoints to be accepted
     # TODO: this should be event driven
     rospy.sleep(2.)
@@ -372,7 +378,6 @@ def handle_flyto(req):
         c += 1
         if c>10: break
 
-    set_custom_mode(rhc.MODE_GUIDED)
     do_takeoff_cur_gps(0, 0, req.cruise_altitude)
      
     # wait a second
@@ -445,7 +450,7 @@ def handle_flywaypoints(msg):
     
     if msg.takeoff:
 
-        # wait for waypoints to be accepted
+        # wait for waypoints to be "accepted"
         # TODO: this should be event driven
         rospy.sleep(1.)
 
@@ -466,12 +471,32 @@ def handle_flywaypoints(msg):
             return FlyWaypointsResponse(False)
          
         # wait a second
-        rospy.sleep(2.0)
+        rospy.loginfo("Sleeping 1 seconds")
+        rospy.sleep(1.0)
     
         # now execute mission waypoints
         set_custom_mode(rhc.MODE_AUTO)
 
     return FlyWaypointsResponse(True)
+
+
+def handle_startup(data):
+
+    # We don't care about the parameters here. Just the fact we received some data 
+    # means that mavros is active and we can use it.
+
+    rospy.loginfo("Clearing waypoints")
+    wp_clear()
+
+    set_airspeed(rhc.CRUISE_SPEED)
+
+    global imu_sub, ready
+    imu_sub.unregister()
+    imu_sub = None
+
+    ready = True
+
+    rospy.loginfo("Flight controller ready.")
 
 
 def start():
@@ -491,7 +516,7 @@ def start():
     wp_clear = get_proxy('/mavros/mission/clear', WaypointClear)
     wp_set = get_proxy('/mavros/mission/set_current', WaypointSetCurrent)
 
-    global gps_topic 
+    global gps_topic, imu_sub 
     gps_topic = mavros.get_topic('global_position', 'global')
 
     rospy.Service('command/takeoff', TakeOff, handle_takeoff)
@@ -501,13 +526,9 @@ def start():
 
     rospy.Subscriber("/mavros/global_position/global", NavSatFix, partial(values.latch_value, gps_topic, max_age=10))
 
-    rospy.sleep(2)
-    rospy.loginfo("Clearing waypoints")
-    wp_clear()
+    # Wait to receive some data from mavros before intializing
+    imu_sub = rospy.Subscriber("/mavros/imu/data", Imu, handle_startup)
 
-    set_airspeed(rhc.CRUISE_SPEED)
-
-    rospy.loginfo("Flight controller ready.")
     rospy.spin()
 
 

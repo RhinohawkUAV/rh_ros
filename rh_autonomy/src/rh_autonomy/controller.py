@@ -233,8 +233,8 @@ class ControllerNode():
         scenario.wayPoints = pp_waypoints
 
         vehicle = pfm.Vehicle()
-        vehicle.maxSpeed = 10.0
-        vehicle.acceleration = 2.0
+        vehicle.maxSpeed = rhc.CRUISE_SPEED + 10
+        vehicle.acceleration = 5.0
 
         goal = pfm.SolvePathProblemGoal()
         goal.params = params

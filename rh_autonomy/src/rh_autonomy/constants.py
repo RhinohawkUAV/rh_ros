@@ -26,7 +26,7 @@ MAV_CMD_DO_SET_HOME = 179
 CRUISE_ALTITUDE = 30
 
 # Mission cruise speed in meters/second
-CRUISE_SPEED = 50
+CRUISE_SPEED = 30
 
 # Should we search for a target, or just land?
 PERFORM_SEARCH = False
