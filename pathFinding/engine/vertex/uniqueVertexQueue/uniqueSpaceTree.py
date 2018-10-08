@@ -1,11 +1,5 @@
 import numpy as np
 
-_subIndexMultipliers = np.array([1, 2, 4, 8], np.int32)
-
-
-def _calcIndex(subIndices):
-    return int(np.dot(subIndices, _subIndexMultipliers))
-
 # Not clear what the best data structure is for this. Numpy supports kd-trees and Voronoi diagrams, but:
 # kd-trees are not considered good in dynamic situations.
 # Voronoi uses n^2 space, not clear if this is good for dynamic situations.
@@ -15,15 +9,26 @@ def _calcIndex(subIndices):
 
 class UniqueTree:
     """
-    A 4-d quadtree-ish data structure used to determine uniqueness of a 4-d value.  The uniqueness of a value is 
+    A higher dimensional quadtree-ish data structure used to determine uniqueness of a vector value.  The uniqueness of a value is 
     more or less a measure of its distance from its closest neighbor.
 
     For efficiency this does not check for illegal values outside the range of the cell.  DON'T INSERT THESE VALUES!
     """
 
     def __init__(self, minPosition, dims, coincidentDistance, borderPadding=0.001):
+        numDims = len(dims)
+        subIndices = []
+        factor = 1
+        for i in range(numDims):
+            subIndices.append(factor)
+            factor *= 2
+        
+        self._subIndexMultipliers = np.array(subIndices, np.double)
+        self._numChildren = factor * 2
+        
         # Pad all dimensions so that no valid point will violate boundaries due to float round off error
         minPosition = np.array(minPosition, np.double)
+        
         dims = np.array(dims, np.double)
 
         self._minPosition = minPosition - dims * borderPadding
@@ -32,22 +37,28 @@ class UniqueTree:
         self._root = None
         self._coincidentDistanceSquared = coincidentDistance * coincidentDistance
 
+    def createRoot(self, position):
+        root = UniqueNode(self._minPosition, self._dims, 1.0)
+        root._children = [None] * self._numChildren
+        root._leafPosition = position
+        return root
+
     def insert(self, position):
         """
         Insert the position and return a uniqueness score.
-        :param position: A 4D sequence of values representing what is being inserted
+        :param position: A sequence of values representing what is being inserted
         :return: uniqueness
         """
 
         if self._root is None:
-            self._root = createRoot(self._minPosition, self._dims, 1.0, position)
+            self._root = self.createRoot(position)
             return 1.0
 
         return self.insertRecurse(self._root, position)
 
     def insertRecurse(self, node, position):
         subIndices = node.calcSubIndices(position)
-        index = _calcIndex(subIndices)
+        index = self._calcIndex(subIndices)
         child = node._children[index]
         # If the slot is empty just insert the position there
         if child is None:
@@ -56,7 +67,8 @@ class UniqueTree:
         if child.isLeaf():
             if self.isCoincident(child._leafPosition, position):
                 return 0.0
-            child.convertToNonLeaf()
+            
+            self.convertToNonLeaf(child)
 
         return self.insertRecurse(child, position)
 
@@ -69,13 +81,14 @@ class UniqueTree:
         diff /= self._dims
         return np.dot(diff, diff) < self._coincidentDistanceSquared
 
-        
-#         return (self._leafPosition == position).sum() == 4
-def createRoot(minPosition, dims, uniqueness, position):
-    root = UniqueNode(minPosition, dims, uniqueness)
-    root._children = [None] * 16
-    root._leafPosition = position
-    return root
+    def convertToNonLeaf(self, node): 
+        node._children = [None] * self._numChildren
+        subIndices = node.calcSubIndices(node._leafPosition)
+        index = self._calcIndex(subIndices)
+        node._children[index] = node.createLeaf(subIndices, index, node._leafPosition)
+
+    def _calcIndex(self, subIndices):
+        return int(np.dot(subIndices, self._subIndexMultipliers))
 
 
 class UniqueNode:
@@ -85,8 +98,8 @@ class UniqueNode:
 
     def __init__(self, minPosition, dims, uniqueness):
         """
-        :param minPosition: The "upper-left" corner of the 4-d cell.
-        :param dims: The dimensions of the 4-d cell
+        :param minPosition: The "upper-left" corner of the cell.
+        :param dims: The dimensions of the cell
         :param uniqueness: The uniqueness value of this node.  Anything point directly inserted into the child array has this uniqueness value.
         """
         
@@ -105,18 +118,12 @@ class UniqueNode:
         self._children[index] = leafNode
         return leafNode
 
-    def convertToNonLeaf(self):
-        self._children = [None] * 16
-        subIndices = self.calcSubIndices(self._leafPosition)
-        index = _calcIndex(subIndices)
-        self._children[index] = self.createLeaf(subIndices, index, self._leafPosition)
-
     def isLeaf(self):
         return self._children is None
 
     def calcSubIndices(self, position):
         """
-        Given a position, determine its "sub-indices".  This is a 4-element array of 0|1 determining if this goes
+        Given a position, determine its "sub-indices".  This is a array of 0|1 determining if this goes
         "left" or "right" for each dimension.
 
         :param position:
