@@ -74,6 +74,16 @@ class ArcPathSegment(PathSegment):
         distance = np.linalg.norm(point - closestPoint)
         return (closestPoint, distance, timeInterp)
 
+    def getPoint(self, interp):
+        arcRatio = self.arc.arcTime() / self.elapsedTime
+        if interp < arcRatio:
+            interp /= arcRatio
+            (endPoint, endDirection) = self.arc.endInfoLength(interp * self.arc.length)
+            return endPoint
+        else:
+            interp /= (1.0 - arcRatio)
+            return self.lineStartPoint * (1.0 - interp) + self.endPoint * interp
+        
     def testIntersection(self, pathIntersectionDetector):
         return pathIntersectionDetector.testStraightPathIntersections(self.linearPathPoints, self.linearPathTimes)
 

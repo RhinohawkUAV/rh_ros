@@ -36,6 +36,21 @@ class PathSegmentFinder(Drawable):
                 vertexNormal = calcs.calcVertexNormal(points[i - 1], points[i], points[i + 1])
                 self.vertexTargets.append(self._createVertexTarget(points[i], velocity, vertexNormal, vertexAngle))
 
+    def stall(self, startTime, startPoint, startSpeed, startUnitVelocity, stallTime):
+        """
+        Find legal path segments for use in a stall manuever.  Stall is a way to waste time, for wasting time's sake!  This
+        allows exploration of inefficient paths, which may delay while obstacles move around and windows open.
+        
+        :param startTime: the time at which the path starts
+        :param startPoint: where the path starts
+        :param startSpeed: the speed of the vehicle at the start of the path
+        :param startUnitVelocity: the direction of the vehicle at the start of the path
+        :param stallTime: The desired amount of time to waste.
+        
+        :return: a list of PathSegments describing routes to the given point
+        """
+        pass
+
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
         """
         Find path segments from a given starting point and velocity to the moving target.  Does not account for interesections with other

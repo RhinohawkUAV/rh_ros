@@ -1,3 +1,4 @@
+import math
 import sys
 
 from engine import waypoint
@@ -24,7 +25,9 @@ class PathFinder:
         startSpeed = np.linalg.norm(velocity)
         unitVelocity = velocity / startSpeed        
         self._waypoints = waypoint.calcWaypoints(scenario.wayPoints, startSpeed, vehicle.acceleration)
-
+        
+        self.minStallTime = 2 * math.pi * startSpeed / vehicle.acceleration
+        
         # Calculate bounding rectangle and use that for dimensions of the UniqueVertexQueue
         bounds = scenario.calcBounds()
         self._vertexQueue = UniqueVertexQueue(bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1], vehicle.maxSpeed, params.maximumTime, len(self._waypoints))
@@ -63,6 +66,9 @@ class PathFinder:
                     
             (psegs, fpsegs) = self._currentVertex.skirtingPathSegments(self._obstacleCourse)
             self._processSegments(psegs, fpsegs, self._currentVertex.getNextWaypoint())
+
+#             (psegs, fpsegs) = self._currentVertex.stall(self._obstacleCourse, self.minStallTime)
+#             self._processSegments(psegs, fpsegs, self._currentVertex.getNextWaypoint())
             
             return True
         except QueueEmptyException:

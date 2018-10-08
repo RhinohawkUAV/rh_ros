@@ -149,6 +149,13 @@ class OriginVertex(BaseVertex):
     def getPreviousVertex(self):
         return None
 
+    def stall(self, obstacleCourse, minStallTime):
+        return obstacleCourse.stall(startTime=0.0,
+                                    startPoint=self._position,
+                                    startSpeed=self._speed,
+                                    startUnitVelocity=self._direction,
+                                    minStallTime=minStallTime)
+        
     def pathSegmentsToWaypoint(self, obstacleCourse): 
         return obstacleCourse.findPathSegmentsToPoint(startTime=0.0,
                                                       startPoint=self._position,
@@ -215,6 +222,13 @@ class Vertex(BaseVertex):
 
     def getPreviousVertex(self):
         return self.previousVertex
+    
+    def stall(self, obstacleCourse, minStallTime):
+        return obstacleCourse.stall(startTime=self.timeToVertex,
+                                    startPoint=self.pathSegment.endPoint,
+                                    startSpeed=self.pathSegment.endSpeed,
+                                    startUnitVelocity=self.pathSegment.endUnitVelocity,
+                                    minStallTime=minStallTime)
     
     def pathSegmentsToWaypoint(self, obstacleCourse):
         return obstacleCourse.findPathSegmentsToPoint(startTime=self.timeToVertex,

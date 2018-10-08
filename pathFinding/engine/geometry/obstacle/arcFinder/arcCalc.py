@@ -45,7 +45,10 @@ class ArcCalc(Arc):
         return time * self.angularSpeed
 
     def endInfo(self):
-        end = self.start + self.length
+        return self.endInfoLength(self.length)
+
+    def endInfoLength(self, length=None):
+        end = self.start + length
         endVec = calcs.unitVectorOfAngle(end, self.rotDirection)
         endPoint = self.center + self.radius * endVec
         endDirection = self.rotDirection * calcs.CCWNorm(endVec)

@@ -6,7 +6,7 @@ from constants import COURSE_DIM
 from engine import interface
 from engine.geometry import calcs
 from engine.interface import scenario
-from engine.interface.generator import Generator
+from engine.interface.generator import ObstacleGenerator
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.scenario import Scenario
 from engine.interface.vehicle import DEFAULT_VEHICLE
@@ -23,6 +23,7 @@ class PathFindViewer(Visualizer):
     def __init__(self, pathFinderInterface, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
         self._showFiltered = False
+        self._bestPath = None
         self._params = None
         self._vehicle = None
         self._scenario = None
@@ -57,6 +58,8 @@ class PathFindViewer(Visualizer):
                 interface.save(fileName, self._params, self._scenario, self._vehicle)
         elif key == "r":
             self.setStateRandom()
+        elif key == "i":
+            self.iterateScenario()
         elif key == "p":
             print profile.result()
             profile.printAggregate()
@@ -77,31 +80,41 @@ class PathFindViewer(Visualizer):
         waypoints.append(boundaryPoints[1] * 0.8)
         waypoints.append(boundaryPoints[3] * 0.8)
         startVelocity = calcs.unit(waypoints[0] - startPoint) * DEFAULT_VEHICLE.maxSpeed
+        scenario = Scenario(boundaryPoints=boundaryPoints,
+                             noFlyZones=[],
+                             dynamicNoFlyZones=[],
+                             roads=[],
+                             startPoint=startPoint,
+                             startVelocity=startVelocity,
+                             wayPoints=waypoints)
         
-        generator = Generator(boundaryPoints,
-                              startPoint,
-                              waypoints,
-                              (DEFAULT_VEHICLE.maxSpeed,
-                               DEFAULT_VEHICLE.maxSpeed * 0.9,
-                               DEFAULT_VEHICLE.maxSpeed * 0.8))
+        generator = ObstacleGenerator(DEFAULT_PARAMS, scenario, DEFAULT_VEHICLE)
         generator.setGenerationInfo(COURSE_DIM / 10.0,
-                                    DEFAULT_VEHICLE.maxSpeed,
-                                    0.0,
-                                    COURSE_DIM / 20.0)
+                                    1.0,
+                                    0.0)
                                     
-        generator.generate(20)
+        generator.blockEstimatedPath(2)
         generator.setGenerationInfo(COURSE_DIM / 15.0,
-                                    np.array((0.0, 0.0), np.double),
-                                    0.15,
-                                    COURSE_DIM / 15.0)
-        generator.generate(10)
+                                    0.0,
+                                    0.15)
+        generator.blockEstimatedPath(1)
          
-        roads = []
-        
-        scenario = Scenario(boundaryPoints, generator.polyNFZs, generator.circularNFZs, roads, startPoint, startVelocity, waypoints)
+#         roads = []
+#         
+#         scenario = Scenario(boundaryPoints, generator.polyNFZs, generator.circularNFZs, roads, startPoint, startVelocity, waypoints)
         self._pathFinderInterface.submitProblem(DEFAULT_PARAMS, scenario, DEFAULT_VEHICLE)
     
+    def iterateScenario(self):
+        if self._bestPath is not None:
+            generator = ObstacleGenerator(self._params, self._scenario, self._vehicle)
+            generator.setGenerationInfo(COURSE_DIM / 10.0,
+                            1.0,
+                            0.0)
+            generator.block(self._bestPath.pathSegments)
+            self._pathFinderInterface.submitProblem(self._params, self._scenario, self._vehicle)
+    
     def inputAccepted(self, params, scenario, vehicle):
+        self._bestPath = None
         self._params = params
         self._scenario = scenario
         self._vehicle = vehicle
@@ -118,6 +131,7 @@ class PathFindViewer(Visualizer):
 
     def stepPerformed(self, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments):
         self._pathFindDrawable.update(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
+        self._bestPath = bestPath
         self.updateDisplay()
 
     def solved(self, bestPath):

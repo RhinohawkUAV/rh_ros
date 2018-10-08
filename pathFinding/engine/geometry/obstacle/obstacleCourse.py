@@ -19,6 +19,20 @@ class ObstacleCourse(Drawable):
         self.pathSegmentFinder = pathSegmentFinder
         self.pathIntersectionDetector = pathIntersectionDetector
 
+    def stall(self, startTime, startPoint, startSpeed, startUnitVelocity, minStallTime, ignoreBuffers=False):
+        """
+        Find legal path segments for use in a stall manuever.  Stall is a way to waste time, for wasting time's sake!  This
+        allows exploration of inefficient paths, which may delay while obstacles move around and windows open.
+        :param minStallTime: The minimum amount of time to waste.  Typically its not valuable to stall for a very short 
+        period of time as the path finder will naturally be able to find solutions which are slightly slower if necessary.
+        """
+        pathSegments = self.pathSegmentFinder.stall(startTime,
+                                                    startPoint,
+                                                    startSpeed,
+                                                    startUnitVelocity,
+                                                    minStallTime)
+        return self._filterPathSegments(pathSegments, ignoreBuffers=ignoreBuffers)
+        
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection, ignoreBuffers=False):
         """
         Find legal path segments from a given starting point and velocity to the moving target, ending at finalSpeed.

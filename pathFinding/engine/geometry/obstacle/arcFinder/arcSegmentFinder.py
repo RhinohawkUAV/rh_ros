@@ -1,6 +1,9 @@
 from engine.geometry import calcs
 from engine.geometry.calcs import NoSolutionException
+from engine.geometry.obstacle.arcFinder import arcCalc
+from engine.geometry.obstacle.arcFinder.arcCalc import ArcCalc
 from engine.geometry.obstacle.arcFinder.arcFinder import ArcFinder
+from engine.geometry.obstacle.arcFinder.arcPathSegment import ArcPathSegment
 from engine.geometry.obstacle.arcFinder.circularArcTarget import CircularArcTarget
 from engine.geometry.obstacle.arcFinder.vertexArcTarget import VertexArcTarget
 from engine.geometry.obstacle.pathSegmentFinder import PathSegmentFinder
@@ -21,7 +24,23 @@ class ArcSegmentFinder(PathSegmentFinder):
     def _createVertexTarget(self, vertexPosition, velocity, vertexNormal, vertexAngle):
         return VertexArcTarget(vertexPosition, velocity, vertexNormal, vertexAngle)
 
+    def stall(self, startTime, startPoint, startSpeed, startUnitVelocity, stallTime):
+        # How far to loop (angle) is based on the requested stall time, speed and acceleration
+        loopLength = stallTime * self.vehicle.acceleration / startSpeed
+ 
+        pathSegments = []
+        for rotDirection in _rotDirections:
+            arc = arcCalc.create(startPoint, startSpeed, startUnitVelocity, rotDirection, self.vehicle.acceleration)
+            arc.length = loopLength
+            pathSegments.append(ArcPathSegment(startTime, arc, 0.0, 0))
+        
+        return pathSegments
+
     def findPathSegmentsToPoint(self, startTime, startPoint, startSpeed, startUnitVelocity, targetPoint, velocityOfTarget, legalRotDirection):
+        
+        # TODO: Should order based on shorter time.  This actually matters as the shorter time one will be explored first
+        # (they are not very unique)
+        
         if legalRotDirection == 0:
             arcFinders = [ArcFinder(startPoint, startSpeed, startUnitVelocity, -1.0, self.vehicle.acceleration),
                           ArcFinder(startPoint, startSpeed, startUnitVelocity, 1.0, self.vehicle.acceleration)]
