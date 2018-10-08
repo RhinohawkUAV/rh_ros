@@ -231,10 +231,9 @@ function drawMissionPlan(missionObject){
  // map.setView(missionObject.boundaryPoints[0], 13);
 
   // PLot NFZs
-  var nfzCoords = [];
 
   for (var i=0; i < missionObject.static_nfzs.length; i++){
-
+    var nfzCoords = [];
     for (var k=0; k<missionObject.static_nfzs[i].points.length; k++){
       nfzCoords.push([missionObject.static_nfzs[i].points[k].lat, missionObject.static_nfzs[i].points[k].lon]);
     }
