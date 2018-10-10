@@ -22,6 +22,9 @@ class DynamicNoFlyZone:
         # and assume no history.
         self.ID = ID
 
+    def copyAtTime(self, time):
+        return DynamicNoFlyZone(self.center + self.velocity * time, self.radius, np.array(self.velocity), self.ID)
+
 
 def fromJSONDict(objDict):
     return DynamicNoFlyZone(objDict["center"], objDict["radius"], objDict["velocity"], objDict["ID"])

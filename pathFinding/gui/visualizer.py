@@ -22,7 +22,6 @@ class Visualizer(Toplevel, core.DrawListener):
         self.viewCenterY = viewCenterY
         self.viewWidth = viewWidth
         self.viewHeight = viewHeight
-        self.title("Path Finding")
         self.canvas = Canvas(self, width=canvasWidth, height=canvasHeight)
         self.canvas.pack()
         self.protocol("WM_DELETE_WINDOW", self.onClose)

@@ -350,6 +350,10 @@ def CWNorm(vec):
     return np.array([vec[1], -vec[0]], np.double)
 
 
+def dirNorm(vec, rotDirection):
+    return np.array([-rotDirection * vec[1], rotDirection * vec[0]], np.double)
+    
+
 def rotate2d(point, angle):
     """Rotate CCW by angle"""
     cosAngle = math.cos(angle)
@@ -487,3 +491,10 @@ def lengthSquared(vector):
 def changeBasis(vec, x, y):
     return (np.dot(vec, x), np.dot(vec, y))
 
+
+def clampMag(value, maximum):
+    if value < -maximum:
+            return -maximum
+    elif value > maximum:
+            return maximum
+    return value

@@ -27,6 +27,13 @@ class NoFlyZone:
         # and assume no history.
         self.ID = ID
 
+    def copyAtTime(self, time):
+        newPoints = []
+        for point in self.points:
+            newPoint = point + self.velocity * time
+            newPoints.append(newPoint)
+        return NoFlyZone(newPoints, np.array(self.velocity), self.ID)
 
+        
 def fromJSONDict(objDict):
     return NoFlyZone(objDict["points"], objDict["velocity"], objDict["ID"])

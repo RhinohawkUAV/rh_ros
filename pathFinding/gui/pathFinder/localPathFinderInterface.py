@@ -13,6 +13,7 @@ class LocalPathFinderInterface(PathFinderInterface):
     """
 
     def __init__(self):
+        PathFinderInterface.__init__(self)
         self._pathFinderManager = PathFinderManager()
         self._pathFinderManager.setListeners(self._fireInputAccepted, self._fireStepPerformed)
         self._solving = False
@@ -21,7 +22,7 @@ class LocalPathFinderInterface(PathFinderInterface):
         
         if self._solving:
             print "Cannot submit problem while other operations are in progress!"
-            return 
+            return
         self._pathFinderManager.submitProblem(params, scenario, vehicle)
     
     def stepProblem(self, numSteps=1):
@@ -36,8 +37,8 @@ class LocalPathFinderInterface(PathFinderInterface):
         if self._pathFinderManager.getStepsRemaining() > 0 or self._solving:
             print "Cannot start a solve operation while other operations are in progress!"
             return 
-            self._solving = True
         
+        self._solving = True
         Thread(target=self._solve, args=[params, scenario, vehicle, startTime, timeout]).start()
 
     def _solve(self, params, scenario, vehicle, startTime, timeout):
@@ -53,8 +54,5 @@ class LocalPathFinderInterface(PathFinderInterface):
             if (totalTime * (numSteps + 1)) / numSteps > timeout:
                 break
         bestPath = pathFinder.getBestPath()
-        self._fireSolved(bestPath)
-        gui.inGUIThread(self._endSolve)
-
-    def _endSolve(self):
         self._solving = False
+        self._fireSolved(bestPath)

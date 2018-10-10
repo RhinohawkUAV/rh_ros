@@ -1,9 +1,13 @@
 import math
 import random
 
+from constants import COURSE_DIM
 from engine.geometry import calcs
 from engine.interface.dynamicNoFlyZone import DynamicNoFlyZone
 from engine.interface.noFlyZone import NoFlyZone
+from engine.interface.pathFindParams import DEFAULT_PARAMS
+from engine.interface.scenario import Scenario
+from engine.interface.vehicle import DEFAULT_VEHICLE
 import numpy as np
 
 
@@ -33,6 +37,38 @@ def randomVelocity(minSpeed, maxSpeed):
 
 def calcStart(time, point, velocity):
     return (point - time * velocity, velocity)
+
+
+def genStandardHardScenario():
+    boundaryPoints = np.array([(-COURSE_DIM / 2.0, -COURSE_DIM / 2.0),
+                              (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
+                              (COURSE_DIM / 2.0, COURSE_DIM / 2.0),
+                              (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)], np.double)
+    startPoint = boundaryPoints[0] * 0.8
+    waypoints = []
+    waypoints.append(boundaryPoints[2] * 0.8)
+    waypoints.append(boundaryPoints[1] * 0.8)
+    waypoints.append(boundaryPoints[3] * 0.8)
+    startVelocity = calcs.unit(waypoints[0] - startPoint) * DEFAULT_VEHICLE.maxSpeed
+    scenario = Scenario(boundaryPoints=boundaryPoints,
+                         noFlyZones=[],
+                         dynamicNoFlyZones=[],
+                         roads=[],
+                         startPoint=startPoint,
+                         startVelocity=startVelocity,
+                         wayPoints=waypoints)
+    
+    generator = ObstacleGenerator(DEFAULT_PARAMS, scenario, DEFAULT_VEHICLE)
+    generator.setGenerationInfo(COURSE_DIM / 10.0,
+                                1.0,
+                                0.0)
+                                
+    generator.blockEstimatedPath(10)
+    generator.setGenerationInfo(COURSE_DIM / 15.0,
+                                0.0,
+                                0.15)
+    generator.blockEstimatedPath(5)
+    return scenario 
 
 
 class NFZGenerator:
@@ -124,10 +160,10 @@ class ObstacleGenerator:
                                      self.avgSpeed,
                                      self.nfzGenerator._maxSize / 2.0)
         
-        velocity = randomVelocity(self.avgSpeed * self.maxObstacleSpeedRatio * 0.25, self.avgSpeed * self.maxObstacleSpeedRatio)
+        velocity = randomVelocity(self.avgSpeed * self.maxObstacleSpeedRatio * 0.1, self.avgSpeed * self.maxObstacleSpeedRatio)
         
         return calcStart(time, point, velocity)
 
     def randomVelocity(self):
-        return randomVelocity(self.avgSpeed * self.maxObstacleSpeedRatio * 0.25, self.avgSpeed * self.maxObstacleSpeedRatio)
+        return randomVelocity(self.avgSpeed * self.maxObstacleSpeedRatio * 0.1, self.avgSpeed * self.maxObstacleSpeedRatio)
 

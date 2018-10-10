@@ -16,10 +16,8 @@ class RosPathFinderInterface(PathFinderInterface):
     """
 
     def __init__(self, outgoingGPSConversion):
+        PathFinderInterface.__init__(self)
         self._outgoingGPSConversion = outgoingGPSConversion
-        # TODO: Figure out how to interface with other namespace
-#         rospy.Subscriber("rh/" + PATHFINDER_INPUT_TOPIC, PathDebug, self.receiveDebug)
-#         rospy.Subscriber("rh/" + PATHFINDER_DEBUG_TOPIC, PathSolution, self.receiveSolution)
         rospy.Subscriber(PATHFINDER_INPUT_TOPIC, pfm.PathInput, self._rosInputAccepted)
         rospy.Subscriber(PATHFINDER_DEBUG_TOPIC, pfm.PathDebug, self._rosStepPerformed)
         

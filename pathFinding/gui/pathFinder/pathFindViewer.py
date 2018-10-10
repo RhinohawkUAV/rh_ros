@@ -1,16 +1,19 @@
-from numpy.random.mtrand import np
 import os
+from threading import Condition, Lock
+import time
 import tkFileDialog
 
+import Tkinter as tk
 from constants import COURSE_DIM
 from engine import interface
-from engine.geometry import calcs
-from engine.interface import scenario
+from engine.interface import scenario, generator
 from engine.interface.generator import ObstacleGenerator
 from engine.interface.pathFindParams import DEFAULT_PARAMS
 from engine.interface.scenario import Scenario
 from engine.interface.vehicle import DEFAULT_VEHICLE
+import gui
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
+from gui.simulator.simulator import SimManager
 from gui.visualizer import Visualizer
 from utils import profile
 
@@ -22,6 +25,7 @@ class PathFindViewer(Visualizer):
 
     def __init__(self, pathFinderInterface, *args, **kwargs):
         Visualizer.__init__(self, *args, **kwargs)
+        self.title("Path Finding")
         self._showFiltered = False
         self._bestPath = None
         self._params = None
@@ -29,8 +33,9 @@ class PathFindViewer(Visualizer):
         self._scenario = None
         self._pointOfInterest = None
         self._pathFinderInterface = pathFinderInterface
-        self._pathFinderInterface.setListeners(self.inputAccepted, self.stepPerformed, self.solved)
+        self._pathFinderInterface.addListeners(self.inputAccepted, self.stepPerformed, self.solved)
         self._pathFindDrawable = None
+        
         self.bindWithTransform('<Key>', self.onKeyPressed)
         self.bindWithTransform('<Motion>', self.onMouseMotion)
         self.bindWithTransform('<Button-1>', self.onLeftClick)
@@ -57,52 +62,18 @@ class PathFindViewer(Visualizer):
             if isinstance(fileName, basestring) and not fileName == '':
                 interface.save(fileName, self._params, self._scenario, self._vehicle)
         elif key == "r":
-            self.setStateRandom()
+            scenario = generator.genStandardHardScenario()
+            self._pathFinderInterface.submitProblem(DEFAULT_PARAMS, scenario, DEFAULT_VEHICLE)
         elif key == "i":
             self.iterateScenario()
         elif key == "p":
             print profile.result()
             profile.printAggregate()
         elif key == "y":
-            self._pathFinderInterface.solveProblem(self._params, self._scenario, self._vehicle, 2.0)
+            self._pathFinderInterface.solveProblem(self._params, self._scenario, self._vehicle, 5.0)
         elif key == "z":
             self._showFiltered = not self._showFiltered
             self.updateDisplay()
-
-    def setStateRandom(self):
-        boundaryPoints = np.array([(-COURSE_DIM / 2.0, -COURSE_DIM / 2.0),
-                                  (-COURSE_DIM / 2.0, COURSE_DIM / 2.0),
-                                  (COURSE_DIM / 2.0, COURSE_DIM / 2.0),
-                                  (COURSE_DIM / 2.0, -COURSE_DIM / 2.0)], np.double)
-        startPoint = boundaryPoints[0] * 0.8
-        waypoints = []
-        waypoints.append(boundaryPoints[2] * 0.8)
-        waypoints.append(boundaryPoints[1] * 0.8)
-        waypoints.append(boundaryPoints[3] * 0.8)
-        startVelocity = calcs.unit(waypoints[0] - startPoint) * DEFAULT_VEHICLE.maxSpeed
-        scenario = Scenario(boundaryPoints=boundaryPoints,
-                             noFlyZones=[],
-                             dynamicNoFlyZones=[],
-                             roads=[],
-                             startPoint=startPoint,
-                             startVelocity=startVelocity,
-                             wayPoints=waypoints)
-        
-        generator = ObstacleGenerator(DEFAULT_PARAMS, scenario, DEFAULT_VEHICLE)
-        generator.setGenerationInfo(COURSE_DIM / 10.0,
-                                    1.0,
-                                    0.0)
-                                    
-        generator.blockEstimatedPath(2)
-        generator.setGenerationInfo(COURSE_DIM / 15.0,
-                                    0.0,
-                                    0.15)
-        generator.blockEstimatedPath(1)
-         
-#         roads = []
-#         
-#         scenario = Scenario(boundaryPoints, generator.polyNFZs, generator.circularNFZs, roads, startPoint, startVelocity, waypoints)
-        self._pathFinderInterface.submitProblem(DEFAULT_PARAMS, scenario, DEFAULT_VEHICLE)
     
     def iterateScenario(self):
         if self._bestPath is not None:
@@ -132,10 +103,12 @@ class PathFindViewer(Visualizer):
     def stepPerformed(self, isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments):
         self._pathFindDrawable.update(isFinished, bestPath, previousPathSegments, futurePathSegments, filteredPathSegments)
         self._bestPath = bestPath
+
         self.updateDisplay()
 
     def solved(self, bestPath):
         self._pathFindDrawable.update(True, bestPath, [], [], [])
+        self._bestPath = bestPath
         self.updateDisplay()
 
     def onLeftClick(self, point, event):
@@ -147,11 +120,11 @@ class PathFindViewer(Visualizer):
     def onRightClick(self, point, event):
         if self._scenario is not None:
             self._pathFinderInterface.submitProblem(self._params, self._scenario, self._vehicle)
-        
+    
     def onMouseMotion(self, point, event):
         self._pointOfInterest = point
         self.updateDisplay()
-
+        
     def updateDisplay(self):
         if self._pathFindDrawable is not None:
             self.drawToCanvas(self._pathFindDrawable, pointOfInterest=self._pointOfInterest, snapDistance=120.0, showFiltered=self._showFiltered)
