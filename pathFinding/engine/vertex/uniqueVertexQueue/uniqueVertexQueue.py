@@ -36,6 +36,7 @@ class UniqueVertexQueue(VertexPriorityQueue):
     def __init__(self, x, y, width, height, maximumSpeed, maximumTime, numWaypoints, coincidentDistance=constants.UNIQUE_TREE_COINCIDENT_DISTANCE):
         self._heap = MinHeap()
         self._uniqueTrees = []
+        self._maximumTime = maximumTime
         for i in range(numWaypoints):
             self._uniqueTrees.append(UniqueTree(
                         minPosition=(x, y, -maximumSpeed, -maximumSpeed, 0.0),
@@ -43,10 +44,16 @@ class UniqueVertexQueue(VertexPriorityQueue):
                         coincidentDistance=coincidentDistance))
 
     def push(self, vertex):
+        # throw away vertices which are outside the time boundaries
+        elapsedTime = vertex.getTimeTo()
+        if elapsedTime > self._maximumTime:
+            return
+        
         vPos = vertex.getPosition()
         vVel = vertex.getVelocity()
         treeIndex = vertex.getNextWaypoint().getIndex()
-        uniqueness = self._uniqueTrees[treeIndex].insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1], vertex.getTimeTo()]))
+        
+        uniqueness = self._uniqueTrees[treeIndex].insert(position=np.array([vPos[0], vPos[1], vVel[0], vVel[1], elapsedTime]))
         
         if uniqueness == 0.0:
             return
