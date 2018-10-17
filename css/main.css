@@ -438,11 +438,11 @@ a.button_green{
 	pointer-events: none;
 }
 
-#button_defineMission {
+#button_defineMission, #button_clearMap {
 	transition: all .3s ease;
 }
 
-#button_defineMission.hidden{
+#button_defineMission.hidden, #button_clearMap.hidden{
 	opacity: 0;
 }
 

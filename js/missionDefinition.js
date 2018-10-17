@@ -38,6 +38,7 @@ function createWaypointIcons(){
 
 function startMissionDefinition(){
 	clearMission();
+  toggleControls();
 	createOutline('mission');
 }
 
@@ -164,10 +165,11 @@ function addWaypoints(e){
 }
 
 
-
 function clearMission(){
   missionLayers.clearLayers();
   tempLayers.clearLayers();
+  pathPlanLayer.clearLayers();
+  actualPathLayer.clearLayers();
 
   outlineCoords = [];
   geofenceCoords = [];
@@ -176,6 +178,8 @@ function clearMission(){
   missionPlanStep = 0;
   waypointNumber = 1;
 
+  document.getElementById('button_exportMission').classList.remove('visible');
+  document.getElementById('button_startMission').classList.remove('visible');
 
   document.getElementById('missionPlanText').innerHTML = "Click to define mission geofence";
   document.getElementById("mapHolder").style.cursor = "auto";
@@ -183,7 +187,8 @@ function clearMission(){
   map.removeEventListener("click", addWaypoints);
 
   deactivateNext();
-  toggleControls();
+
+  vehicleState.unsubscribe();
 }
 
 // Draw Arc ---------------------------------------------
@@ -258,17 +263,6 @@ function drawMissionPlan(missionObject){
 
 }
 
-function drawMissionSolution(missionSolution){
-
-  // Plot Solution Path
-  //var pathSegs = missionSolution.solutionPathSegments;
-
- /*for (var i=0; i < pathSegs.length; i++){
-      drawArc(pathSegs[i].arc.radius, pathSegs[i].arc.center, pathSegs[i].arc.start, pathSegs[i].arc.length, pathSegs[i].lineStartPoint, pathSegs[i].endPoint);
-
-  }*/
-}
-
 
 //Set mission --------------------------------------------------
 
@@ -286,6 +280,8 @@ function startMission(){
   setTheMission.callService(newRequest, function(result) {
     console.log(result);
   });
+
+  subscribeToState();
 }
 
 
@@ -363,6 +359,7 @@ function toggleControls(){
 	document.getElementById('timeline').classList.toggle('hidden');
 	document.getElementById('telemetry').classList.toggle('hidden');
 	document.getElementById('button_defineMission').classList.toggle('hidden');
+  document.getElementById('button_clearMap').classList.toggle('hidden');
 	document.getElementById('mapHolder').classList.toggle('hideControls');
 }
 

@@ -6,6 +6,9 @@ var menuOpen = false;
 var showArucos = false;
 var showVideo = true;
 
+var vehicleState;
+var pathPlanner;
+
 var uavPath=[];
 var coords;
 var home;
@@ -28,15 +31,6 @@ var imageTopic;
 
 
 
-/*var nfz1 =  [[-35.2653204217,149.167854404],[-35.2680289162,149.172119218],[-35.2713521399,149.167857198],[-35.2710924879,149.158370304]];
-var nfz2 = [[-35.2784356099,149.157626635],[ -35.2769489533,149.160077947],[-35.2777347419,149.163702692]];
-var nfzs = [nfz1, nfz2];
-var geofenceCoords = [[-35.2669809344,149.090898914],[-35.3124370914,149.090877152],[-35.3106012238,149.169581702],[-35.2566652302,149.170834472],[-35.247926401,149.161346021],[-35.2487994608,149.094637347]];
-var mission_wpsCoords = [[-35.3003799576,149.123938597],[-35.2539580919,149.161561475]];
-
-*/
-
-
 
 
 
@@ -44,17 +38,20 @@ var mission_wpsCoords = [[-35.3003799576,149.123938597],[-35.2539580919,149.1615
 
 function connectToROS(address){
     ros = new ROSLIB.Ros({ url : address });
-    ros.on('connection', function() { console.log('Connected to websocket server.');});
+    ros.on('connection', function() { 
+      console.log('Connected to websocket server.');
+    });
     ros.on('error', function(error) { console.log('Error connecting to websocket server: ', error);});
     ros.on('close', function() { console.log('Connection to websocket server closed.');});
+    
     setUpIcons();
     setUpGauges();
     connectToTopics();
-   // loadMissionPlan();
 
     tempLayers = L.layerGroup().addTo(map);
     missionLayers = L.layerGroup().addTo(map);
     pathPlanLayer = L.layerGroup().addTo(map);
+    actualPathLayer = L.layerGroup().addTo(map);
 
 }
   
@@ -130,20 +127,32 @@ var opts = {
 
 var gaugeTopSpeed = 20;
 
+
 //Set Up Topics -------------------------------------------------------------------------------
-
-
 
 function connectToTopics() {
   console.log("connect to topics");
-  var vehicleState = new ROSLIB.Topic({
+  vehicleState = new ROSLIB.Topic({
       ros: ros,
       name: '/rh/state',
       messageType: 'rh_msgs/State'
     });
 
+  pathPlanner = new ROSLIB.Topic({
+      ros: ros,
+      name: 'rh/pathPlanner/debug',
+      messageType: 'pathfinding/PathDebug'
+  });
+
+   pathPlanner .subscribe(function(message) {
+    console.log(message);
+   });
+
+  subscribeToState();
+}
+
+function subscribeToState(){
   vehicleState.subscribe(function(message) {
-    //console.log(message);
 
     //position
     var coords = [message.vehicle_state.position.lat, message.vehicle_state.position.lon];
@@ -180,22 +189,11 @@ function connectToTopics() {
 }
 
 
-// Calculate ground velocity using geometry_msgs/TwistStamped.
-function getGroundVelocity(data){
-  var velocity = Math.sqrt(Math.abs(Math.pow(data.linear.x, 2)+Math.pow(data.linear.y, 2)));
-  return velocity;
-}
-
-
-
-
-  
-
 // update path on map ---------------------------------------------
 
 function updateMapPath(){
   var newLine = [uavPath[uavPath.length-2],uavPath[uavPath.length-1]]
-  var polyline = L.polyline(newLine, {color: '#4ABDE2', className: 'actualPath'}).addTo(map);
+  var polyline = actualPathLayer.addLayer(new L.polyline(newLine, {color: '#4ABDE2', className: 'actualPath'}));
   
   if(centerMap){
     map.flyTo(uavPath[uavPath.length-1]);
@@ -218,17 +216,6 @@ function addJoe(loc){
   var innerMarkerLocation = L.circle(loc, {radius: 40, color:"#ffffff", weight:3, fillColor: "#ffffff", fillOpacity: 0, interactive:false}).addTo(map);
 
 }
-
-
-// Add Waypoint to Map ---------------------------------------------
-
-function addWaypoint(loc){
-  console.log("waypoint added");
-  var newWaypoint = L.marker([loc[0], loc[1]],  {icon: waypointYellowIcon}).addTo(map);
-  newWaypoint.bindPopup("<p>Altitude: 32m</p><p>Flight Speed: 35 m/s</p>", {className:"waypointTip"});
-}
-
-
 
 
 // Set direction ---------------------------------------------
@@ -356,7 +343,6 @@ function toggleVideo(toToggle){
     showVideo = true;
   }
 }
-
 
 
 
