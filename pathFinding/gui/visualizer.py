@@ -62,8 +62,7 @@ class Visualizer(Toplevel, core.DrawListener):
         height = canvas.winfo_height()
 
         canvas.move("all", -self.viewCenterX, -self.viewCenterY)
-        canvas.scale("all", 0.0, 0.0, 2.0 / self.viewWidth, 2.0 / self.viewHeight)
-        canvas.scale("all", 0.0, 0.0, width / 2.0, -height / 2.0)
+        canvas.scale("all", 0.0, 0.0, width / self.viewWidth, -height / self.viewHeight)
         canvas.move("all", width / 2.0, height / 2.0)
 
     def transformCanvasToPoint(self, canvasPoint):

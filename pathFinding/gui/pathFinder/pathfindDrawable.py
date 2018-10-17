@@ -2,6 +2,7 @@ from engine.geometry.obstacle import obstacleCourse
 from engine.geometry.obstacle.pathSegment import calcSegmentsPointDebug
 from gui import Drawable
 import gui
+import numpy as np
 
 
 class PathFindDrawable(Drawable):
@@ -78,8 +79,9 @@ class PathFindDrawable(Drawable):
         if self._bestPath is not None:
             for pathSegment in self._bestPath.pathSegments:
                 pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            
-
+            
             for solutionWaypoint in self._bestPath.pathWaypoints:
                 gui.draw.drawCircle(canvas, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
+                gui.draw.drawText(canvas, solutionWaypoint.position + np.array((0.0, 50.0), np.double), "%.1f" % solutionWaypoint.estimatedTime)
         
         return drawTime

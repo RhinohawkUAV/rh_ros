@@ -14,7 +14,6 @@ import engine.interface.road
 import engine.interface.scenario
 import engine.interface.solutionWaypoint
 import engine.interface.vehicle
-import numpy as np
 import pathfinding.msg as pfm
 
 
@@ -107,7 +106,7 @@ class MessageConverter:
         return solutionWaypoints
 
     def msgToSolutionWaypoint(self, msg):
-        return engine.interface.solutionWaypoint.SolutionWaypoint(self.msgToPoint(msg.position), float(msg.radius))
+        return engine.interface.solutionWaypoint.SolutionWaypoint(self.msgToPoint(msg.position), float(msg.radius), float(msg.estimatedTime))
     
     def msgToPathSegmentList(self, msg):
         pathSegments = []
@@ -235,6 +234,7 @@ class MessageConverter:
         msg = pfm.SolutionWaypoint() 
         msg.position = self.pointToMsg(solutionWaypoint.position)
         msg.radius = solutionWaypoint.radius
+        msg.estimatedTime = solutionWaypoint.estimatedTime
         return msg
         
     def pathSegmentListToMsg(self, pathSegments):

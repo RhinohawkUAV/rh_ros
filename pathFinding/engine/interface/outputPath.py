@@ -2,6 +2,8 @@ import math
 
 from engine.interface.solutionWaypoint import SolutionWaypoint
 
+MAX_WAYPOINT_ARC_LENGTH = math.pi - 0.01
+
 
 class OutputPath:
     """
@@ -27,11 +29,13 @@ def _calcSolutionWaypoints(pathSegments, waypointAcceptanceRadii):
     for pathSegment in pathSegments:
         
         # We are arcing close to 180 degrees.  To force flight controller to loop in this direction, add waypoint
-        if pathSegment.arc.length - math.pi > 0.01:
-            (position, direction) = pathSegment.arc.endInfoLength(math.pi - 0.01)
-            solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii))
+        arc = pathSegment.arc 
+        if pathSegment.arc.length > MAX_WAYPOINT_ARC_LENGTH:
+            estimatedTime = pathSegment.startTime + arc.arcTime(MAX_WAYPOINT_ARC_LENGTH)
+            (position, direction) = arc.endInfoLength(MAX_WAYPOINT_ARC_LENGTH)
+            solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii, estimatedTime))
         
         position = pathSegment.endPoint + pathSegment.endUnitVelocity * waypointAcceptanceRadii
-        solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii))
+        solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii, pathSegment.startTime + pathSegment.elapsedTime))
         
     return solutionWaypoints

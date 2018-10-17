@@ -6,7 +6,6 @@ import numpy as np
 from utils.minheap import MinHeap
 
 
-# TODO: Handle uniqueness of 0.0 (throw away at this point)?
 class UniqueVertexQueue(VertexPriorityQueue):
     """
     This VertexPriorityQueue uses several criteria to determine priority:
@@ -17,7 +16,7 @@ class UniqueVertexQueue(VertexPriorityQueue):
     Uniqueness depends on position and velocity of a vertex in comparison to other vertices and is given a score [0,1]:
     1 - this is the only vertex
     0 - this exactly matches an existing vertex
-
+ 
 
     We define priority (lower is better) as:
     _diagnonalTime = sqrt(width*width + height*height) / maximumSpeed
