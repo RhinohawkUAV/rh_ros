@@ -17,11 +17,13 @@ class SimManager:
         self._simulator = None
         self._shutdown = False
         self._speed = 1.0
+        self._elapsedTime = 0.0
         self._thread = Thread(target=self._run)
         self._thread.start()
 
     def setState(self, scenario, vehicle):
         with self._lock:
+            self._elapsedTime = 0.0
             self._simulator = Simulator(scenario, vehicle)
 
     def scaleSpeed(self, scale):
@@ -51,7 +53,9 @@ class SimManager:
         self._lastStepTime = now
         with self._lock:
             if self._simulator is not None:
-                self._simulator.step(elapsedTime * self._speed)
+                stepTime = elapsedTime * self._speed
+                self._elapsedTime += stepTime
+                self._simulator.step(stepTime)
       
     def _run(self):
         try:
@@ -62,7 +66,8 @@ class SimManager:
                 now = time.time()
                 self._step(now)
                 i += 1
-#                 print i
+                time.sleep(0.01)
+                print self._elapsedTime
                 
         except self.ShutdownException:
             pass
@@ -215,4 +220,10 @@ class Simulator(Drawable):
         draw.drawPoly(visualizer, self.scenario.boundaryPoints, color="red")
 
         draw.drawVelocity(visualizer, self.scenario.startPoint, self.scenario.startVelocity, color="orange")
-        draw.drawPoint(visualizer, self.scenario.startPoint, radius=30.0, color="orange")
+        draw.drawPoint(visualizer, self.scenario.startPoint, radius=3.0, color="orange")
+        
+        for i in range(len(self.scenario.wayPoints)):
+            point = self.scenario.wayPoints[i]
+            draw.drawPoint(visualizer, point)
+            draw.drawText(visualizer, point, "Waypoint: " + str(i), offsetY=15)
+        

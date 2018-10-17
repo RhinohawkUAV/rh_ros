@@ -2,12 +2,12 @@ import math
 import sys
 
 from engine import waypoint
+from engine.geometry import calcs
 from engine.geometry.obstacle import obstacleCourse
 from engine.interface import outputPath
 from engine.vertex import UniqueVertexQueue
 from engine.vertex.vertex import OriginVertex
 from engine.vertex.vertexPriorityQueue import QueueEmptyException
-import numpy as np
 from utils import profile
 from vertex import Vertex
 
@@ -21,9 +21,8 @@ class PathFinder:
         self._obstacleCourse = obstacleCourse.createObstacleCourse(params, vehicle, scenario)
 
         self._start = scenario.startPoint
-        velocity = np.array(scenario.startVelocity, np.double)
-        startSpeed = np.linalg.norm(velocity)
-        unitVelocity = velocity / startSpeed        
+        (startDirection, startSpeed) = calcs.unitAndLength(scenario.startVelocity)
+
         self._waypoints = waypoint.calcWaypoints(scenario.wayPoints, startSpeed, vehicle.acceleration)
         
         self.minStallTime = 2 * math.pi * startSpeed / vehicle.acceleration
@@ -37,7 +36,7 @@ class PathFinder:
         if startSpeed == 0.0:
             return
         
-        self._currentVertex = OriginVertex(self._waypoints[0], self._start, startSpeed, unitVelocity)
+        self._currentVertex = OriginVertex(self._waypoints[0], self._start, startSpeed, startDirection)
 
         self._pathSegments = []
         self._filteredPathSegments = []

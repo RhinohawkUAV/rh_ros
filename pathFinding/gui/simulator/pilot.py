@@ -42,8 +42,11 @@ class Pilot:
                 self._checkShutdown()
                 state = self._simulator.copyState()
                 if state is not None and len(state.scenario.wayPoints) > 0:
+                    scenario = state.scenario
                     self._solved = False
-                    self._pathFinderInterface.solveProblem(self._params, state.scenario, self._vehicle, 4.0)
+                    if len(scenario.wayPoints) > 5:
+                        scenario.wayPoints = scenario.wayPoints[0:5]
+                    self._pathFinderInterface.solveProblem(self._params, scenario, self._vehicle, 2.0)
                     self._waitForSolution()
                 
         except self.ShutdownException:

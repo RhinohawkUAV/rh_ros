@@ -16,6 +16,7 @@ MAX_ANGLE_ERROR = 0.001
 MIN_ANGLE_ERROR_COS = math.cos(MAX_ANGLE_ERROR)
 
 
+# TODO: Handle case of point inside arc.  Rather than just not making it, instead move in straight line before starting arc (makes segment definition more complicated)
 class ArcFinder:
 
     def __init__(self, startPoint, startSpeed, unitVelocity, rotDirection, acceleration):
