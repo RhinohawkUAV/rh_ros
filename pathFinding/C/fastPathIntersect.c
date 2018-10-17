@@ -1,17 +1,6 @@
 #include <Python.h>
 #include "geometry.h"
 #include "numpy/arrayobject.h"
-static PyObject* test_print(PyObject *self, PyObject *args)
-{
-    const char *string;
-
-    if (!PyArg_ParseTuple(args, "s", &string))
-        return NULL;
-    printf("%s",string);
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
 static PyObject* createIntersectionDetector(PyObject *self, PyObject *args)
 {
 	PyObject *lineList,*circleList;
@@ -29,7 +18,22 @@ static PyObject* createIntersectionDetector(PyObject *self, PyObject *args)
 
     return PyLong_FromVoidPtr((void*)obstacleCourse);
 }
-static PyObject* testIntersectionDetector(PyObject *self, PyObject *args)
+static PyObject* destroyIntersectionDetector(PyObject *self, PyObject *args)
+{
+	PyObject* handle;
+	if(!PyArg_ParseTuple(args,"O",&handle))
+		return NULL;
+	ObstacleCourse* obstacleCourse = (ObstacleCourse*)PyLong_AsVoidPtr(handle);
+	if(obstacleCourse->lineSegments != NULL)
+		free(obstacleCourse->lineSegments);
+	if(obstacleCourse->circles != NULL)
+		free(obstacleCourse->circles);
+	free(obstacleCourse);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject* printIntersectionDetector(PyObject *self, PyObject *args)
 {
 	int i;
 	PyObject* handle;
@@ -77,10 +81,10 @@ static PyObject* testIntersection(PyObject *self, PyObject *args)
 	Py_RETURN_FALSE;
 }
 static PyMethodDef methods[] = {
-	    {"test_print",  test_print, METH_VARARGS, "Print a string."},
 	    {"createIntersectionDetector",  createIntersectionDetector, METH_VARARGS, "Create a C object representing all obstacles, which can be tested against."},
-	    {"testIntersectionDetector",  testIntersectionDetector, METH_VARARGS, ""},
+	    {"destroyIntersectionDetector",  destroyIntersectionDetector, METH_VARARGS, "Deallocate intersection detector's memory."},
 	    {"testIntersection",  testIntersection, METH_VARARGS, "Test if a given path intersects any of the paths stored by createIntersectionDetector."},
+	    {"printIntersectionDetector",  printIntersectionDetector, METH_VARARGS, "Prints the geometry in an intersection detector (for testing)."},
 		{NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

@@ -125,6 +125,8 @@ class PathFinderManager:
             # extract state to act on before exiting lock
             newInput = self._newInput
             if self._newInput is not None:
+                if self._activePathFinder is not None:
+                    self._activePathFinder.destroy()
                 self._activePathFinder = PathFinder(*self._newInput)
                 self._newInput = None
 

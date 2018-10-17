@@ -49,6 +49,12 @@ class PathFinder:
         
         # The best completed solution time found so far.  Any vertex whose admissible estimate is worse, is rejected immediately.
         self._pruningTime = float("inf")
+
+    def destroy(self):
+        """
+        Deallocates memory.  CANNOT be used after this is called!
+        """
+        self._obstacleCourse.destroy()
         
     @profile.accumulate("step")
     def step(self):
@@ -91,7 +97,7 @@ class PathFinder:
                 quality -= 1
             
         return outputPath.generatePath(self._bestPathVertex, self._params.waypointAcceptanceRadii, quality, numWaypointsCompleted)
-       
+
     def getDebugData(self):
         """
         Generates several useful pieces of debugging data:

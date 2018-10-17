@@ -20,12 +20,12 @@ class PathIntersectionDetector(Drawable):
                                           CircularObstacle(c.center, c.radius + self._bufferWidth, c.velocity),
                                           circularNoFlyZones))
 
-    def _createObstacleLines(self, points, velocity):
-        shell = calcs.calcShell(points, self._bufferWidth)
-        for i in range(len(shell)):
-            self._lineObstacles.append(
-                LineSegmentObstacle(shell[i - 1], shell[i], velocity))        
-
+    def destroy(self):
+        """
+        Deallocates memory.  CANNOT be used after this is called!
+        """
+        pass
+    
     @profile.accumulate("Collision Detection")
     def testStraightPathIntersections(self, points, times):
         for i in range(0, len(points) - 1):
@@ -40,6 +40,12 @@ class PathIntersectionDetector(Drawable):
 
     def testStraightPathIntersection(self, startTime, startPoint, velocity, time):
         return False
+
+    def _createObstacleLines(self, points, velocity):
+        shell = calcs.calcShell(points, self._bufferWidth)
+        for i in range(len(shell)):
+            self._lineObstacles.append(
+                LineSegmentObstacle(shell[i - 1], shell[i], velocity))        
 
     def draw(self, visualizer, time=0.0, **kwargs):
         for obstacleLine in self._lineObstacles:

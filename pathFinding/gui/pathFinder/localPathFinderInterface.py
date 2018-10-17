@@ -54,5 +54,6 @@ class LocalPathFinderInterface(PathFinderInterface):
             if (totalTime * (numSteps + 1)) / numSteps > timeout:
                 break
         bestPath = pathFinder.getBestPath()
+        pathFinder.destroy()
         self._solving = False
         self._fireSolved(bestPath)

@@ -114,6 +114,7 @@ class RosPathFinderServer:
             self._publishPathFinderState(True, pathFinder, messageConverter)
 
         bestPath = pathFinder.getBestPath()
+        pathFinder.destroy()
         self.server.set_succeeded(pfm.SolvePathProblemResult(messageConverter.outputPathToMsg(bestPath)))
 
         # Don't know Python's exact memory protocol regarding this kind of situation

@@ -1,8 +1,8 @@
-from engine.geometry.obstacle.pathInteresectionDetector import PathIntersectionDetector
 import fastPathIntersect
 
+from engine.geometry.obstacle.pathInteresectionDetector import PathIntersectionDetector
 
-# TODO: Add cleanup/deallocation step to surounding code 
+
 class CPathIntersectionDetector(PathIntersectionDetector):
     
     def __init__(self, bufferWidth, boundaryPoints, polyNFZs, circularNoFlyZones):
@@ -14,5 +14,8 @@ class CPathIntersectionDetector(PathIntersectionDetector):
             return True
         return False
     
-    def cleanup(self):
-        pass
+    def destroy(self):
+        """
+        Deallocates memory.  CANNOT be used after this is called!
+        """
+        fastPathIntersect.destroyIntersectionDetector(self.intersectionDetector)

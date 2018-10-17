@@ -58,7 +58,7 @@ void fromPyCircle(Circle* circle, PyObject* pyCircle)
 LineSegment* buildLineSegments(PyObject *lineList)
 {
     Py_ssize_t numLineSegments = PySequence_Length(lineList);
-    LineSegment* lines;
+    LineSegment* lines = NULL;
     if(numLineSegments > 0)
     {
     	lines = malloc(numLineSegments*sizeof(LineSegment));
@@ -74,7 +74,7 @@ Circle* buildCircles(PyObject *circleList)
 {
 
     Py_ssize_t numCircles = PySequence_Length(circleList);
-    Circle* circles;
+    Circle* circles = NULL;
     if(numCircles>0)
     {
     	circles = malloc(numCircles*sizeof(Circle));

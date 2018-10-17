@@ -12,6 +12,12 @@ class PathSegmentFinder(Drawable):
         self.vehicle = vehicle
         self.vertexTargets = []
         self.circularTargets = []
+
+    def destroy(self):
+        """
+        Deallocates memory.  CANNOT be used after this is called!
+        """
+        pass
         
     def setState(self, boundaryPoints, polyNFZs, circularNFZs):
         self.vertexTargets = []

@@ -1,5 +1,5 @@
 from engine.geometry.obstacle.arcFinder.arcSegmentFinder import ArcSegmentFinder
-from engine.geometry.obstacle.intersectionDetector.cPathIntersectionDetector import CPathIntersectionDetector
+#from engine.geometry.obstacle.intersectionDetector.cPathIntersectionDetector import CPathIntersectionDetector
 from engine.geometry.obstacle.intersectionDetector.pyPathIntersectionDetector import PyPathIntersectionDetector
 from gui.core import Drawable
 
@@ -9,7 +9,7 @@ def createObstacleCourse(params, vehicle, scenario):
     pathSegmentFinder.setState(scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)    
 #   pathSegmentFinder = LineSegmentFinder(params, vehicle)
     pathIntersectionDetector = PyPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
-#     pathIntersectionDetector = CPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
+#    pathIntersectionDetector = CPathIntersectionDetector(params.nfzBufferWidth, scenario.boundaryPoints, scenario.noFlyZones, scenario.dynamicNoFlyZones)
     return ObstacleCourse(pathSegmentFinder, pathIntersectionDetector)
 
     
@@ -19,6 +19,13 @@ class ObstacleCourse(Drawable):
         self.pathSegmentFinder = pathSegmentFinder
         self.pathIntersectionDetector = pathIntersectionDetector
 
+    def destroy(self):
+        """
+        Deallocates memory.  CANNOT be used after this is called!
+        """
+        self.pathSegmentFinder.destroy()
+        self.pathIntersectionDetector.destroy()
+    
     def stall(self, startTime, startPoint, startSpeed, startUnitVelocity, minStallTime, ignoreBuffers=False):
         """
         Find legal path segments for use in a stall manuever.  Stall is a way to waste time, for wasting time's sake!  This
