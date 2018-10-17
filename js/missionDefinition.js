@@ -224,6 +224,10 @@ function loadMissionPlan(){
 }
 
 function drawMissionPlan(missionObject){
+  activeMission = missionObject;
+  document.getElementById('button_exportMission').classList.add('visible');
+
+
   missionLayers.clearLayers();
   waypointNumber = 1;
 
