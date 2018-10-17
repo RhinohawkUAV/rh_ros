@@ -1,3 +1,4 @@
 GPSCoord position
 float64 radius
 float64 estimatedTime
+GPSVelocity normal

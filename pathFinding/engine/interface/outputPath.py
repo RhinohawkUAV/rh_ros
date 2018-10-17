@@ -33,9 +33,9 @@ def _calcSolutionWaypoints(pathSegments, waypointAcceptanceRadii):
         if pathSegment.arc.length > MAX_WAYPOINT_ARC_LENGTH:
             estimatedTime = pathSegment.startTime + arc.arcTime(MAX_WAYPOINT_ARC_LENGTH)
             (position, direction) = arc.endInfoLength(MAX_WAYPOINT_ARC_LENGTH)
-            solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii, estimatedTime))
+            solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii, estimatedTime, direction))
         
         position = pathSegment.endPoint + pathSegment.endUnitVelocity * waypointAcceptanceRadii
-        solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii, pathSegment.startTime + pathSegment.elapsedTime))
+        solutionWaypoints.append(SolutionWaypoint(position, waypointAcceptanceRadii, pathSegment.startTime + pathSegment.elapsedTime, pathSegment.endUnitVelocity))
         
     return solutionWaypoints

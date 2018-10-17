@@ -67,7 +67,7 @@ class SimManager:
                 self._step(now)
                 i += 1
                 time.sleep(0.01)
-                print self._elapsedTime
+#                 print self._elapsedTime
                 
         except self.ShutdownException:
             pass
@@ -107,13 +107,19 @@ class Simulator(Drawable):
         # Waypoints given in the path finder solution (not competition waypoints)
         self._pathWaypointIndex = 0
         self._path = None
-    
-    def setPath(self, path):
-        changed = True
+
+    def _detectSignificantPathChange(self, path):
+        """
+        For debugging only.  If path changes significantly, then the rate of simulation drops automatically.
+        """
         if self._path is not None and len(path.pathWaypoints) > 0:
             (goal, radius) = self._currentPathWaypoint()     
             if goal is not None and calcs.length(goal - path.pathWaypoints[0].position) < 1.0:
-                changed = False
+                return False
+        return True
+
+    def setPath(self, path):
+        changed = self._detectSignificantPathChange(path)
         self._path = path
         self._pathWaypointIndex = 0
         return changed
@@ -210,11 +216,8 @@ class Simulator(Drawable):
             
     def draw(self, visualizer, solutionColor="green", solutionWidth=1.0, **kwargs):
         if self._path is not None:
-            for pathSegment in self._path.pathSegments:
-                pathSegment.draw(visualizer, color=solutionColor, width=solutionWidth)            
-        
-            for solutionWaypoint in self._path.pathWaypoints:
-                gui.draw.drawCircle(visualizer, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
+            gui.draw.drawOutputPath(visualizer, self._path, pathColor=solutionColor, pathWidth=solutionWidth, waypointColor=solutionColor)
+                
         draw.drawNoFlyZones(visualizer, self.scenario.noFlyZones, color="red", width=1.0, **kwargs)
         draw.drawDynamicNoFlyZones(visualizer, self.scenario.dynamicNoFlyZones, color="red", **kwargs)
         draw.drawPoly(visualizer, self.scenario.boundaryPoints, color="red")

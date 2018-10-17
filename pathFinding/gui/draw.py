@@ -13,6 +13,8 @@ DEFAULT_DASH = (1, 6)
 # Multiply to convert velocity to pixels
 VELOCITY_TO_PIXEL = 1.0
 
+# Multiply to convert a unit vector to pixels
+UNIT_TO_PIXEL = 15.0
 
 def drawPoint(visualizer, pos, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, outline=None, width=1.0, **kwargs):
     scaledRadius = visualizer.pixelVecToScale(np.array((radius, radius), np.double))
@@ -21,6 +23,11 @@ def drawPoint(visualizer, pos, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, o
 
 def drawLine(visualizer, p1, p2, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, arrow=None, dash=None, **kwargs):
     visualizer.canvas.create_line(p1[0], p1[1], p2[0], p2[1], fill=color, width=width, arrow=arrow, dash=dash)
+
+
+def drawDirection(visualizer, start, direction, **kwargs):
+    direction = visualizer.pixelVecToScale(direction * UNIT_TO_PIXEL)
+    drawLine(visualizer, start, start + direction, arrow=tk.LAST, **kwargs)
 
 
 def drawVelocity(visualizer, start, velocity, **kwargs):
@@ -102,3 +109,12 @@ def drawScenario(visualizer, scenarioInput, time=0.0, **kwargs):
         drawPoly(visualizer, scenarioInput.boundaryPoints, color="red")
     drawWayPoints(visualizer, scenarioInput.startPoint, scenarioInput.startVelocity, scenarioInput.wayPoints)
 
+
+def drawOutputPath(visualizer, path, pathColor=DEFAULT_COLOR, pathWidth=DEFAULT_WIDTH, waypointColor=DEFAULT_COLOR, **kwargs):
+    for pathSegment in path.pathSegments:
+        pathSegment.draw(visualizer, color=pathColor, width=pathWidth)            
+    
+    for solutionWaypoint in path.pathWaypoints:
+        drawDirection(visualizer, solutionWaypoint.position, solutionWaypoint.normal, color=waypointColor)
+        drawCircle(visualizer, solutionWaypoint.position, solutionWaypoint.radius, color=waypointColor)
+        drawText(visualizer, solutionWaypoint.position, "%.1f" % solutionWaypoint.estimatedTime, offsetY=-25.0)    

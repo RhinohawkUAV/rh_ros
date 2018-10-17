@@ -1,4 +1,5 @@
 from threading import Condition, Lock, Thread
+import numpy as np
 
 
 class Pilot:
@@ -6,6 +7,7 @@ class Pilot:
     def __init__(self, pathFinderInterface, simulator):
         self._lock = Condition(Lock())
         self._simulator = simulator
+        self._previousPosition = None
         self._params = None
         self._vehicle = None
         self._shutdown = False
@@ -20,10 +22,31 @@ class Pilot:
             self._vehicle = vehicle
 
     def solved(self, bestPath):
+        state = self._simulator.copyState()
+        if state is not None and self._previousPosition is not None:
+            bestPath.pathWaypoints = self._filterPassedWaypoints(bestPath.pathWaypoints,
+                                                                 self._previousPosition,
+                                                                 currentPosition=state.scenario.startPoint)
         self._simulator.setPath(bestPath)
         with self._lock:
             self._solved = True
             self._lock.notifyAll()
+            
+    def _filterPassedWaypoints(self, pathWaypoints, previousPosition, currentPosition):
+        """
+        When given a new path, this determines if any of the waypoints have effectively already been passed.
+        A waypoint is considered path, if the a straightline from the last position of the vehicle to the current
+        position passes through a plane in the perpendicular direction of motion.
+        """
+        i = 0
+        while i < len(pathWaypoints):
+            waypoint = pathWaypoints[i]
+            if np.dot(currentPosition - waypoint.position, waypoint.normal) < 0.0 \
+            or np.dot(waypoint.position - previousPosition, waypoint.normal) < 0.0:
+                break
+            i += 1
+        
+        return pathWaypoints[i:]
 
     def _waitForSolution(self):
         with self._lock:
@@ -43,6 +66,7 @@ class Pilot:
                 state = self._simulator.copyState()
                 if state is not None and len(state.scenario.wayPoints) > 0:
                     scenario = state.scenario
+                    self._previousPosition = scenario.startPoint
                     self._solved = False
                     if len(scenario.wayPoints) > 5:
                         scenario.wayPoints = scenario.wayPoints[0:5]

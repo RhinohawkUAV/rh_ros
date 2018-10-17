@@ -106,7 +106,7 @@ class MessageConverter:
         return solutionWaypoints
 
     def msgToSolutionWaypoint(self, msg):
-        return engine.interface.solutionWaypoint.SolutionWaypoint(self.msgToPoint(msg.position), float(msg.radius), float(msg.estimatedTime))
+        return engine.interface.solutionWaypoint.SolutionWaypoint(self.msgToPoint(msg.position), float(msg.radius), float(msg.estimatedTime), self.msgToVector(msg.normal))
     
     def msgToPathSegmentList(self, msg):
         pathSegments = []
@@ -235,6 +235,7 @@ class MessageConverter:
         msg.position = self.pointToMsg(solutionWaypoint.position)
         msg.radius = solutionWaypoint.radius
         msg.estimatedTime = solutionWaypoint.estimatedTime
+        msg.normal = self.vectorToMsg(solutionWaypoint.normal)
         return msg
         
     def pathSegmentListToMsg(self, pathSegments):

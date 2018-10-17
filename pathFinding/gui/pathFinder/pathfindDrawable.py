@@ -77,11 +77,6 @@ class PathFindDrawable(Drawable):
         else:
             solutionWidth = 5
         if self._bestPath is not None:
-            for pathSegment in self._bestPath.pathSegments:
-                pathSegment.draw(visualizer, color=solutionColor, width=solutionWidth)            
-            
-            for solutionWaypoint in self._bestPath.pathWaypoints:
-                gui.draw.drawCircle(visualizer, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
-                gui.draw.drawText(visualizer, solutionWaypoint.position, "%.1f" % solutionWaypoint.estimatedTime, offsetY=-25.0)
+            gui.draw.drawOutputPath(visualizer, self._bestPath, pathColor=solutionColor, pathWidth=solutionWidth, waypointColor=solutionColor)
         
         return drawTime
