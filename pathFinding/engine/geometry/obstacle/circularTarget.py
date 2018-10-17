@@ -11,5 +11,5 @@ class CircularTarget(Target):
         self.radius = radius + nfzBufferWidth + constants.IDENTICAL_POINT_TOLERANCE
         self.targetRadius = radius + nfzTargetOffset
 
-    def draw(self, canvas, **kwargs):
-        gui.draw.drawCircle(canvas, self.position, self.targetRadius, dash=DEFAULT_DASH)
+    def draw(self, visualizer, **kwargs):
+        gui.draw.drawCircle(visualizer, self.position, self.targetRadius, dash=DEFAULT_DASH)

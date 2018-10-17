@@ -60,14 +60,14 @@ class PolyBuilder(SubGUI):
     def _polyBuilt(self, points):
         pass
 
-    def draw(self, canvas, color=DEFAULT_COLOR, **kwargs):
-        SubGUI.draw(self, canvas, **kwargs)
+    def draw(self, visualizer, color=DEFAULT_COLOR, **kwargs):
+        SubGUI.draw(self, visualizer, **kwargs)
         
         for point in self._points:
-            gui.draw.drawPoint(canvas, point, color=color)
+            gui.draw.drawPoint(visualizer, point, color=color)
         for line in self._lines:
-            line.draw(canvas, color=color)
+            line.draw(visualizer, color=color)
         if not self._previewPoint is None:
-            gui.draw.drawPoint(canvas, self._previewPoint, color=color)
+            gui.draw.drawPoint(visualizer, self._previewPoint, color=color)
         if not self._previewLine is None:
-            self._previewLine.draw(canvas, color=color)
+            self._previewLine.draw(visualizer, color=color)

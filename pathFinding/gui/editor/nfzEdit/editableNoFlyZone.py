@@ -23,14 +23,14 @@ class EditableNoFlyZone(Drawable):
         for i in range(0, len(points)):
             self._lines.append(LineSegment(self.points[i - 1], self.points[i]))
 
-    def draw(self, canvas, **kwargs):
-        # type: (Canvas) -> None
+    def draw(self, visualizer, **kwargs):
+        # type: (visualizer) -> None
 
         for line in self._lines:
-            line.draw(canvas, **kwargs)
+            line.draw(visualizer, **kwargs)
 
         if np.linalg.norm(self.velocity) > 0.0:
-            gui.draw.drawVelocity(canvas, self._midPoint, self.velocity, **kwargs)
+            gui.draw.drawVelocity(visualizer, self._midPoint, self.velocity, **kwargs)
 
     def isPointInside(self, point):
         """

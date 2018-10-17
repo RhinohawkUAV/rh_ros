@@ -108,11 +108,11 @@ class ArcSegmentFinder(PathSegmentFinder):
                         pass
         return pathSegments
 
-    def draw(self, canvas, time=0.0, **kwargs):
+    def draw(self, visualizer, time=0.0, **kwargs):
         for target in self.vertexTargets:
             target.update(time)
-            target.draw(canvas)
+            target.draw(visualizer)
             
         for target in self.circularTargets:
             target.update(time)
-            target.draw(canvas)
+            target.draw(visualizer)

@@ -121,7 +121,7 @@ class ScenarioEditor(Visualizer, Drawable):
         self.updateDisplay()
 
     def _setModeState(self):
-        self._mode.onSwitch(self._params, self._scenario, self._vehicle, self._testScenario)
+        self._mode.onSwitch(self._params, self._scenario, self._vehicle, self._testScenario, self)
         
     def onLeftPress(self, point, event):
         self._mode.onLeftPress(point)
@@ -150,6 +150,6 @@ class ScenarioEditor(Visualizer, Drawable):
     def updateDisplay(self):
         self.drawToCanvas(self)
 
-    def draw(self, canvas, **kwargs):
-        self._mode.draw(canvas, **kwargs)
+    def draw(self, visualizer, **kwargs):
+        self._mode.draw(visualizer, **kwargs)
 

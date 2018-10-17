@@ -2,7 +2,7 @@ from engine.geometry import calcs
 from engine.geometry.obstacle import obstacleCourse
 from engine.interface.outputPath import OutputPath
 from gui import draw
-from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
+from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_TO_PIXEL
 from gui.editor.subGUI import SubGUI
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
 
@@ -26,9 +26,9 @@ class PathSegmentTester(SubGUI):
     def onKey(self, point, key, ctrl=False):
         if key == "v":
             if ctrl:
-                self._testInput.velocityOfTarget = (point - self._testInput.targetPoint) / VELOCITY_SCALE
+                self._testInput.velocityOfTarget = self._visualizer.scaleVecToPixels(point - self._testInput.targetPoint) / VELOCITY_TO_PIXEL
             else:
-                self._testInput.startVelocity = (point - self._testInput.startPoint) / VELOCITY_SCALE
+                self._testInput.startVelocity = self._visualizer.scaleVecToPixels(point - self._testInput.startPoint) / VELOCITY_TO_PIXEL
 
         if key == "z":
             self._showPathsToPoints = not self._showPathsToPoints
@@ -37,8 +37,8 @@ class PathSegmentTester(SubGUI):
     def onMotion(self, point, control=False):
         self._pointOfInterest = point
 
-    def onSwitch(self, params, scenario, vehicle, testInput):
-        SubGUI.onSwitch(self, params, scenario, vehicle, testInput)
+    def onSwitch(self, params, scenario, vehicle, testInput, visualizer):
+        SubGUI.onSwitch(self, params, scenario, vehicle, testInput, visualizer)
         self._obstacleCourse = obstacleCourse.createObstacleCourse(self._params, self._vehicle, self._scenario)
         self._pathFinderDrawable = PathFindDrawable(self._params, self._vehicle, self._scenario)
 
@@ -66,17 +66,17 @@ class PathSegmentTester(SubGUI):
         
         self._pathFinderDrawable.update(False, OutputPath([], goalSegments, 3, 0, 0.0), [], pathSegments, filteredPathSegments)
 
-    def draw(self, canvas, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
-        drawTime = self._pathFinderDrawable.draw(canvas,
+    def draw(self, visualizer, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
+        drawTime = self._pathFinderDrawable.draw(visualizer,
                                       pointOfInterest=self._pointOfInterest,
                                       snapDistance=50.0,
                                       showFiltered=True)
-        draw.drawPoint(canvas, self._testInput.startPoint, radius=radius, color=color)
-        draw.drawVelocity(canvas,
+        draw.drawPoint(visualizer, self._testInput.startPoint, radius=radius, color=color)
+        draw.drawVelocity(visualizer,
                           self._testInput.startPoint,
                           self._testInput.startVelocity)
 
         targetPoint = self._testInput.targetPoint + self._testInput.velocityOfTarget * drawTime
-        draw.drawPoint(canvas, targetPoint, radius=radius, color=color)
-        draw.drawVelocity(canvas, targetPoint, self._testInput.velocityOfTarget)
+        draw.drawPoint(visualizer, targetPoint, radius=radius, color=color)
+        draw.drawVelocity(visualizer, targetPoint, self._testInput.velocityOfTarget)
 

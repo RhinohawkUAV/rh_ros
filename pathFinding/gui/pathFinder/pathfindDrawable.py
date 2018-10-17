@@ -45,7 +45,7 @@ class PathFindDrawable(Drawable):
         else:
             return (point, 0.0)
         
-    def draw(self, canvas, pointOfInterest=None, snapDistance=float("inf"), obstacleColor="black",
+    def draw(self, visualizer, pointOfInterest=None, snapDistance=float("inf"), obstacleColor="black",
              lineOfSightColor="blue",
              vertexColor="green",
              pathColor="purple",
@@ -58,30 +58,30 @@ class PathFindDrawable(Drawable):
         else:
             (pointOfInterest, drawTime) = self.findClosestPointOnPath(pointOfInterest, snapDistance, showFiltered)
             
-        gui.draw.drawScenario(canvas, self.scenario, time=drawTime)
-        self._obstacleCourse.draw(canvas, time=drawTime)
+        gui.draw.drawScenario(visualizer, self.scenario, time=drawTime)
+        self._obstacleCourse.draw(visualizer, time=drawTime)
         if pointOfInterest is not None:
-            gui.draw.drawPoint(canvas, pointOfInterest, color="cyan", outline="black", width=1.5, radius=1.0)
+            gui.draw.drawPoint(visualizer, pointOfInterest, color="cyan", outline="black", width=1.5, radius=1.0)
             
         if not self._finished:
             if showFiltered:
                 for pathSegment in self._filteredPathSegments:
-                    pathSegment.draw(canvas, color=lineOfSightColor, filtered=True)            
+                    pathSegment.draw(visualizer, color=lineOfSightColor, filtered=True)            
             for pathSegment in self._futurePathSegments:
-                pathSegment.draw(canvas, color=lineOfSightColor)
+                pathSegment.draw(visualizer, color=lineOfSightColor)
                 if pathSegment.debug is not None:
-                    gui.draw.drawText(canvas, pathSegment.endPoint , str(pathSegment.debug) + "\n" + str(pathSegment.endPoint))  
+                    gui.draw.drawText(visualizer, pathSegment.endPoint , str(pathSegment.debug) + "\n" + str(pathSegment.endPoint))  
             for pathSegment in self._previousPathSegments:
-                pathSegment.draw(canvas, color=pathColor, width=2.0)
+                pathSegment.draw(visualizer, color=pathColor, width=2.0)
             solutionWidth = 3
         else:
             solutionWidth = 5
         if self._bestPath is not None:
             for pathSegment in self._bestPath.pathSegments:
-                pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            
+                pathSegment.draw(visualizer, color=solutionColor, width=solutionWidth)            
             
             for solutionWaypoint in self._bestPath.pathWaypoints:
-                gui.draw.drawCircle(canvas, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
-                gui.draw.drawText(canvas, solutionWaypoint.position + np.array((0.0, 50.0), np.double), "%.1f" % solutionWaypoint.estimatedTime)
+                gui.draw.drawCircle(visualizer, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
+                gui.draw.drawText(visualizer, solutionWaypoint.position, "%.1f" % solutionWaypoint.estimatedTime, offsetY=-25.0)
         
         return drawTime

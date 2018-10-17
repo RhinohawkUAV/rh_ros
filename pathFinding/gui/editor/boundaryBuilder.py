@@ -10,5 +10,5 @@ class BoundaryBuilder(PolyBuilder):
     def _polyBuilt(self, points):
         self._scenario.boundaryPoints = points
 
-    def draw(self, canvas, color="red", **kwargs):
-        PolyBuilder.draw(self, canvas, color=color)
+    def draw(self, visualizer, color="red", **kwargs):
+        PolyBuilder.draw(self, visualizer, color=color)

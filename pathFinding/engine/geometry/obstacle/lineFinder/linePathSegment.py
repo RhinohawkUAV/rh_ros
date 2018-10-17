@@ -14,12 +14,12 @@ class LinePathSegment(PathSegment):
         self.startSpeed = startSpeed
         self.lineSegment = LineSegment(startPoint, endPoint)
 
-    def draw(self, canvas, color=DEFAULT_COLOR, filtered=False, width=DEFAULT_WIDTH, **kwargs):
+    def draw(self, visualizer, color=DEFAULT_COLOR, filtered=False, width=DEFAULT_WIDTH, **kwargs):
         if filtered:
             dash = DEFAULT_DASH
         else:
             dash = None
-        draw.drawLine(canvas, self.startPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
+        draw.drawLine(visualizer, self.startPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
 
     def calcPointDebug(self, point):
         timeInterp = self.lineSegment.closestPointParametric(point)

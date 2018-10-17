@@ -31,6 +31,6 @@ class NoFlyMover(Drawable):
             for dragZone in self._dragZones:
                 self._previewZones.append(dragZone.getTranslatedCopy(offset))
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, visualizer, **kwargs):
         for previewZone in self._previewZones:
-            previewZone.draw(canvas, **kwargs)
+            previewZone.draw(visualizer, **kwargs)

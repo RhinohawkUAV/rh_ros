@@ -84,7 +84,7 @@ class ObstacleCourse(Drawable):
                 unfilteredPathSegments.append(pathSegment)
         return (unfilteredPathSegments, filteredPathSegments)   
 
-    def draw(self, canvas, time=0.0, **kwargs):
-        self.pathSegmentFinder.draw(canvas, time=time, **kwargs)
-        self.pathIntersectionDetector.draw(canvas, time=time, **kwargs)
+    def draw(self, visualizer, time=0.0, **kwargs):
+        self.pathSegmentFinder.draw(visualizer, time=time, **kwargs)
+        self.pathIntersectionDetector.draw(visualizer, time=time, **kwargs)
         

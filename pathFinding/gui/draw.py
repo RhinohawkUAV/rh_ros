@@ -1,104 +1,104 @@
 
 from Tkconstants import ARC
-from curses.ascii import CAN
 import math
 
 import Tkinter as tk
 import numpy as np
 
-# TODO: Offset will not look correct for other scalings, similar problem for DEFAULT_POINT_SIZE.
-# Ideally this will be a non-scaling factor.
-TEXT_OFFSET = np.array((0, -2.0), np.double)
-
-DEFAULT_POINT_SIZE = 0.5
+DEFAULT_POINT_SIZE = 5
 DEFAULT_COLOR = "black"
 DEFAULT_WIDTH = 1.0
 DEFAULT_DASH = (1, 6)
-VELOCITY_SCALE = 10.0
+
+# Multiply to convert velocity to pixels
+VELOCITY_TO_PIXEL = 1.0
 
 
-def drawPoint(canvas, pos, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, outline=None, width=1.0, **kwargs):
-    canvas.create_oval(pos[0] - radius, pos[1] - radius, pos[0] + radius, pos[1] + radius, fill=color, outline=outline, width=width)
+def drawPoint(visualizer, pos, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, outline=None, width=1.0, **kwargs):
+    scaledRadius = visualizer.pixelVecToScale(np.array((radius, radius), np.double))
+    visualizer.canvas.create_oval(pos[0] - scaledRadius[0], pos[1] - scaledRadius[1], pos[0] + scaledRadius[0], pos[1] + scaledRadius[1], fill=color, outline=outline, width=width)
 
 
-def drawLine(canvas, p1, p2, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, arrow=None, dash=None, **kwargs):
-    canvas.create_line(p1[0], p1[1], p2[0], p2[1], fill=color, width=width, arrow=arrow, dash=dash)
+def drawLine(visualizer, p1, p2, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, arrow=None, dash=None, **kwargs):
+    visualizer.canvas.create_line(p1[0], p1[1], p2[0], p2[1], fill=color, width=width, arrow=arrow, dash=dash)
 
 
-def drawVelocity(canvas, start, velocity, **kwargs):
-    drawLine(canvas, start, start + velocity * VELOCITY_SCALE, arrow=tk.LAST, **kwargs)
+def drawVelocity(visualizer, start, velocity, **kwargs):
+    velocity = visualizer.pixelVecToScale(velocity * VELOCITY_TO_PIXEL)
+    drawLine(visualizer, start, start + velocity, arrow=tk.LAST, **kwargs)
 
 
-def drawPoly(canvas, points, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, dash=None, **kwargs):
+def drawPoly(visualizer, points, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, dash=None, **kwargs):
     for i in range(0, len(points)):
-        drawLine(canvas, points[i - 1], points[i], color=color, width=width, dash=dash, **kwargs)
+        drawLine(visualizer, points[i - 1], points[i], color=color, width=width, dash=dash, **kwargs)
 
 
-def drawText(canvas, position, text, color=DEFAULT_COLOR, **kwargs):
-    canvas.create_text(position[0], position[1],
+def drawText(visualizer, position, text, color=DEFAULT_COLOR, offsetX=0.0, offsetY=0.0, **kwargs):
+    offset = visualizer.pixelVecToScale(np.array((offsetX, offsetY), np.double))
+    visualizer.canvas.create_text(position[0] + offset[0], position[1] + offset[1],
                        text=text,
                        fill=color, **kwargs)
 
 
-def drawCircle(canvas, center, radius, color=DEFAULT_COLOR, dash=None, **kwargs):
-    canvas.create_oval(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, outline=color, dash=dash, **kwargs)
+def drawCircle(visualizer, center, radius, color=DEFAULT_COLOR, dash=None, **kwargs):
+    visualizer.canvas.create_oval(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, outline=color, dash=dash, **kwargs)
 
     
-def drawArc(canvas, center, radius, startAngle, length, color=DEFAULT_COLOR, **kwargs):
-    canvas.create_arc(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, start=startAngle,
+def drawArc(visualizer, center, radius, startAngle, length, color=DEFAULT_COLOR, **kwargs):
+    visualizer.canvas.create_arc(center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius, start=startAngle,
                       extent=length, outline=color, **kwargs)
 
 
-def drawArcObj(canvas, arc, **kwargs):
-    drawArc(canvas, arc.center, arc.radius,
+def drawArcObj(visualizer, arc, **kwargs):
+    drawArc(visualizer, arc.center, arc.radius,
             math.degrees(arc.start) * arc.rotDirection,
             math.degrees(arc.length) * arc.rotDirection,
             style=ARC, **kwargs)
 
 
-def drawDynamicNoFlyZone(canvas, dynamicNoFlyZone, color=DEFAULT_COLOR, time=0.0, **kwargs):
+def drawDynamicNoFlyZone(visualizer, dynamicNoFlyZone, color=DEFAULT_COLOR, time=0.0, **kwargs):
     center = dynamicNoFlyZone.center + dynamicNoFlyZone.velocity * time
-    drawCircle(canvas, center, dynamicNoFlyZone.radius, color=color)
-    drawVelocity(canvas, center, dynamicNoFlyZone.velocity)
+    drawCircle(visualizer, center, dynamicNoFlyZone.radius, color=color)
+    drawVelocity(visualizer, center, dynamicNoFlyZone.velocity)
 
 
-def drawDynamicNoFlyZones(canvas, dynamicNoFlyZones, color=DEFAULT_COLOR, **kwargs):
+def drawDynamicNoFlyZones(visualizer, dynamicNoFlyZones, color=DEFAULT_COLOR, **kwargs):
     for dnfz in dynamicNoFlyZones:
-        drawDynamicNoFlyZone(canvas, dnfz, color=color, **kwargs)
+        drawDynamicNoFlyZone(visualizer, dnfz, color=color, **kwargs)
 
 
-def drawNoFlyZone(canvas, noFlyZone, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, time=0.0, **kwargs):
+def drawNoFlyZone(visualizer, noFlyZone, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, time=0.0, **kwargs):
     for i in range(len(noFlyZone.points)):
-        drawLine(canvas,
+        drawLine(visualizer,
                  noFlyZone.points[i - 1] + noFlyZone.velocity * time,
                  noFlyZone.points[i] + noFlyZone.velocity * time,
                  color=color, width=width)
     if np.linalg.norm(noFlyZone.velocity) > 0.0:
         midPoint = noFlyZone.points.sum(axis=0) / len(noFlyZone.points) + noFlyZone.velocity * time
-        drawVelocity(canvas, midPoint, noFlyZone.velocity, **kwargs)
+        drawVelocity(visualizer, midPoint, noFlyZone.velocity, **kwargs)
     
         
-def drawNoFlyZones(canvas, noFlyZones, **kwargs):
+def drawNoFlyZones(visualizer, noFlyZones, **kwargs):
         for noFlyZone in noFlyZones:
-            drawNoFlyZone(canvas, noFlyZone, **kwargs)
+            drawNoFlyZone(visualizer, noFlyZone, **kwargs)
 
 
-def drawWayPoints(canvas, startPoint, startVelocity, wayPoints, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
-    drawPoint(canvas, startPoint, radius=radius, color=color)
-    drawText(canvas, startPoint + TEXT_OFFSET, "Start", color=color)
-    drawVelocity(canvas, startPoint,
+def drawWayPoints(visualizer, startPoint, startVelocity, wayPoints, radius=DEFAULT_POINT_SIZE, color=DEFAULT_COLOR, **kwargs):
+    drawPoint(visualizer, startPoint, radius=radius, color=color)
+    drawText(visualizer, startPoint, "Start", offsetY=15, color=color)
+    drawVelocity(visualizer, startPoint,
                   startVelocity)
 
     for i in range(len(wayPoints)):
         point = wayPoints[i]
-        drawPoint(canvas, point, radius=radius, color=color)
-        drawText(canvas, point + TEXT_OFFSET, "Waypoint: " + str(i), color=color)
+        drawPoint(visualizer, point, radius=radius, color=color)
+        drawText(visualizer, point, "Waypoint: " + str(i), offsetY=15, color=color)
 
 
-def drawScenario(canvas, scenarioInput, time=0.0, **kwargs):
-    drawNoFlyZones(canvas, scenarioInput.noFlyZones, color="red", width=1.0, time=time, **kwargs)
-    drawDynamicNoFlyZones(canvas, scenarioInput.dynamicNoFlyZones, color="red", time=time, **kwargs)
+def drawScenario(visualizer, scenarioInput, time=0.0, **kwargs):
+    drawNoFlyZones(visualizer, scenarioInput.noFlyZones, color="red", width=1.0, time=time, **kwargs)
+    drawDynamicNoFlyZones(visualizer, scenarioInput.dynamicNoFlyZones, color="red", time=time, **kwargs)
     if len(scenarioInput.boundaryPoints) > 2:
-        drawPoly(canvas, scenarioInput.boundaryPoints, color="red")
-    drawWayPoints(canvas, scenarioInput.startPoint, scenarioInput.startVelocity, scenarioInput.wayPoints)
+        drawPoly(visualizer, scenarioInput.boundaryPoints, color="red")
+    drawWayPoints(visualizer, scenarioInput.startPoint, scenarioInput.startVelocity, scenarioInput.wayPoints)
 

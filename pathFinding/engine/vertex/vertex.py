@@ -5,7 +5,6 @@ import gui.draw
 import numpy as np
 
 DRAW_RADIUS = 0.5
-TEXT_OFFSET = 3.0
 _zero = np.array((0, 0), np.double)
 
 
@@ -95,10 +94,10 @@ class BaseVertex(Drawable):
         """
         pass
 
-    def drawPath(self, canvas, **kwargs):
+    def drawPath(self, visualizer, **kwargs):
         pass
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, visualizer, **kwargs):
         pass
 
     def generatePathSegments(self):
@@ -172,11 +171,11 @@ class OriginVertex(BaseVertex):
                                                       startUnitVelocity=self._direction,
                                                       legalRotDirection=0.0)
 
-    def drawPath(self, canvas, **kwargs):
+    def drawPath(self, visualizer, **kwargs):
         pass
 
-    def draw(self, canvas, **kwargs):
-        gui.draw.drawPoint(canvas, self._position, **kwargs)
+    def draw(self, visualizer, **kwargs):
+        gui.draw.drawPoint(visualizer, self._position, **kwargs)
 
 
 class Vertex(BaseVertex):
@@ -246,15 +245,15 @@ class Vertex(BaseVertex):
                                                       startUnitVelocity=self.pathSegment.endUnitVelocity,
                                                       legalRotDirection=self.pathSegment.nextLegalRotDirection)
 
-    def drawPath(self, canvas, **kwargs):
+    def drawPath(self, visualizer, **kwargs):
         if self.previousVertex is not None:
-            self.pathSegment.draw(canvas, **kwargs)
-            self.previousVertex.drawPath(canvas, **kwargs)
+            self.pathSegment.draw(visualizer, **kwargs)
+            self.previousVertex.drawPath(visualizer, **kwargs)
 
-    def draw(self, canvas, **kwargs):
-        gui.draw.drawPoint(canvas, self._position, **kwargs)
-        gui.draw.drawText(canvas, (self._position[0] + TEXT_OFFSET, self._position[1]),
-                          text="{:4.2f}".format(self.timeToVertex), **kwargs)
+    def draw(self, visualizer, **kwargs):
+        gui.draw.drawPoint(visualizer, self._position, **kwargs)
+        gui.draw.drawText(visualizer, (self._position[0], self._position[1]),
+                          text="{:4.2f}".format(self.timeToVertex), offsetY=10.0, **kwargs)
 
     def __str__(self):
         return "(" + str(self._position[0]) + "," + str(self._position[1]) + ") with cost: " + str(self.timeToVertex)

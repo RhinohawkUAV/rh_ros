@@ -15,8 +15,9 @@ class NFZEditor(SubGUI):
         self._mover = NoFlyMover()
         self._velocityChanger = NFZVelocityChanger()
 
-    def onSwitch(self, params, scenario, vehicle, testInput):
-        SubGUI.onSwitch(self, params, scenario, vehicle, testInput)
+    def onSwitch(self, params, scenario, vehicle, testInput, visualizer):
+        SubGUI.onSwitch(self, params, scenario, vehicle, testInput, visualizer)
+        self._velocityChanger._visualizer = visualizer
         self._nfzEdit = EditableNoFlyZoneList(self._scenario.noFlyZones)
         self._scenario.noFlyZones = []
     
@@ -53,9 +54,9 @@ class NFZEditor(SubGUI):
                 self._velocityChanger.onRelease(point, self._nfzEdit)
             self._pressVelocity = not self._pressVelocity
             
-    def draw(self, canvas, **kwargs):
-        SubGUI.draw(self, canvas, **kwargs)
+    def draw(self, visualizer, **kwargs):
+        SubGUI.draw(self, visualizer, **kwargs)
 
-        self._nfzEdit.draw(canvas, **kwargs)
-        self._pointMover.draw(canvas, **kwargs)
-        self._mover.draw(canvas, **kwargs)
+        self._nfzEdit.draw(visualizer, **kwargs)
+        self._pointMover.draw(visualizer, **kwargs)
+        self._mover.draw(visualizer, **kwargs)

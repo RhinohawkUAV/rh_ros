@@ -22,5 +22,5 @@ class CircularObstacle(Drawable):
         
         return calcs.lineSegmentCircleIntersect(startPoint + offset, pathVector, self.center, self.radius)
 
-    def draw(self, canvas, time=0.0, **kwargs):
-        gui.draw.drawCircle(canvas, self.center + time * self.velocity, self.radius)
+    def draw(self, visualizer, time=0.0, **kwargs):
+        gui.draw.drawCircle(visualizer, self.center + time * self.velocity, self.radius)

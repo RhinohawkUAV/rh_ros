@@ -16,9 +16,9 @@ class EditableNoFlyZoneList(Drawable):
     def removeNoFlyZone(self, editableNoFlyZone):
         self.noFlyZones.remove(editableNoFlyZone)
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, visualizer, **kwargs):
         for editableNoFlyZone in self.noFlyZones:
-            editableNoFlyZone.draw(canvas, **kwargs)
+            editableNoFlyZone.draw(visualizer, **kwargs)
 
     def findClosestPointIndex(self, point):
         closestDistanceSquared = float("inf")

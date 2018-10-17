@@ -52,7 +52,7 @@ class Visualizer(Toplevel, core.DrawListener):
         """Draw the given drawable, applying virtual coordinates transform.
         Must be called from GUI THREAD!"""
         self.canvas.delete(tk.ALL)
-        drawable.draw(self.canvas, **kwargs)
+        drawable.draw(self, **kwargs)
         self.transformCanvas()
 
     def transformCanvas(self):
@@ -76,6 +76,16 @@ class Visualizer(Toplevel, core.DrawListener):
         transX = self.viewCenterX + self.viewWidth * (canvasPoint[0] - width / 2.0) / width
         transY = self.viewCenterY - self.viewHeight * (canvasPoint[1] - height / 2.0) / height
         return np.array((transX, transY), np.double)
+
+    def pixelVecToScale(self, vec):
+        """
+        Scale the given vector, expressed in pixels, to the transform, currently in use.  This allows, things like offsets and the radius of
+        points to always be displayed with the same absolute size on the screen.
+        """
+        return vec * np.array((self.viewWidth / self.canvas.winfo_width(), self.viewHeight / self.canvas.winfo_height()), np.double)
+
+    def scaleVecToPixels(self, vec):
+        return vec * np.array((self.canvas.winfo_width() / self.viewWidth, self.canvas.winfo_height() / self.viewHeight), np.double)
 
     def onDraw(self, drawable, **kwargs):
         """Callback for DrawListener.  This can be used by a background calculation thread to signal the GUI to draw a new state."""

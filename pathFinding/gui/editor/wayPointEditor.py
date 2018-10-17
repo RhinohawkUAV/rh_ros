@@ -1,6 +1,6 @@
 from engine.geometry import calcs
 from engine.interface.fileUtils import SCENARIO_KEY
-from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_SCALE
+from gui.draw import DEFAULT_COLOR, DEFAULT_POINT_SIZE, VELOCITY_TO_PIXEL
 from subGUI import SubGUI
 
 
@@ -14,8 +14,8 @@ class WayPointEditor(SubGUI):
         self._offset = None
         self._dragIndex = None
 
-    def onSwitch(self, params, scenario, vehicle, testInput):
-        SubGUI.onSwitch(self, params, scenario, vehicle, testInput)
+    def onSwitch(self, params, scenario, vehicle, testInput, visualizer):
+        SubGUI.onSwitch(self, params, scenario, vehicle, testInput, visualizer)
         self._points = [self._scenario.startPoint]
         self._startVelocity = self._scenario.startVelocity
         self._points.extend(self._scenario.wayPoints)
@@ -48,7 +48,7 @@ class WayPointEditor(SubGUI):
 
     def onKey(self, point, key, ctrl=False):
         if key == "v":
-            self._startVelocity = (point - self._points[0]) / VELOCITY_SCALE
+            self._startVelocity = self._visualizer.scaleVecToPixels(point - self._points[0]) / VELOCITY_TO_PIXEL
         if key == "Delete":
             if len(self._points) > 1:
                 (distance, index) = calcs.findClosestPoint(point, self._points)

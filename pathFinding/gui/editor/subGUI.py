@@ -21,14 +21,15 @@ class SubGUI(Drawable):
     def onKey(self, point, key, ctrl=False):
         pass
 
-    def onSwitch(self, params, scenario, vehicle, testInput):
+    def onSwitch(self, params, scenario, vehicle, testInput, visualizer):
         self._params = params
         self._scenario = scenario
         self._vehicle = vehicle
         self._testInput = testInput
+        self._visualizer = visualizer
 
     def onExit(self):
         pass
     
-    def draw(self, canvas, **kwargs):
-        draw.drawScenario(canvas, self._scenario)
+    def draw(self, visualizer, **kwargs):
+        draw.drawScenario(visualizer, self._scenario)

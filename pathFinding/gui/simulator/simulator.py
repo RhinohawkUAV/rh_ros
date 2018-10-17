@@ -203,16 +203,16 @@ class Simulator(Drawable):
         for i in range(len(self.scenario.dynamicNoFlyZones)):
             self.scenario.dynamicNoFlyZones[i] = self.scenario.dynamicNoFlyZones[i].copyAtTime(simTime)
             
-    def draw(self, canvas, solutionColor="green", solutionWidth=1.0, **kwargs):
+    def draw(self, visualizer, solutionColor="green", solutionWidth=1.0, **kwargs):
         if self._path is not None:
             for pathSegment in self._path.pathSegments:
-                pathSegment.draw(canvas, color=solutionColor, width=solutionWidth)            
+                pathSegment.draw(visualizer, color=solutionColor, width=solutionWidth)            
         
             for solutionWaypoint in self._path.pathWaypoints:
-                gui.draw.drawCircle(canvas, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
-        draw.drawNoFlyZones(canvas, self.scenario.noFlyZones, color="red", width=1.0, **kwargs)
-        draw.drawDynamicNoFlyZones(canvas, self.scenario.dynamicNoFlyZones, color="red", **kwargs)
-        draw.drawPoly(canvas, self.scenario.boundaryPoints, color="red")
+                gui.draw.drawCircle(visualizer, solutionWaypoint.position, solutionWaypoint.radius, color=solutionColor)
+        draw.drawNoFlyZones(visualizer, self.scenario.noFlyZones, color="red", width=1.0, **kwargs)
+        draw.drawDynamicNoFlyZones(visualizer, self.scenario.dynamicNoFlyZones, color="red", **kwargs)
+        draw.drawPoly(visualizer, self.scenario.boundaryPoints, color="red")
 
-        draw.drawVelocity(canvas, self.scenario.startPoint, self.scenario.startVelocity, color="orange")
-        draw.drawPoint(canvas, self.scenario.startPoint, radius=30.0, color="orange")
+        draw.drawVelocity(visualizer, self.scenario.startPoint, self.scenario.startVelocity, color="orange")
+        draw.drawPoint(visualizer, self.scenario.startPoint, radius=30.0, color="orange")

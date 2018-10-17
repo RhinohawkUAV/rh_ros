@@ -16,16 +16,16 @@ def inGUIThread(task, *args):
 
 
 class Drawable:
-    """Something that can be draw itself on the given TK Canvas object."""
+    """Something that can be draw itself on the given TK visualizer object."""
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, visualizer, **kwargs):
         """
-        Draw on the canvas with any modifiers stored in kwargs.
-        :param canvas:
+        Draw on the visualizer with any modifiers stored in kwargs.
+        :param visualizer:
         :param kwargs:
         :return:
         """
-        # type: (Canvas) -> None
+        # type: (visualizer) -> None
         pass
 
 

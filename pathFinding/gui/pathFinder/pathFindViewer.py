@@ -1,19 +1,13 @@
 import os
-from threading import Condition, Lock
-import time
 import tkFileDialog
 
-import Tkinter as tk
 from constants import COURSE_DIM
 from engine import interface
 from engine.interface import scenario, generator
 from engine.interface.generator import ObstacleGenerator
 from engine.interface.pathFindParams import DEFAULT_PARAMS
-from engine.interface.scenario import Scenario
 from engine.interface.vehicle import DEFAULT_VEHICLE
-import gui
 from gui.pathFinder.pathfindDrawable import PathFindDrawable
-from gui.simulator.simulator import SimManager
 from gui.visualizer import Visualizer
 from utils import profile
 

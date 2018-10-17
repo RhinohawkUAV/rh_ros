@@ -120,14 +120,14 @@ class LineSegment(Drawable):
 
         return parametric >= 0 and parametric <= 1
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, visualizer, **kwargs):
         """
-        Draw on the canvas with any modifiers stored in kwargs.
-        :param canvas:
+        Draw on the visualizer with any modifiers stored in kwargs.
+        :param visualizer:
         :param kwargs:
         :return:
         """
-        gui.draw.drawLine(canvas, self.p1, self.p2, **kwargs)
+        gui.draw.drawLine(visualizer, self.p1, self.p2, **kwargs)
 
     def xRay(self, point):
         """

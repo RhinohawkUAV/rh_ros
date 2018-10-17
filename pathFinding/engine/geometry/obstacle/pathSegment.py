@@ -33,7 +33,7 @@ class PathSegment(Drawable):
     def testIntersection(self, pathIntersectionDetector):
         pass
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, visualizer, **kwargs):
         pass
 
 

@@ -25,7 +25,7 @@ class NFZPointMover(Drawable):
         else:
             self._alteredNoFlyZone = self._noFlyZone.getPointTranslatedCopy(self._pointIndex, point)
 
-    def draw(self, canvas, **kwargs):
+    def draw(self, visualizer, **kwargs):
         if not self._alteredNoFlyZone is None:
-            self._alteredNoFlyZone.draw(canvas, **kwargs)
+            self._alteredNoFlyZone.draw(visualizer, **kwargs)
 

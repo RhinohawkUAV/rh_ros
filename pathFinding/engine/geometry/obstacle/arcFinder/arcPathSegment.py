@@ -35,15 +35,15 @@ class ArcPathSegment(PathSegment):
             self.linearPathPoints.append(self.endPoint)
             self.linearPathTimes.append(self.startTime + self.elapsedTime)
         
-    def draw(self, canvas, filtered=False, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
+    def draw(self, visualizer, filtered=False, color=DEFAULT_COLOR, width=DEFAULT_WIDTH, **kwargs):
         if filtered:
             dash = DEFAULT_DASH
         else:
             dash = None
-        draw.drawLine(canvas, self.lineStartPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
-        draw.drawArcObj(canvas, self.arc, color=color, dash=dash, width=width)
+        draw.drawLine(visualizer, self.lineStartPoint, self.endPoint, color=color, arrow=tk.LAST, dash=dash, width=width)
+        draw.drawArcObj(visualizer, self.arc, color=color, dash=dash, width=width)
         for i in range(0, len(self.linearPathPoints) - 2):
-            draw.drawLine(canvas, self.linearPathPoints[i], self.linearPathPoints[i + 1], color="orange", dash=dash)
+            draw.drawLine(visualizer, self.linearPathPoints[i], self.linearPathPoints[i + 1], color="orange", dash=dash)
 
     def calcPointDebug(self, point):
         linePointDebug = self.linePointDebug(point)

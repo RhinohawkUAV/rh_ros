@@ -1,8 +1,7 @@
 from engine.geometry import  calcs
 from engine.interface.dynamicNoFlyZone import DynamicNoFlyZone
-from engine.interface.fileUtils import SCENARIO_KEY
-from gui import Drawable
 import gui
+from gui.draw import VELOCITY_TO_PIXEL
 from gui.editor.subGUI import SubGUI
 import numpy as np
 
@@ -37,7 +36,7 @@ class DNFZBuilder(SubGUI):
         elif self._inputMode == 1:
             self._previewRadius = np.linalg.norm(point - self._previewCenter)
         else:
-            self._previewVelocity = (point - self._previewCenter) / gui.draw.VELOCITY_SCALE
+            self._previewVelocity = self._visualizer.scaleVecToPixels(point - self._previewCenter) / VELOCITY_TO_PIXEL
 
     def onKey(self, point, key, ctrl=False):
         if key == "Delete":
@@ -47,9 +46,9 @@ class DNFZBuilder(SubGUI):
                     keepDNFZs.append(dnfz)
             self._scenario.dynamicNoFlyZones = keepDNFZs
     
-    def draw(self, canvas, **kwargs):
-        SubGUI.draw(self, canvas, **kwargs)
+    def draw(self, visualizer, **kwargs):
+        SubGUI.draw(self, visualizer, **kwargs)
         if self._previewCenter is not None:
-            gui.draw.drawCircle(canvas, self._previewCenter, self._previewRadius)
-            gui.draw.drawVelocity(canvas, self._previewCenter, self._previewVelocity)
+            gui.draw.drawCircle(visualizer, self._previewCenter, self._previewRadius)
+            gui.draw.drawVelocity(visualizer, self._previewCenter, self._previewVelocity)
 

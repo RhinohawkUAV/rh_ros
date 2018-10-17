@@ -41,8 +41,8 @@ class PathIntersectionDetector(Drawable):
     def testStraightPathIntersection(self, startTime, startPoint, velocity, time):
         return False
 
-    def draw(self, canvas, time=0.0, **kwargs):
+    def draw(self, visualizer, time=0.0, **kwargs):
         for obstacleLine in self._lineObstacles:
-            obstacleLine.draw(canvas, time=time, **kwargs)
+            obstacleLine.draw(visualizer, time=time, **kwargs)
         for circularObstacle in self._circularObstacles:
-            circularObstacle.draw(canvas, time=time, **kwargs)
+            circularObstacle.draw(visualizer, time=time, **kwargs)

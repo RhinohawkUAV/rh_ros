@@ -23,5 +23,5 @@ class VertexTarget(Target):
         cosEntryAngle = np.dot(relativeVelocity, self.normal)
         return cosEntryAngle <= self.upperCosLimit and cosEntryAngle >= self.lowerCosLimit 
 
-    def draw(self, canvas, **kwargs):
-        gui.draw.drawCircle(canvas, self.position, 4.0, dash=DEFAULT_DASH)
+    def draw(self, visualizer, **kwargs):
+        gui.draw.drawCircle(visualizer, self.position, 4.0, dash=DEFAULT_DASH)
