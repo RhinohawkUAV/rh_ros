@@ -273,12 +273,25 @@ function startMission(){
     serviceType : 'rh_msgs/SetMissionRequest'
   });
 
+  var startTheMission = new ROSLIB.Service({
+    ros : ros,
+    name : 'rh/command/start_mission',
+    serviceType : 'rh_msgs/StartMissionRequest'
+  });
+
  var newRequest = new ROSLIB.ServiceRequest({
      mission:activeMission
   });
 
+ var startRequest = new ROSLIB.ServiceRequest();
+
   setTheMission.callService(newRequest, function(result) {
     console.log(result);
+    if(result.success == true){
+      startTheMission.callService(startRequest, function(result) {
+          console.log(result);
+      });
+    }
   });
 
   subscribeToState();
