@@ -347,7 +347,7 @@ body{
 /*******************  Define Mission *******************/
 
 
-#missionPlanner, #toast{
+#missionPlanner, #toast, #YAMLEntry{
 	position: absolute;
 	top:-50px;
 	left:50%;
@@ -360,9 +360,28 @@ body{
 	transition: all 0.3s ease;
 }
 
-#missionPlanner {
+#missionPlanner, #YAMLEntry{
 	width:60%;
 	margin-left:-30%;
+}
+
+#YAMLEntry{
+	top: -500px;
+	text-align:left;
+	padding: 14px 20px;
+	font-weight: bold;
+}
+
+#YAMLEntry.show{
+	top:65px;
+}
+
+#YAMLEntry textarea{
+	width:100%;
+	height:300px;
+	background:transparent;
+	border:1px solid #fff;
+	color:#fff;
 }
 
 #toast{

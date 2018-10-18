@@ -50,7 +50,7 @@ function clickNext(){
 
 	if(missionPlanStep == 0){
 		document.getElementById('missionPlanText').innerHTML = "Click to add mission waypoints";
-  		map.addEventListener("click", addWaypoints);
+  	map.addEventListener("click", addWaypoints);
 		deactivateNext();
 		missionPlanStep ++;
 	}else if(missionPlanStep == 1){
@@ -216,12 +216,12 @@ function drawArc(radius, latlong, startAngle, angleLength, lineStart, lineEnd){
 }
 
 //  + Draw Mission Plan ---------------------------------------------
-
+/*
 function loadMissionPlan(){
       var theMission = jsyaml.load(mission);
       var theMissionPlan = jsyaml.load(missionPlan);
       drawMissionPlan(theMission, theMissionPlan);
-}
+}*/
 
 function drawMissionPlan(missionObject){
   activeMission = missionObject;
@@ -388,5 +388,27 @@ function toast(message){
       document.getElementById('toast').classList.remove('show');
     },4000);
 }
+
+function loadYAMLFile(){
+  document.getElementById("YAMLEntry").classList.add('show');
+}
+
+function submitYAML(){
+  var theYAML = document.getElementById("myYAML").value;
+  //console.log(jsyaml.load(theYAML));
+  drawMissionPlan(jsyaml.load(theYAML));
+  document.getElementById("YAMLEntry").classList.remove('show');
+
+  map.flyTo([activeMission.mission_wps.points[0].lat,activeMission.mission_wps.points[0].lon], 12);
+  document.getElementById('button_exportMission').classList.add('visible');
+    document.getElementById('button_startMission').classList.add('visible');
+    toggleControls();
+
+  //hide controls
+  //show start button
+
+}
+
+
 
 

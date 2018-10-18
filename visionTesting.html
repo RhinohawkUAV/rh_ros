@@ -132,11 +132,22 @@
   </div>
   <div id="missionPlanner" class="container-fluid">
     <div class="row">
-      <div class="col-3"><a href='#' onClick="clearMission()" class="button_ghost left">Cancel</a></div>
-     <div class="col-6" style="padding-top:10px"><span id="missionPlanText">Click to define mission geofence</span></div>
-      <div class="col-3"><a href='#' onClick='clickNext()' class="button_blue right deactive" id="missionPlanNext">next</a></div>
+      <div class="col-5"><a href='#' onClick="clearMission()" class="button_ghost left">Cancel</a> <a href='#' onClick="loadYAMLFile()" class="button_ghost left" id="button_loadYAML">Load YAML</a></div>
+     <div class="col-5" style="padding-top:10px"><span id="missionPlanText">Click to define mission geofence</span></div>
+      <div class="col-2"><a href='#' onClick='clickNext()' class="button_blue right deactive" id="missionPlanNext">next</a></div>
     </div>
   </div>
+
+   <div id="YAMLEntry" class="container-fluid">
+    <div class="row">
+    <div class="col-12">
+      <p>Paste YAML Below</p>
+      <textarea id="myYAML"></textarea>
+      <a href='#' onClick="submitYAML()" class="button_ghost right">Submit</a> 
+    </div>
+  </div>
+  </div>
+
 
  <div id="toast" class="">toast</div>
 
@@ -161,6 +172,7 @@
     connectToROS('ws://'+localROSIP+':9090');
 
   </script>
+ 
 
 </body>
 </html>
