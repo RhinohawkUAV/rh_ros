@@ -7,6 +7,9 @@ float64 heading
 # airspeed in m/s
 float64 airspeed 
 
+# groundspeed in m/s
+float64 groundspeed 
+
 # See rh_autonomy.state.VehicleStatus
 uint8 status
 uint8 STATUS_GROUNDED = 1

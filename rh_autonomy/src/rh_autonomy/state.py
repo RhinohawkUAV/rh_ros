@@ -276,6 +276,7 @@ class StateNode():
         if vfr:
             vehicle_state.position.alt = vfr.altitude
             vehicle_state.airspeed = vfr.airspeed
+            vehicle_state.groundspeed = vfr.groundspeed
 
         if self.apm_wps:
             state.apm_wps = self.apm_wps
