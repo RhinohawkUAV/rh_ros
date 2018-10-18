@@ -44,11 +44,11 @@ SEARCH_STRIP_OVERLAP = 10
 WAYPOINT_ACCEPTANCE_RADIUS = 10
 
 # Distance which must be kept from NFZ's during a mission (meters)
-NOFLYZONE_BUFFER_SIZE = 1
+NOFLYZONE_BUFFER_SIZE = 15
 
 # Buffer used for planning purposes
 # Must be larger than NOFLYZONE_BUFFER_SIZE
-NOFLYZONE_TARGET_OFFSET = 3 
+NOFLYZONE_TARGET_OFFSET = 30 
 
 # Multiplier for heuristic which prioritizes path choices based on direct routes
 NOFLYZONE_HEURISTIC_WEIGHT = 1.0
