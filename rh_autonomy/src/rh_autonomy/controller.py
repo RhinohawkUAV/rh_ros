@@ -228,7 +228,7 @@ class ControllerNode():
         scenario.roads = pp_roads
         scenario.startPoint = pfm.GPSCoord(vs.position.lat, vs.position.lon)
         # path finder throws divide by zero if speed is zero
-        speed = vs.airspeed if vs.airspeed > 0 else 0.1 
+        speed = vs.groundspeed if vs.groundspeed > 0 else 0.1 
         scenario.startVelocity = pfm.GPSVelocity(vs.heading, speed)
         scenario.wayPoints = pp_waypoints
 
