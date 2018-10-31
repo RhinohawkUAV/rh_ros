@@ -1,0 +1,478 @@
+html{
+	height:100%;
+	width:100%;
+	padding:0px;
+	overflow: hidden;
+}
+
+body{
+	font-family: 'Source Sans Pro', sans-serif;	
+}
+
+.fill{
+	height: 100%;
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    top: 0px;
+    z-index: -1;
+}
+
+
+.right{
+	float:right;
+}
+
+.left {
+	float:left;
+}
+/*******************  Telemetry *******************/
+
+.telemetryHolder {
+	position:relative;
+}
+
+.telemetryHolder:last-child {
+	padding-right:0px;
+}
+
+.telemetryHolder:first-child {
+	margin-left:12px;
+}
+
+
+.telemetryRow{
+	background:rgba(10,10,10,.6);
+	color:#fff;
+	position: absolute;
+	bottom:0px;
+    width: 100%;
+    margin: 0px;
+}
+.telemetryRow.topRow{
+	bottom: 70px;
+}
+
+
+.telemetryRow.timingRow{
+	height: 70px;
+	background:rgba(10,10,10,.8);
+}
+
+
+.tel-header, .tel-sub-header {
+	text-transform:uppercase;
+	font-size: 10px;
+	font-weight: 800;
+	margin: 12px 0 0 0;
+	letter-spacing: .8px;
+}
+
+.tel-sub-header {
+	font-weight: 400;
+	margin-top:4px;
+}
+
+.tel-detail {
+	font-size:40px;
+	font-weight: 200;
+}
+
+#tel-lat, #tel-long, #tel-time {
+	font-size:25px;
+	margin-bottom: 4px;
+}
+
+.tel-detail span{
+	font-size: 10px;
+	font-weight: 400;
+	vertical-align: 17px;
+    margin-left: 4px;
+}
+
+#tel-compass {
+	background: transparent url('../img/compass_bg.png') no-repeat;
+	position: relative;
+	width:84px;
+	height:84px;
+	margin-top: 32px;
+}
+
+#tel-compass img{
+	position: absolute;
+	top:0px;
+	left:0px;
+}
+
+#tel-compass p{
+	position:absolute;
+	width:100%;
+	top:13px;
+	text-align: center;
+}
+
+
+
+#telemetry.hidden{
+	bottom: -200px;
+}
+
+
+#timeline.hidden{
+	bottom: -100px;
+}
+
+#telemetry, #timeline, .leaflet-right{
+	 transition: all .3s;
+	 transition-timing-function: ease-out;
+}
+
+.hideControls .leaflet-right{
+	margin-right:-50px;
+}
+
+
+/*******************  Image Stream *******************/
+
+.image-stream {
+	/*bottom:195px;*/
+	margin-top:15px;
+	margin-right:15px;
+}
+
+.image-stream div{
+	/*text-align: right;
+	padding-right: 45px;*/
+}
+
+.image-stream img{
+	width:250px;
+	border:1px solid #999;
+}
+
+/*******************  Scatter plot *******************/
+
+.scatter-plot {
+	width:500px;
+	height:500px;
+	background:#fff;
+	bottom:160px;
+	left:45px;
+}
+
+#graph-scatter-plot {
+	position: relative;
+}
+
+.landing-box-loc {
+	width:4px;
+	height: 4px;
+	border-radius: 2px;
+	background-color:#4ABDE2;
+	position: absolute;
+}
+
+.aruco-image-crop{
+	border:3px solid #fff;
+	margin:6px;
+	float:left;
+}
+
+.aruco-popup-img {
+	position:absolute;
+}
+
+.aruco-popup-img-holder {
+	width:100px;
+	height:100px;
+	overflow: hidden;
+	position:relative;
+}
+
+#image-seen{
+	width:500px;
+	height:500px;
+	overflow: scroll;
+	position: absolute;
+	bottom:0;
+}
+
+.aruco-popup .leaflet-popup-content-wrapper {
+	border-radius:3px;
+
+}
+
+.aruco-popup .leaflet-popup-content {
+	margin:4px;
+}
+
+/*******************  Map Controls *******************/
+
+
+#menu-layers{
+    width:35px;
+    height:27px;
+    background: transparent url(../img/layers.png) center center no-repeat;
+    text-indent: 9999px;
+    float: right;
+    margin:10px;
+}
+
+.toggleOn, .toggleOff {
+	position: relative;
+	width: 50px;
+    height: 32px;
+    border-radius: 15px;
+    border: 1px solid #fff;
+    margin:4px 0 0 20px;
+    float:right;
+    margin-right:20px;
+}
+
+.toggleOn{
+	background: #4ABDE2;
+}
+
+.toggleOn .toggleMarker, .toggleOff .toggleMarker {
+	height: 26px;
+	width: 26px;
+	border-radius: 13px;
+	position: absolute;
+	top:2px;
+	left:2px;
+	background: #fff;
+	transition: all 0.3s ease;
+}
+
+.toggleOn .toggleMarker {
+	left:20px;
+}
+
+.leaflet-bottom .leaflet-control.leaflet-control-zoom {
+	margin-bottom: 215px;
+}
+
+
+
+/*******************  Gauges *******************/
+
+
+#groundGauge, #airGauge {
+	transform: rotate(-45deg);
+	position: absolute;
+    top: -8px;
+    left: -102px;
+}
+
+#tel-speed, #tel-airSpeed {
+	margin-top: 44px;
+    margin-left: 49px;
+}
+
+
+/*******************  Waypoints *******************/
+.waypointTip .leaflet-popup-content-wrapper,.waypointTip .leaflet-popup-tip{
+	background:#FFCB00;
+	color:#222;
+	font-weight: bold;
+	box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+}
+
+.waypointTip a.leaflet-popup-close-button {
+	color:#222;
+	top: 2px;
+    right: 2px;
+}
+
+
+
+/*******************  Menu *******************/
+
+.menu-layers {
+	width:300px;
+	position: absolute;
+    top: 0px;
+    right: 0px;
+	background:#383838;
+	box-shadow:  inset 3px 0 6px #222;
+	z-index: -2
+}
+
+#mainHolder {
+	position:relative;
+}
+
+#mainHolder.menuOpen {
+	left:-300px;
+}
+#mainHolder.menuClosed {
+	left:0px;
+}
+
+.menu-layers ul {
+	padding-left: 20px;
+	margin-top:35px;
+}
+
+.menu-layers li {
+	list-style-type: none;
+	color:#fff;
+	font-weight: 300;
+	width:100%;
+	float:left;
+	margin-bottom:6px;
+	cursor: pointer;
+}
+
+.menu-layers li.menu-section {
+	margin-top:24px;
+	font-weight: 800;
+	cursor: default;
+}
+
+
+.menu-layers li:hover span{
+	color:#4ABDE2;
+}
+
+.menu-layers span{
+	float:left;
+	padding-top: 6px;
+}
+
+
+
+
+/*******************  Define Mission *******************/
+
+
+#missionPlanner, #toast, #YAMLEntry{
+	position: absolute;
+	top:-50px;
+	left:50%;
+	color:#fff;
+	background: rgba(20,20,20,0.8);
+	border-radius: 20px;
+	padding:0px ;
+	text-align: center;
+	font-size:14px;
+	transition: all 0.3s ease;
+}
+
+#missionPlanner, #YAMLEntry{
+	width:60%;
+	margin-left:-30%;
+}
+
+#YAMLEntry{
+	top: -500px;
+	text-align:left;
+	padding: 14px 20px;
+	font-weight: bold;
+}
+
+#YAMLEntry.show{
+	top:65px;
+}
+
+#YAMLEntry textarea{
+	width:100%;
+	height:300px;
+	background:transparent;
+	border:1px solid #fff;
+	color:#fff;
+}
+
+#toast{
+	padding:10px 40px;
+}
+
+#missionPlanner.show, #toast.show{
+	top:10px;
+}
+
+#missionPlanner span{
+	position:relative;
+}
+
+
+
+/*******************  Numbered Waypoints *******************/
+
+.leaflet-div-icon {
+	background: transparent;
+	border: none;
+}
+
+.leaflet-marker-icon .number{
+	position: relative;
+	top: -37px;
+	font-size: 12px;
+	width: 25px;
+	text-align: center;
+}
+
+.waypoint-1{
+	background-position: middle center;
+	background-image: url('../img/waypointNumbers/1.png');
+}
+
+
+
+/******************  Button Styles  ***********************/
+
+a.button_ghost, a.button_blue, a.button_white, a.button_green{
+	text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 13px;
+    padding: 2px 12px;
+    margin: 9px 18px;
+}
+
+a.button_ghost{
+	border: 1px solid #fff;
+}
+
+a.button_blue{
+	background: #4AA6E2;
+}
+
+a.button_white{
+	background:#fff;
+	color:#222;
+}
+
+
+a.button_green{
+	background: #0FB476;
+}
+
+
+#missionPlanNext.deactive{
+	background:#666;
+	color:#888;
+	pointer-events: none;
+}
+
+#button_defineMission, #button_clearMap {
+	transition: all .3s ease;
+}
+
+#button_defineMission.hidden, #button_clearMap.hidden{
+	opacity: 0;
+}
+
+#button_exportMission, #button_startMission{
+	display:none;
+}
+
+#button_exportMission.visible, #button_startMission.visible{
+	display:inline;
+}
+
+
+
+
