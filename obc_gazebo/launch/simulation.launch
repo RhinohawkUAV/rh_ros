@@ -1,0 +1,44 @@
+<launch>
+
+  <!--
+     This launch file is use to split the simulation across a couple of computers.
+     This launch start the gazebo simulation and PX4.
+     Mavros and all of the other ROS nodes nodes run on another computer.
+     Mavros should communicate with the PX4 via mavlink/UDP
+  -->
+
+  <!-- This portion is a copy of the px4 mavros_posix_sitl.launch with the 
+       vehicle spawing step removed so we can launch our obc_quad model -->
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="0"/>
+  <arg name="R" default="0"/>
+  <arg name="P" default="0"/>
+  <arg name="Y" default="0"/>
+  <arg name="est" default="lpe"/>
+  <arg name="vehicle" default="iris"/>
+  <arg name="world" default="$(find obc_gazebo)/worlds/obc.world"/>
+  <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
+  <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
+
+  <arg name="headless" default="true"/>
+  <arg name="gui" default="false"/>
+
+  <arg name="debug" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="paused" default="false"/>
+
+  <node name="sitl" pkg="px4" type="px4" output="screen"
+        args="$(find px4) $(arg rcS)">
+  </node>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="world_name" value="$(arg world)" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="verbose" value="$(arg verbose)" />
+    <arg name="paused" value="$(arg paused)" />
+  </include>
+
+</launch>

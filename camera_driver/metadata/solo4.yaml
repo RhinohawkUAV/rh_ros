@@ -1,0 +1,7 @@
+camera_name: solo4
+focal_length: 2.98 # mm
+image_width: 1280 # pixels
+image_height: 720 # pixels
+sensor_width: 6.17 # mm
+sensor_height: 4.55 # mm
+

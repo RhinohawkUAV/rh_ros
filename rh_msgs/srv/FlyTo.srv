@@ -1,0 +1,5 @@
+float64 target_lat
+float64 target_long
+float64 cruise_altitude
+---
+bool success
