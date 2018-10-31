@@ -1,0 +1,169 @@
+<!-- 
+	roscore
+
+	roslaunch rosbridge_server rosbridge_websocket.launch
+
+	rosbag play /media/molly/Files/RhinoHawk/ROSBags/2017-12-17-13-16-46_5.bag 
+
+  
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+
+  <title>Vision Testing Map</title>
+
+  <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+  <script type="text/javascript" src="localConfig.js"></script>
+  <script src="yml/boundaryPoints.txt"></script>
+  <script src="yml/missionPlan.txt"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+
+  <script type="text/javascript" src="js/missionDefinition.js"></script>
+    <script src="js/js-yaml.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+ <!-- <script src="js/semicircle.js"></script>-->
+  <script src='js/leafletarc.js'></script>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/main.css"/>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,700" rel="stylesheet">
+
+
+  
+
+</head>
+
+<body class="fill">
+
+  <div class="container-fluid fill menuClosed" id="mainHolder">
+    <div class="row" style="pointer-events: none;">
+      <div class="col" >
+        <img src="img/RhinoHawk_Logo_white.png" style="width:180px; margin:12px;"/>
+      </div>
+      <div class="col-7 pull-right" style="text-align:right; pointer-events: auto; margin-top: 8px;">
+         <a href="#" class="button_layers" onClick="toggleMenu();"><span id="menu-layers">Layers</span></a>
+        <a href="#" class='button_green right' id="button_startMission" onclick="startMission();">Start Mission</a>
+        <a href="#" class='button_white right' id="button_exportMission" onclick="exportMission();">Export Mission</a>
+        <a href="#" class='button_white right' id="button_defineMission" onclick="startMissionDefinition();">New Mission</a>
+        <a href="#" class='button_white right' id="button_clearMap" onclick="clearMission();">Clear Map</a>
+
+      </div>
+    </div>
+    <div class="row fill">
+      <div class="col fill" id="mapHolder"></div>
+    </div>
+    <div class="row fixed-bottom telemetryRow topRow" id="telemetry">
+      <div class="col telemetryHolder" >
+        <h3 class="tel-header">Position</h3>
+        <h4 class="tel-sub-header">Latitude</h4>
+        <p class="tel-detail" id="tel-lat">00.00000</p>
+        <h4 class="tel-sub-header">Longitude</h4>
+        <p class="tel-detail" id="tel-long">-00.00000</p>
+      </div>
+      <div class="col telemetryHolder">
+        <div class="tel-detail" id="tel-compass">
+          <img id="compass-pointer" src="img/compass_pointer.png" />
+          <p class="tel-detail" id="compass-direction">N</p>
+        </div>
+      </div>
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Ground Speed</h3>
+        <canvas id="groundGauge"></canvas>
+        <p class="tel-detail" id="tel-speed">0<span>M/S</span></p>
+      </div>
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Air Speed</h3>
+        <canvas id="airGauge"></canvas>
+        <p class="tel-detail" id="tel-airSpeed">0<span>M/S</span></p>
+      </div>
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Altitude</h3>
+        <p class="tel-detail" id="tel-altitude">0<span>FT</span></p>
+      </div>
+       <div class="col telemetryHolder image-stream">
+          <img id="aruco-image" />
+       </div>
+    </div>
+
+  <div class="row fixed-bottom timingRow telemetryRow" id="timeline">
+      <div class="col telemetryHolder">
+        <h3 class="tel-header">Mission Time</h3>
+        <p class="tel-detail" id="tel-time">00:00:00</p>
+      </div>
+      <div class="col">
+        <p> timeline will go here</p>
+      </div>
+  </div>
+ 
+ <!-- <div class="row fixed-bottom buttonRow">
+      <div class="col">
+        <a href="#" id="missionPlanButton" onclick="createMissionObject(geofenceCoords, mission_wpsCoords, nfzs);">Define Mission</a>
+        <a href="#" onclick="startTheMission()">Dynamic NFZ</a>
+      </div>
+  </div>-->
+</div>
+  <div class="fill menu-layers">
+      <ul>
+        <li class="menu-section">Options</li>
+        <li onClick="toggleMapCenter('toggle1')"><span>Auto Center Map</span><div id="toggle1" class="toggleOff"><div class="toggleMarker"></div></div></li>
+        
+        <li class="menu-section">Layers</li>
+       
+        <li onClick="toggleArucoMarker('toggle7')"><span>Aruco Markers</span><div id="toggle7" class="toggleOff"><div class="toggleMarker"></div></div></li>
+
+        <li onClick="toggleMapLayer('knownLocation','toggle8')"><span>Known Marker locations</span><div id="toggle8" class="toggleOn"><div class="toggleMarker"></div></div></li>
+
+        <li onClick="toggleVideo('toggle9')"><span>Video Stream</span><div id="toggle9" class="toggleOn"><div class="toggleMarker"></div></div></li>
+
+      </ul>
+  </div>
+  <div id="missionPlanner" class="container-fluid">
+    <div class="row">
+      <div class="col-5"><a href='#' onClick="clearMission()" class="button_ghost left">Cancel</a> <a href='#' onClick="loadYAMLFile()" class="button_ghost left" id="button_loadYAML">Load YAML</a></div>
+     <div class="col-5" style="padding-top:10px"><span id="missionPlanText">Click to define mission geofence</span></div>
+      <div class="col-2"><a href='#' onClick='clickNext()' class="button_blue right deactive" id="missionPlanNext">next</a></div>
+    </div>
+  </div>
+
+   <div id="YAMLEntry" class="container-fluid">
+    <div class="row">
+    <div class="col-12">
+      <p>Paste YAML Below</p>
+      <textarea id="myYAML"></textarea>
+      <a href='#' onClick="submitYAML()" class="button_ghost right">Submit</a> 
+    </div>
+  </div>
+  </div>
+
+
+ <div id="toast" class="">toast</div>
+
+  <script type="text/javascript" src="js/gaugemin.js"></script>
+  <script>
+
+    
+    var myAccessToken = 'pk.eyJ1IjoibW8xMXlqIiwiYSI6ImNqY2pzMHMyZTQ1aG8yd3A1d2dpZ2N0ODAifQ.encFuTzHoiqxDgNjVFtXIw';
+
+    var map = L.map('mapHolder').setView([38.977699,-77.3374482], 8);
+
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+      maxZoom: 25,
+      id: 'mapbox.satellite',
+      accessToken: myAccessToken,
+    }).addTo(map);
+    map.zoomControl.setPosition('bottomright');
+    //map.addEventListener("contextmenu", createNFZPopUp);
+
+
+    connectToROS('ws://'+localROSIP+':9090');
+
+  </script>
+ 
+
+</body>
+</html>
