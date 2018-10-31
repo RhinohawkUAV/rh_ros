@@ -109,7 +109,6 @@ function createOutline(type){
 function drawOutline(e){
   outlineCoords.push(e.latlng);
   if (startDrawing == true){
-  	console.log('draw outline called');
   	var vertex;
     vertex = L.circleMarker(e.latlng, {radius: 10, color:drawColor, weight:0, fillOpacity:1});
     tempLayers.addLayer(vertex);
@@ -123,7 +122,6 @@ function drawOutline(e){
 }
 
 function finishOutline(e){
-	console.log('outline finished');
 
 	map.removeEventListener("click", drawOutline);
 	document.getElementById("mapHolder").style.cursor = "auto";
@@ -224,47 +222,49 @@ function loadMissionPlan(){
 }*/
 
 function drawMissionPlan(missionObject){
-  activeMission = missionObject;
-  document.getElementById('button_exportMission').classList.add('visible');
-
-
-  missionLayers.clearLayers();
-  waypointNumber = 1;
-
-  //Plot Mission Boundry
-  var theGeofence = [];
-  for (var i=0; i<missionObject.geofence.points.length; i++ ){
-    theGeofence.push([missionObject.geofence.points[i].lat,missionObject.geofence.points[i].lon] )
-  }
-  missionLayers.addLayer(new L.polygon(theGeofence, {color: '#ffffff', weight:2, fillOpacity:0, interactive:false,dashArray:"2, 6 "}));
- // map.setView(missionObject.boundaryPoints[0], 13);
-
-  // PLot NFZs
-
-  for (var i=0; i < missionObject.static_nfzs.length; i++){
-    var nfzCoords = [];
-    for (var k=0; k<missionObject.static_nfzs[i].points.length; k++){
-      nfzCoords.push([missionObject.static_nfzs[i].points[k].lat, missionObject.static_nfzs[i].points[k].lon]);
-    }
-    missionLayers.addLayer(new L.polygon(nfzCoords, {color: '#DF3500', weight:1, fillOpacity:.2, interactive:false}));
-  }
-
-
-  //Plot Wayponts
-
-   for (var i=0; i < missionObject.mission_wps.points.length; i++){
-
-    if(waypointNumber < 11){
-      missionLayers.addLayer(new L.marker([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon], {icon:waypointIcons[waypointNumber-1], title: "Waypoint "+waypointNumber}));
-    }else{
-      missionLayers.addLayer(new L.circleMarker([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon], {radius: 10, stroke:false, color:'#FFCB00', fillOpacity:1, title: "Waypoint "+waypointNumber}));
-    }
+  if(activeMission == undefined || activeMission.geofence.points[0].lat != missionObject.geofence.points[0].lat){
+    console.log("Draw Mission");
     
-    mission_wpsCoords.push([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon]);
-    waypointNumber += 1;
+    activeMission = missionObject;
+    document.getElementById('button_exportMission').classList.add('visible');
+    
+    missionLayers.clearLayers();
+    waypointNumber = 1;
 
+    //Plot Mission Boundry
+    var theGeofence = [];
+    for (var i=0; i<missionObject.geofence.points.length; i++ ){
+      theGeofence.push([missionObject.geofence.points[i].lat,missionObject.geofence.points[i].lon] )
+    }
+    missionLayers.addLayer(new L.polygon(theGeofence, {color: '#ffffff', weight:2, fillOpacity:0, interactive:false,dashArray:"2, 6 "}));
+   // map.setView(missionObject.boundaryPoints[0], 13);
+
+    // PLot NFZs
+
+    for (var i=0; i < missionObject.static_nfzs.length; i++){
+      var nfzCoords = [];
+      for (var k=0; k<missionObject.static_nfzs[i].points.length; k++){
+        nfzCoords.push([missionObject.static_nfzs[i].points[k].lat, missionObject.static_nfzs[i].points[k].lon]);
+      }
+      missionLayers.addLayer(new L.polygon(nfzCoords, {color: '#DF3500', weight:1, fillOpacity:.2, interactive:false}));
+    }
+
+
+    //Plot Wayponts
+
+     for (var i=0; i < missionObject.mission_wps.points.length; i++){
+
+      if(waypointNumber < 11){
+        missionLayers.addLayer(new L.marker([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon], {icon:waypointIcons[waypointNumber-1], title: "Waypoint "+waypointNumber}));
+      }else{
+        missionLayers.addLayer(new L.circleMarker([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon], {radius: 10, stroke:false, color:'#FFCB00', fillOpacity:1, title: "Waypoint "+waypointNumber}));
+      }
+      
+      mission_wpsCoords.push([missionObject.mission_wps.points[i].lat, missionObject.mission_wps.points[i].lon]);
+      waypointNumber += 1;
+
+    }
   }
-
 }
 
 
