@@ -7,7 +7,7 @@ from gui.pathFinder.pathFindViewer import PathFindViewer
 from gui.simulator.pathFindSimulatorViewer import PathFindSimulatorViewer
 if __name__ == '__main__':
     
-    localInterface = LocalPathFinderInterface()
+    localInterface = LocalPathFinderInterface(dumpScenarios=True)
     PathFindViewer(localInterface, 800, 800)
     PathFindSimulatorViewer(localInterface, 800, 800)
     

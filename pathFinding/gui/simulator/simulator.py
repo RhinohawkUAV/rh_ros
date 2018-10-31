@@ -188,23 +188,10 @@ class Simulator(Drawable):
         turnAngle = calcs.clampMag(turnAngle, maxTurn)
         
         turnAcceleration = turnAngle * speed / simTime
-        availableAcceleration = self._vehicle.acceleration * self._vehicle.acceleration - turnAcceleration * turnAcceleration
-        if availableAcceleration < 0.0:
-            availableAcceleration = 0.0
-        availableAcceleration = math.sqrt(availableAcceleration)
 
-        speedAcceleration = calcs.clampMag(speedDelta / simTime, availableAcceleration)
+        speedAcceleration = calcs.clampMag(speedDelta / simTime, self._vehicle.acceleration)
         
         return turnAcceleration * calcs.CCWNorm(direction) + speedAcceleration * direction
-        
-#         toGoal = calcs.unit(goal - position)
-#         velDiff = toGoal * calcs.length(velocity) - velocity
-#         (accDir, velDiffMag) = calcs.unitAndLength(velDiff)
-#         
-#         if velDiffMag / simTime > self._vehicle.acceleration:
-#             return accDir * self._vehicle.acceleration
-#         else:
-#             return velDiff / simTime
         
     def _updateNFZs(self, simTime):
         
