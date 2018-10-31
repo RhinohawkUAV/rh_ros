@@ -1,0 +1,20 @@
+image_width: 1280
+image_height: 720
+camera_name: solo4zoom
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1596.9557344328155, 0.0, 612.5709584291675, 0.0, 1609.6698475454068, 405.6870481627064, 0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.17269672972417108, 0.35210100785992576, 0.011861474036618525, -0.0012291840341045043, 0.0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1571.369873046875, 0.0, 611.2448018053547, 0.0, 0.0, 1592.753173828125, 409.2423917087435, 0.0, 0.0, 0.0, 1.0, 0.0]

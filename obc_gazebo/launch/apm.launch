@@ -1,0 +1,34 @@
+<launch>
+	<!-- vim: set ft=xml noet : -->
+	
+    <!-- from http://ardupilot.org/dev/docs/ros-sitl.html -->
+
+    <arg name="fcu_url" default="udp://:14551@127.0.0.1:14555"/>
+    <!--
+    this one crashes if mavlink is not reachable on startup
+    <arg name="fcu_url" default="udp://127.0.0.1:14551@14555" />
+    -->
+	<arg name="gcs_url" default="" /> <!-- GCS link is provided by SITL -->
+	<arg name="tgt_system" default="1" />
+	<arg name="tgt_component" default="1" />
+	<arg name="log_output" default="screen" />
+
+	<include file="$(find mavros)/launch/node.launch">
+		<arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+		<arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
+
+		<arg name="fcu_url" value="$(arg fcu_url)" />
+		<arg name="gcs_url" value="$(arg gcs_url)" />
+		<arg name="tgt_system" value="$(arg tgt_system)" />
+		<arg name="tgt_component" value="$(arg tgt_component)" />
+		<arg name="log_output" value="$(arg log_output)" />
+	</include>
+    
+    <!-- rhinohawk mission nodes -->
+
+    <node pkg="rh_autonomy" type="flight.py" name="flight" ns="rh" output="screen"/>
+    <node pkg="rh_autonomy" type="state.py" name="state" ns="rh" output="screen"/>
+    <node pkg="rh_autonomy" type="controller.py" name="controller" ns="rh" output="screen"/>
+    <node pkg="pathfinding" type="pathfinderserver.py" name="pathfinder" ns="rh" output="screen"/>
+
+</launch>

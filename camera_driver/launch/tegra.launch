@@ -1,0 +1,18 @@
+<launch>
+
+  <node pkg="polled_camera" type="poller"  name="camera_pump"   respawn="true" respawn_delay="10" args="0.1">
+  	<remap from="output" to="d5100"/>
+	<remap from="camera" to="d5100"/>
+  </node>
+
+  <node pkg="camera_driver" type="nikon_d5100"       name="d5100"/>
+  <node pkg="image_proc"    type="image_proc"      name="image_proc"      ns="d5100">
+  	<remap from="image" to="image_raw"/>
+  </node>
+
+  <node pkg="camera_driver" type="blob_detector.py"   name="blob_detector"   ns="d5100">
+	<remap from="image" to="image_rect_color"/>
+        <param name="show_picker" value="false"/>
+  </node>
+
+</launch>

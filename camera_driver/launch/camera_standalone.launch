@@ -1,0 +1,16 @@
+<launch>
+  <node pkg="camera_driver" type="camera_pump.py"   name="camera_pump"   ns="nikon" 
+	respawn="true" respawn_delay="10">
+  	<param name="rate" value="1"/>
+  	<param name="camera" value="nikon"/>
+  </node>
+
+  <node pkg="camera_driver" type="nikon_d5100.py"   name="nikon"         ns="nikon"/>
+
+  <node pkg="image_proc"    type="image_proc"       name="image_proc"    ns="nikon">
+  	<remap from="image" to="/nikon/d5100/image_raw"/>
+  </node>
+  <node pkg="camera_driver" type="blob_detector.py" name="blob_detector" ns="nikon">
+	<remap from="image" to="image_rect_color"/>
+  </node>
+</launch>

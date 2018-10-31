@@ -1,0 +1,3 @@
+rh_msgs/Mission mission
+---
+bool success

@@ -1,0 +1,8 @@
+uint16 mission_goal_id
+float32 cruise_alt
+float32 wp_radius
+rh_msgs/GPSCoordList waypoints
+bool takeoff
+bool land
+---
+bool success

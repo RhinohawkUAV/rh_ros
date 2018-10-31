@@ -1,0 +1,13 @@
+<launch>
+  <node pkg="camera_driver" type="camera_pump.py"  name="camera_pump"     ns="webcam" respawn="true" respawn_delay="10">
+  	<param name="rate" value="10"/>
+  	<param name="camera" value="webcam"/>
+  </node>
+  <node pkg="camera_driver" type="webcam.py"       name="webcam"          ns="webcam"/>
+  <node pkg="image_proc"    type="image_proc"      name="image_proc"      ns="webcam">
+  	<remap from="image" to="image_raw"/>
+  </node>
+  <node pkg="camera_driver" type="people_detector" name="people_detector" ns="webcam">
+	<remap from="people_detector/image" to="image_rect"/>
+  </node>
+</launch>

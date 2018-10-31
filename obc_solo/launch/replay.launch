@@ -1,0 +1,8 @@
+<launch>
+
+  <node pkg="rh_vision" type="image_to_target.py" name="image_to_target_test" ns="vision">
+    <remap from="image_location" to="/rh/vision/aruco/location"/>
+    <remap from="camera_info" to="/camera/camera_info"/>
+  </node>
+
+</launch>
