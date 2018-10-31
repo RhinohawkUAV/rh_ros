@@ -1,0 +1,1 @@
+from pyPathIntersectionDetector import PyPathIntersectionDetector

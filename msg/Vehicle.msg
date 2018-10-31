@@ -1,0 +1,2 @@
+float64 maxSpeed
+float64 acceleration

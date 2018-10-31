@@ -1,0 +1,3 @@
+GPSCoord startPoint
+GPSCoord endPoint
+float64 width

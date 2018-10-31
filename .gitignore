@@ -1,0 +1,13 @@
+*.pyc
+/.idea/
+/pathfinding.iml
+/pathFinding.engine/rhinoPathFinding.egg-info/
+/pathFinding.engine/scenarios/
+/rhinoPathFinding.egg-info/
+rhinoPathFinding*.egg
+/pathFinding/C/build
+.project
+.pydevproject
+/rhpathfinder.egg-info/
+/dist/
+/build/

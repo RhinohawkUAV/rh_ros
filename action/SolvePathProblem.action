@@ -1,0 +1,31 @@
+# Input
+Params params
+Scenario scenario
+Vehicle vehicle
+
+
+#Will not exceed timeout, by much, when solving
+float64 timeout
+
+#Use information from the previous solution when computing the new solution.
+#This is generally set to true, except when loading a brand new scenario in testing.
+#bool usePreviousSolution
+
+#Due to computation time, vehicle will have moved since solution was computed.  
+#This forces path finder to assume that a certain portion of the path is fixed. 
+#If a previous solution is being used then the first <fixedTime> of it will be used.  
+#If no previous solution is being used then it is assumed the vehicle flies in a straight line.
+#Note: The goal of this is to not produce a solution with path-waypoints, behind the vehicle.  It should be set to a number larger than timeout.
+#float64 fixedTime
+
+#If possible use this much of the previous solution
+#float64 requiredTimeImprovement
+
+#If true, debug messages are published through ROS
+bool emitDebug
+---
+# Final result
+PathSolution bestPath
+---
+# Intermediate result
+PathSolution bestPath
