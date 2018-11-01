@@ -73,23 +73,24 @@ CAMERA_NAME=solo4zoom roslaunch rh_autonomy rh.launch
 The code is organized into several ROS packages, each containing one or more ROS nodes:
 
 * Core Rhinohawk System
-  * **camera_driver** - all camera-related code and configurations
-    * /camera
-    * /camera/image_raw
-    * /camera/image_rect
-    * /camera/image_mono
+  * **rh_ground_station** - web-based ground station for defining and monitoring missions
   * **rh_msgs** - shared ROS message/service definition, modeled after mavros_msgs package
-  * **rh_autonomy** - rhinohawk master controller and centralized state
+  * **rh_autonomy** - Rhinohawk autonomous mission execution
     * /rh/state
     * /rh/flight
     * /rh/controller
     * /rh/command
-  * **rh_vision** - all machine vision code, currently aruco + image2target. Includes unit tests. 
+  * **rh_vision** - all machine vision code for camera-based sensing
     * /rh/vision/aruco_detector
     * /rh/vision/image_to_target
+  * **rh_camera_driver** - all camera-related code and configurations
+    * /camera
+    * /camera/image_raw
+    * /camera/image_rect
+    * /camera/image_mono
 * 3dr Solo 
   * **rh_solo** - code and configuration for running the Rhinohawk System on a 3dr Solo quadcopter
-  * **gscam** - GStreamer node used for interfacting with the 3dr Solo GoPro camera stream
+  * **gscam** - GStreamer node used for interfacing with the 3DR Solo GoPro camera stream
 * Software-In-The-Loop (SITL)
   * **rh_simulation** - code and launch files for running SITL simulations on PX4 and APM
 
