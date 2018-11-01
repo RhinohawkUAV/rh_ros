@@ -1,9 +1,9 @@
 <launch>
   <!--
     Set the "CAMERA_NAME" environment variable to specify the calibration file:
-    CAMERA_NAME=solo4zoom roslaunch obc_solo solo.launch
-    CAMERA_NAME=gopro  roslaunch obc_solo solo.launch
-    CAMERA_NAME=chameleon3  roslaunch obc_solo solo.launch  
+    CAMERA_NAME=solo4zoom roslaunch rh_solo solo.launch
+    CAMERA_NAME=gopro  roslaunch rh_solo solo.launch
+    CAMERA_NAME=chameleon3  roslaunch rh_solo solo.launch  
   -->
 
   <arg name="fcu_url" default="udp://:14550@"/>
@@ -20,7 +20,7 @@
   
   <include file="$(find mavros)/launch/node.launch">
     <arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
-    <arg name="config_yaml" value="$(find obc_solo)/launch/apm_config.yaml" />
+    <arg name="config_yaml" value="$(find rh_solo)/launch/apm_config.yaml" />
     <arg name="fcu_url" value="$(arg fcu_url)" />
     <arg name="gcs_url" value="$(arg gcs_url)" />
     <arg name="tgt_system" value="$(arg tgt_system)" />
@@ -69,7 +69,7 @@ capable of
     </node>
   </group>
 
-  <node pkg="obc_solo" type="request-video-stream.py" name="solo_video_stream" ns="gopro"/>
+  <node pkg="rh_solo" type="request-video-stream.py" name="solo_video_stream" ns="gopro"/>
   
   <node pkg="image_proc" type="image_proc" name="image_proc" ns="gopro">
     <remap from="image" to="image_raw"/>
@@ -98,7 +98,7 @@ capable of
 
   <!-- rhinohawk mission nodes -->
 
-  <node pkg="obc_solo" type="flight.py" name="flight" ns="rhinohawk" output="screen"/>
+  <node pkg="rh_solo" type="flight.py" name="flight" ns="rhinohawk" output="screen"/>
 
 
 </launch>

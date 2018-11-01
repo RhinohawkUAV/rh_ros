@@ -38,7 +38,7 @@
   <arg name="Y" default="0"/>
   <arg name="est" default="lpe"/>
   <arg name="vehicle" default="iris"/>
-  <arg name="world" default="$(find obc_gazebo)/worlds/obc.world"/>
+  <arg name="world" default="$(find rh_simulation)/worlds/obc.world"/>
   <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
   <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
 
@@ -53,7 +53,7 @@
   <arg name="paused" default="false"/>
 
   <arg name="pluginlists_yaml" default="$(find mavros)/launch/px4_pluginlists.yaml" />
-  <arg name="config_yaml" default="$(find obc_gazebo)/launch/px4_config.yaml" />
+  <arg name="config_yaml" default="$(find rh_simulation)/launch/px4_config.yaml" />
 
   <node name="sitl" pkg="px4" type="px4" output="screen"
         args="$(find px4) $(arg rcS)">

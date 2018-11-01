@@ -23,8 +23,8 @@ https://dev.px4.io/en/simulation/ros_interface.html
 The simulator and image pipeline are started with roslaunch:
 
     cd ~/catkin_ws
-    source src/obc_gazebo/scripts/setup.sh
-    roslaunch obc_gazebo obc.launch
+    source src/rh_simulation/scripts/setup.sh
+    roslaunch rh_simulation obc.launch
 
 Which should bring up:
 * gazebo server and client

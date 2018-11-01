@@ -43,7 +43,7 @@
         <remap from="camera/image_raw" to="/camera/image_raw" />
       </node>
       
-      <node pkg="obc_solo" type="request-video-stream.py" name="solo_video_stream" ns="camera"/>
+      <node pkg="rh_solo" type="request-video-stream.py" name="solo_video_stream" ns="camera"/>
       
   </group>
 
@@ -104,6 +104,6 @@
   <node pkg="rh_autonomy" type="flight.py" name="flight" ns="rh" output="screen"/>
   <node pkg="rh_autonomy" type="state.py" name="state" ns="rh" output="screen"/>
   <node pkg="rh_autonomy" type="controller.py" name="controller" ns="rh" output="screen"/>
-  <node pkg="pathfinding" type="pathfinderserver.py" name="pathfinder" ns="rh" output="screen"/>
+  <node pkg="rh_pathfinding" type="pathfinderserver.py" name="pathfinder" ns="rh" output="screen"/>
 
 </launch>

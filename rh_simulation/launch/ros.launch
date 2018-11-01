@@ -27,7 +27,7 @@
   <arg name="tgt_system" default="1"/>
   <arg name="tgt_component" default="1"/>
   <arg name="pluginlists_yaml" default="$(find mavros)/launch/px4_pluginlists.yaml" />
-  <arg name="config_yaml" default="$(find obc_gazebo)/launch/px4_config.yaml" />
+  <arg name="config_yaml" default="$(find rh_simulation)/launch/px4_config.yaml" />
 
   <include file="$(find mavros)/launch/node.launch">
     <arg name="gcs_url" value="$(arg gcs_url)"/>
