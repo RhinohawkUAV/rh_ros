@@ -1,7 +1,0 @@
-[submodule "sitl_gazebo"]
-	path = sitl_gazebo
-	url = git@github.com:martykube/sitl_gazebo.git
-	branch = rh_obc
-[submodule "gscam"]
-	path = gscam
-	url = https://github.com/ros-drivers/gscam.git
