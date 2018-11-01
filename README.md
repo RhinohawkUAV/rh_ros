@@ -37,13 +37,13 @@ MAP_SERVICE=MicrosoftSat sim_vehicle.py -v ArduPlane -f quadplane --console --ma
 
 In terminal 2, start the Rhinohawk System:
 ```
-source ~/catkin_ws/src/obc_gazebo/scripts/setup.sh
-roslaunch obc_gazebo apm.launch
+source ~/catkin_ws/src/rh_simulation/scripts/setup.sh
+roslaunch rh_simulation apm.launch
 ```
 
 In terminal 3, run missions, e.g.:
 ```
-rosrun obc_gazebo run_me2018_ez.sh
+rosrun rh_simulation run_me2018_ez.sh
 
 ```
 You can also issue individual commands using the Rhinohawk ROS services:
@@ -56,7 +56,7 @@ rosservice call /rh/command/flyto "{target_lat: 38.977610, target_long: -77.3390
 To use the web-based Rhinohawk Ground Control Station software, first launch the bridge:
 
 ```
-roslaunch obc_gazebo bridge.launch
+roslaunch rh_simulation bridge.launch
 ```
 Then open this file in your web browser:
 ./ground_control/web/visionTesting.html
@@ -88,8 +88,8 @@ The code is organized into several ROS packages, each containing one or more ROS
     * /rh/vision/aruco_detector
     * /rh/vision/image_to_target
 * 3dr Solo 
-  * **obc_solo** - code and configuration for running the Rhinohawk System on a 3dr Solo quadcopter
+  * **rh_solo** - code and configuration for running the Rhinohawk System on a 3dr Solo quadcopter
   * **gscam** - GStreamer node used for interfacting with the 3dr Solo GoPro camera stream
 * Software-In-The-Loop (SITL)
-  * **obc_gazebo** - code and launch files for running SITL simulations on PX4 and APM
+  * **rh_simulation** - code and launch files for running SITL simulations on PX4 and APM
 

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package>
-  <name>obc_solo</name>
-  <version>0.0.0</version>
-  <description>The obc_solo package</description>
+  <name>rh_simulation</name>
+  <version>0.1.0</version>
+  <description>The rh_simulation package</description>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
+  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="marty@todo.todo">marty</maintainer>
+  <maintainer email="marty@beavercreekconsulting.com">Marty Kube</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -16,14 +16,14 @@
   <license>TODO</license>
 
 
-  <!-- Url tags are optional, but multiple are allowed, one per tag -->
+  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/obc_solo</url> -->
+  <!-- <url type="website">http://wiki.ros.org/rh_simulation</url> -->
 
 
-  <!-- Author tags are optional, multiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintainers, but could be -->
+  <!-- Author tags are optional, mutiple are allowed, one per tag -->
+  <!-- Authors do not have to be maintianers, but could be -->
   <!-- Example: -->
   <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
 
@@ -31,8 +31,12 @@
   <!-- The *_depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->
   <!-- Examples: -->
+  <!-- Use build_depend for packages you need at compile time: -->
+  <!--   <build_depend>message_generation</build_depend> -->
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+  <!--   <run_depend>message_runtime</run_depend> -->
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
@@ -43,9 +47,6 @@
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
 
-  <!-- build custom messages --> 
-  <build_depend>message_generation</build_depend>
-  <run_depend>message_runtime</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
