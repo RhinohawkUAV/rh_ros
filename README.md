@@ -6,9 +6,11 @@ mkdir -p ~/catkin_ws/src
 cd ~/catkin_ws/src
 catkin_init_workspace
 git clone git@github.com:RhinohawkUAV/rh_ros.git
-git clone git@github.com:ros-drivers/gscam.git
 ```
-For more detailed instructions about getting started with this codebase, see the documentation.
+
+## Install
+
+This software has been developed and tested on Ubuntu 14. To get started, create a new [Lubuntu 14](https://lubuntu.net/lubuntu-1404-trusty-tahr-released/) VM, and use the RH ROS [Installer](https://github.com/RhinohawkUAV/rh_ros_installer) to install ROS, the Rhinohawk code, and all the dependencies.
 
 ## Build
 To build, run `catkin_make` in the Catkin workspace:
@@ -37,14 +39,13 @@ MAP_SERVICE=MicrosoftSat sim_vehicle.py -v ArduPlane -f quadplane --console --ma
 
 In terminal 2, start the Rhinohawk System:
 ```
-source ~/catkin_ws/src/rh_simulation/scripts/setup.sh
+source ~/catkin_ws/src/rh_ros/rh_simulation/scripts/setup.sh
 roslaunch rh_simulation apm.launch
 ```
 
 In terminal 3, run missions, e.g.:
 ```
 rosrun rh_simulation run_me2018_ez.sh
-
 ```
 You can also issue individual commands using the Rhinohawk ROS services:
 ```
@@ -59,7 +60,7 @@ To use the web-based Rhinohawk Ground Control Station software, first launch the
 roslaunch rh_simulation bridge.launch
 ```
 Then open this file in your web browser:
-./ground_control/web/visionTesting.html
+~/catkin_ws/src/rh_ros/rh_ground_control/web/visionTesting.html
 
 ### 3DR Solo
 
