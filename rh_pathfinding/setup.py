@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages, Extension
 
-extModule = Extension('fastPathIntersect',
+fastPathIntersectModule = Extension('fastPathIntersect',
                 ['pathFinding/C/fastPathIntersect.c', 'pathFinding/C/geometry.c'])
 
 setup(name='rhpathfinder',
@@ -11,5 +11,5 @@ setup(name='rhpathfinder',
           'numpy', 'typing',
       ],
       packages=find_packages(),
-      ext_modules=[extModule])
+      ext_modules=[fastPathIntersectModule])
 
