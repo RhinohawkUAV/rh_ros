@@ -31,4 +31,9 @@
     <node pkg="rh_autonomy" type="controller.py" name="controller" ns="rh" output="screen"/>
     <node pkg="pathfinding" type="pathfinderserver.py" name="pathfinder" ns="rh" output="screen"/>
 
+    <!-- simulator -->
+	<node pkg="aliencontrol" type="aliencontrol" name="ardupilot">
+		<param name="cmd" value="'$(find rh_simulation)/scripts/start_sim.sh'"/>
+	</node>
+
 </launch>
