@@ -1,6 +1,6 @@
 <launch>
-	<!-- vim: set ft=xml noet : -->
-	
+    <!-- vim: set ft=xml noet : -->
+    
     <!-- from http://ardupilot.org/dev/docs/ros-sitl.html -->
 
     <arg name="fcu_url" default="udp://:14551@127.0.0.1:14555"/>
@@ -8,21 +8,21 @@
     this one crashes if mavlink is not reachable on startup
     <arg name="fcu_url" default="udp://127.0.0.1:14551@14555" />
     -->
-	<arg name="gcs_url" default="" /> <!-- GCS link is provided by SITL -->
-	<arg name="tgt_system" default="1" />
-	<arg name="tgt_component" default="1" />
-	<arg name="log_output" default="screen" />
+    <arg name="gcs_url" default="" /> <!-- GCS link is provided by SITL -->
+    <arg name="tgt_system" default="1" />
+    <arg name="tgt_component" default="1" />
+    <arg name="log_output" default="screen" />
 
-	<include file="$(find mavros)/launch/node.launch">
-		<arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
-		<arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
+    <include file="$(find mavros)/launch/node.launch">
+        <arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+        <arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
 
-		<arg name="fcu_url" value="$(arg fcu_url)" />
-		<arg name="gcs_url" value="$(arg gcs_url)" />
-		<arg name="tgt_system" value="$(arg tgt_system)" />
-		<arg name="tgt_component" value="$(arg tgt_component)" />
-		<arg name="log_output" value="$(arg log_output)" />
-	</include>
+        <arg name="fcu_url" value="$(arg fcu_url)" />
+        <arg name="gcs_url" value="$(arg gcs_url)" />
+        <arg name="tgt_system" value="$(arg tgt_system)" />
+        <arg name="tgt_component" value="$(arg tgt_component)" />
+        <arg name="log_output" value="$(arg log_output)" />
+    </include>
     
     <!-- rhinohawk mission nodes -->
 
@@ -32,8 +32,8 @@
     <node pkg="pathfinding" type="pathfinderserver.py" name="pathfinder" ns="rh" output="screen"/>
 
     <!-- simulator -->
-	<node pkg="aliencontrol" type="aliencontrol" name="ardupilot">
-		<param name="cmd" value="'$(find rh_simulation)/scripts/start_sim.sh'"/>
-	</node>
+    <node pkg="aliencontrol" type="aliencontrol" name="ardupilot">
+        <param name="cmd" value="'$(find rh_simulation)/scripts/start_sim.sh'"/>
+    </node>
 
 </launch>
