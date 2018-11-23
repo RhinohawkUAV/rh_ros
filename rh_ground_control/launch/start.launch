@@ -1,0 +1,14 @@
+<launch>
+
+	<!-- ros/js bridge -->
+  	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
+    	<arg name="address" value="0.0.0.0"/>
+  	</include>
+
+    <!-- ground control web page -->
+	<node pkg="aliencontrol" type="aliencontrol" name="ground_control">
+		<param name="cmd" value="'$(find rh_ground_control)/scripts/start.sh'"/>
+	</node>
+
+</launch>
+

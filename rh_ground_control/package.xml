@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rh_ground_control</name>
+  <version>0.0.1</version>
+  <description>The rh_ground_control package</description>
+  <maintainer email="krokicki@gmail.com">Konrad Rokicki</maintainer>
+  <license>TODO</license>
+  <url type="website">http://rhinohawk.com</url>
+  <url type="repository">https://gitlab.com/NL-outback-challenge-2016/obc-2016-ros</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <!--
+  <build_depend>rospy</build_depend>
+  <build_depend>rostest</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>rh_msgs</build_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>rh_msgs</build_export_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>rh_msgs</exec_depend>
+  <test_depend>rostest</test_depend>
+  -->
+
+  <export>
+    <!-- This package only has Python code -->
+    <architecture_independent/>
+  </export>
+</package>
