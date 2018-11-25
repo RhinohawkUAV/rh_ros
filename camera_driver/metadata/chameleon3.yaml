@@ -1,0 +1,8 @@
+# CM3-U3-28S4C
+camera_name: chameleon3
+focal_length: 7.8 # mm
+image_width: 1928 # pixels
+image_height: 1448 # pixels
+sensor_width: 7.114 # mm
+sensor_height: 7.114 # mm
+
