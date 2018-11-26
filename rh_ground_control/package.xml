@@ -2,11 +2,11 @@
 <package format="2">
   <name>rh_ground_control</name>
   <version>0.0.1</version>
-  <description>The rh_ground_control package</description>
-  <maintainer email="krokicki@gmail.com">Konrad Rokicki</maintainer>
-  <license>TODO</license>
+  <description>Ground Control Web UI for Rhinohawk</description>
+  <maintainer email="molly@no-reply.com">Molly</maintainer>
+  <license>MIT</license>
   <url type="website">http://rhinohawk.com</url>
-  <url type="repository">https://gitlab.com/NL-outback-challenge-2016/obc-2016-ros</url>
+  <url type="repository">https://github.com/RhinohawkUAV/rh_ros</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <!--

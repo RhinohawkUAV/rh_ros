@@ -2,11 +2,11 @@
 <package format="2">
   <name>rh_vision</name>
   <version>0.0.1</version>
-  <description>The rh_vision package</description>
+  <description>Rhinohawk vision components</description>
   <maintainer email="krokicki@gmail.com">Konrad Rokicki</maintainer>
-  <license>TODO</license>
+  <license>MIT</license>
   <url type="website">http://rhinohawk.com</url>
-  <url type="repository">https://gitlab.com/NL-outback-challenge-2016/obc-2016-ros</url>
+  <url type="repository">https://github.com/RhinohawkUAV/rh_ros</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>
