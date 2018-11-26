@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pathfinding)
+project(rh_pathfinding)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -53,19 +53,19 @@ catkin_python_setup()
 
 ## Generate messages in the 'msg' folder
 add_message_files(
-   FILES
+    FILES
     GPSCoord.msg
     GPSVelocity.msg
     Arc.msg
 
     PathSegment.msg
-	SolutionWaypoint.msg
+    SolutionWaypoint.msg
     
     PathInput.msg
     PathDebug.msg
     PathSolution.msg
 
-	Params.msg
+    Params.msg
     Vehicle.msg
     Road.msg
     NoFlyZone.msg
@@ -75,15 +75,15 @@ add_message_files(
 
 ## Generate services in the 'srv' folder
 add_service_files(
-  FILES
-  SubmitPathProblem.srv
-  StepPathProblem.srv
+    FILES
+    SubmitPathProblem.srv
+    StepPathProblem.srv
 )
 
 ## Generate actions in the 'action' folder
 add_action_files(
-  FILES
-  SolvePathProblem.action
+    FILES
+    SolvePathProblem.action
 )
 
 ## Generate added messages and services with any dependencies listed here
