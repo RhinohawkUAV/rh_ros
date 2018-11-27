@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages, Extension
 
 fastPathIntersectModule = Extension('fastPathIntersect',
-                ['pathFinding/C/fastPathIntersect.c', 'pathFinding/C/geometry.c'])
+                ['src/rh_pathfinding/C/fastPathIntersect.c', 'src/rh_pathfinding/C/geometry.c'])
 
 setup(name='rhpathfinder',
       version='0.0.1',
