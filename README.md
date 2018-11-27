@@ -18,8 +18,7 @@ catkin_make
 
 ### Simulation
 
-To run a simulation using SITL you'll need three terminals:
-```
+To run a simulation using SITL you'll need three terminals.
 
 In terminal 1, launch the ground control station:
 ```
