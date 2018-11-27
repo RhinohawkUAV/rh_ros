@@ -4,8 +4,8 @@ from threading import Thread
 
 from gui.pathFinder.pathFinderInterface import PathFinderInterface
 from messageConverter import MessageConverter
-import pathfinding.msg as pfm
-import pathfinding.srv as pfs
+import rh_pathfinding.msg as pfm
+import rh_pathfinding.srv as pfs
 from ros.rosConstants import SUBMIT_PROBLEM_SERVICE, STEP_PROBLEM_SERVICE, \
     PATHFINDER_DEBUG_TOPIC, PATHFINDER_INPUT_TOPIC
 

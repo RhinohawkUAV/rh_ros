@@ -4,7 +4,7 @@ import rospy
 import constants
 import gui
 from gui.pathFinder.pathFindViewer import PathFindViewer
-import pathfinding.msg as pfm
+import rh_pathfinding.msg as pfm
 from ros.rosPathFinderInterface import RosPathFinderInterface
 
 if __name__ == '__main__':
