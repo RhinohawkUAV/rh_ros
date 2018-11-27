@@ -1,8 +1,8 @@
 # Based on the paper Datum Transformations of GPS Positions (https://www.u-blox.com/en)
 import math
 from numpy.random.mtrand import np
-from pathfinding.msg._GPSCoord import GPSCoord
-from pathfinding.msg._GPSVelocity import GPSVelocity
+from rh_pathfinding.msg._GPSCoord import GPSCoord
+from rh_pathfinding.msg._GPSVelocity import GPSVelocity
 
 from constants import COURSE_DIM
 import constants

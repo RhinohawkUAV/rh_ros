@@ -14,7 +14,7 @@ import engine.interface.road
 import engine.interface.scenario
 import engine.interface.solutionWaypoint
 import engine.interface.vehicle
-import pathfinding.msg as pfm
+import rh_pathfinding.msg as pfm
 
 
 #**********************Msg objects to path finding objects********************

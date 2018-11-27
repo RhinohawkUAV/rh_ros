@@ -10,8 +10,8 @@ import time
 from engine.interface import fileUtils
 from engine.pathFinder import PathFinder
 from engine.pathFinderManager import PathFinderManager
-import pathfinding.msg as pfm
-import pathfinding.srv as pfs
+import rh_pathfinding.msg as pfm
+import rh_pathfinding.srv as pfs
 from ros.messageConverter import MessageConverter
 from ros.rosConstants import PATHFINDER_NODE_ID, SUBMIT_PROBLEM_SERVICE, \
     STEP_PROBLEM_SERVICE, PATHFINDER_DEBUG_TOPIC, ROS_QUEUE_SIZE, \

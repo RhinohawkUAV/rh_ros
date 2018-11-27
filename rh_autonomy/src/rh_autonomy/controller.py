@@ -14,7 +14,7 @@ from rh_autonomy.util import get_proxy
 from rh_autonomy.state import MissionStatus, VehicleStatus
 from rh_autonomy.search_pattern import create_waypoints
 import rh_autonomy.constants as rhc
-import pathfinding.msg as pfm
+import rh_pathfinding.msg as pfm
 
 # check state and adjust control every other second
 CONTROL_RATE_HZ = 0.5
